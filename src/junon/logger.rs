@@ -14,11 +14,15 @@ pub enum LogLevel {
 
 impl fmt::Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            LogLevel::Error => "\x1b[1;31mError",
-            LogLevel::Warning => "\x1b[1;33mWarning",
-            LogLevel::Info => "\x1b[1;34mInfo"
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                LogLevel::Error => "\x1b[1;31mError",
+                LogLevel::Warning => "\x1b[1;33mWarning",
+                LogLevel::Info => "\x1b[1;34mInfo",
+            }
+        )
     }
 }
 
@@ -27,13 +31,13 @@ pub struct Log {
     level: LogLevel,
 
     title: String,
-    cause: String, 
+    cause: String,
     message: String,
     hint: String,
 }
 
 impl Log {
-    pub fn new(level: LogLevel, title: String, message: String) -> Self  {
+    pub fn new(level: LogLevel, title: String, message: String) -> Self {
         Log {
             level,
 
@@ -44,7 +48,7 @@ impl Log {
         }
     }
 
-    /// An debug information does not only need a title because it's a simple 
+    /// An debug information does not only need a title because it's a simple
     /// message (without `cause` or `hint` for example) \
     /// This constructor permits to create easily an info log
     pub fn info(title: String) -> Self {
@@ -58,8 +62,9 @@ impl Log {
         }
     }
 
-    /// Add a cause that raise the problem, in the log content (the point of 
-    /// this log) \
+    /// Add a cause that raise the problem, in the log content (the point of
+    /// this log)
+    ///
     /// NOTE The cause will be not printed if this function is not called
     pub fn add_cause(&mut self, cause: String) -> &mut Self {
         if self.cause != String::new() {
@@ -69,7 +74,8 @@ impl Log {
         self
     }
 
-    /// Add something that could help the user, in the log content \
+    /// Add something that could help the user, in the log content
+    ///
     /// NOTE The hint will be not printed if this function is not called
     pub fn add_hint(&mut self, hint: String) -> Self {
         self.hint += hint.as_str();
@@ -78,8 +84,8 @@ impl Log {
 }
 
 impl fmt::Display for Log {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {        
-        if self.level == LogLevel::Info && ! cfg!(debug_assertions) {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.level == LogLevel::Info && !cfg!(debug_assertions) {
             return Ok(());
         }
 
@@ -90,20 +96,23 @@ impl fmt::Display for Log {
                 to_write += format!("\n--> {}", self.cause).as_str();
             }
 
-            let mut new_message = String::new();
-            for c in self.message.chars() {
-                new_message.push(c);
-                if c == '\n' {
-                    new_message += " |";
+            if self.message != String::new() {
+                let mut new_message = String::new();
+                for c in self.message.chars() {
+                    new_message.push(c);
+                    if c == '\n' {
+                        new_message += " |";
+                    }
                 }
+    
+                to_write += format!("\n |\n | {}\n |", new_message).as_str();
             }
 
-            to_write += format!("\n |\n | {}\n |", new_message).as_str();
             if self.hint != String::new() {
                 to_write += format!("\n\x1b[1;34m | ? {}", self.hint).as_str();
             }
         }
-        
+
         write!(f, "{}\n\x1b[0m\n", to_write)
     }
 }
@@ -111,14 +120,12 @@ impl fmt::Display for Log {
 #[derive(Clone)]
 pub struct Logger {
     logs: Vec<Log>,
-    is_killer: bool,
 }
 
 impl Logger {
-    pub fn new(is_killer: bool) -> Self {
+    pub fn new() -> Self {
         Logger {
-            logs: vec!(),
-            is_killer,
+            logs: vec![],
         }
     }
 
@@ -129,21 +136,27 @@ impl Logger {
 
     /// When it's time to reveal all the stocked logs to the user \
     /// Print each contained logs in the log list \
-    /// When the logger is set as a killer, the program is stopped after 
-    /// having printed all logs \
+    /// When the logger is set as a killer, the program is stopped after
+    /// having printed all logs
+    ///
     /// NOTE The function is super simple because each log has a way to be
     /// printed, implemented from `fmt::Display`
     pub fn print_all(&self) {
+        let mut is_killer = false;
+
         for log in &self.logs {
+            if log.level == LogLevel::Error {
+                is_killer = true;
+            }
             print!("{}", log);
         }
 
-        if self.is_killer {
+        if is_killer {
             process::exit(1);
         }
     }
 
-    /// Designed to be used in the others functions (which need to return a 
+    /// Designed to be used in the others functions (which need to return a
     /// specific result with the Logger or with nothing) \
     /// ```
     /// fn foo() -> Result<(), Logger> {
@@ -151,7 +164,7 @@ impl Logger {
     ///     ...     
     ///
     ///     logger.get_result()
-    /// } 
+    /// }
     /// ```
     #[allow(unused)]
     pub fn get_result(&self) -> Result<(), Self> {
@@ -166,7 +179,7 @@ impl Logger {
     ///     ...
     ///
     ///     logger.get_result_with_value::<i32>(1)
-    /// } 
+    /// }
     /// ```
     #[allow(unused)]
     pub fn get_result_with_value<T>(&self, value: T) -> Result<T, Self> {
@@ -177,7 +190,7 @@ impl Logger {
         }
     }
 
-    /// When it's useless to return a `Result` structure with 
+    /// When it's useless to return a `Result` structure with
     /// `Self::get_result()`
     #[allow(unused)]
     pub fn interpret(&self) {
@@ -188,40 +201,38 @@ impl Logger {
 }
 
 /// NOTE you should run the test with parameters: "-- --nocapture" to see the
-/// outputs of the logs 
+/// outputs of the logs
 #[test]
 fn test() {
-    let mut logger = Logger::new(false);
+    let mut logger = Logger::new();
 
-    let logs: Vec<Log> = vec!(
+    let logs: Vec<Log> = vec![
         Log::info("This is an info log".to_string()),
-        
-        Log::new(LogLevel::Error, 
+        Log::new(
+            LogLevel::Error,
             "This is an error log".to_string(),
             "This message is for this error log".to_string(),
         ),
-        
-        Log::new(LogLevel::Warning, 
+        Log::new(
+            LogLevel::Warning,
             "This is a warning log".to_string(),
             "This message is for this warning log".to_string(),
         ),
-        
-        Log::new(LogLevel::Error, 
+        Log::new(
+            LogLevel::Error,
             "This is an error log with an hint".to_string(),
             "This message is for this error log".to_string(),
         )
-            .add_hint("This hint is for this error log".to_string()),
-        
-
-        Log::new(LogLevel::Error, 
+        .add_hint("This hint is for this error log".to_string()),
+        Log::new(
+            LogLevel::Error,
             "This is an error log with a cause and an hint".to_string(),
             "This message is for this error log".to_string(),
         )
-            .add_cause("This cause is for this error log".to_string())
-            .add_hint("This hint is for this error log".to_string()),
-        
+        .add_cause("This cause is for this error log".to_string())
+        .add_hint("This hint is for this error log".to_string()),
         Log::info("This is another info log".to_string()),
-    );
+    ];
 
     for log in logs {
         logger.add_log(log);
