@@ -3,9 +3,14 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
+use std::env;
+use std::path::Path;
 
 mod junon;
-use junon::{args::Args, logger::*};
+use junon::{
+    args::Args, 
+    logger::*
+};
 
 fn main() {
     let mut args = Args::new();
@@ -14,7 +19,26 @@ fn main() {
     let sources: &Vec<String> = args.get_sources();
     let options: &Dict<String, String> = args.get_options();
 
-    Args::when_flag('h', options, |value| help());
+    let mut logger = Logger::new();
+
+    Args::when_flag('h', options, | _ | help());
+    Args::when_flag('d', options, | path: String | {
+        let current_dir = Path::new(&path);
+        if ! current_dir.is_dir() || ! current_dir.exists() {
+            logger.add_log(
+                Log::new(
+                    LogLevel::Error,
+                    "Invalid path OR Not a directory".to_string(),
+                    format!("The given directory '{}' does not exist or it's not a directory", path),
+                )
+            );
+        }
+        logger.interpret();
+
+        env::set_current_dir(&current_dir).unwrap();
+    });
+
+    logger.interpret();
 }
 
 fn help() {

@@ -14,8 +14,7 @@ pub enum LogLevel {
 
 impl fmt::Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
+        write!(f,
             "{}",
             match *self {
                 LogLevel::Error => "\x1b[1;31mError",
@@ -105,11 +104,11 @@ impl fmt::Display for Log {
                     }
                 }
     
-                to_write += format!("\n |\n | {}\n |", new_message).as_str();
+                to_write += format!("\n |\n | {}", new_message).as_str();
             }
 
             if self.hint != String::new() {
-                to_write += format!("\n\x1b[1;34m | ? {}", self.hint).as_str();
+                to_write += format!("\n |\n\x1b[1;34m | ? {}", self.hint).as_str();
             }
         }
 
