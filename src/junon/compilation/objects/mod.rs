@@ -2,8 +2,7 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-pub mod objects;
-
-pub mod base;
-pub mod data;
-pub mod linux;
+pub mod function;
+pub mod params;
+pub mod type_;
+pub mod variable;
