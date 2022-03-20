@@ -8,6 +8,9 @@ use std::path::Path;
 
 mod junon;
 use junon::{
+    compilation::{
+        base::*,
+    },
     args::Args, 
     logger::*
 };
@@ -39,6 +42,8 @@ fn main() {
     });
 
     logger.interpret();
+
+    run_compiler(sources, options);
 }
 
 fn help() {

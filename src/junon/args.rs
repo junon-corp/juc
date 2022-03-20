@@ -174,7 +174,7 @@ impl Args {
     pub fn when_flag<F: FnMut(String)>(flag: char, 
         options: &Dict<String, String>, mut do_what: F) {
         
-            match options.get(format!("-{}", flag).as_str()) {
+        match options.get(format!("-{}", flag).as_str()) {
             Some(value) => do_what(value.to_string()),
             None => {},
         }
