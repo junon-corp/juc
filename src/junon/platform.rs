@@ -9,7 +9,9 @@ use crate::junon::{
     logger::*,
 };
 
-#[derive(Debug, Eq, PartialEq)]
+pub const AVAILABLE_PLATFORMS: &str = "Android, IOS, Linux, MacOS, WIndows";
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Platform {
     Android,
     IOS,

@@ -41,6 +41,12 @@ fn main() {
         env::set_current_dir(&current_dir).unwrap();
     });
 
+    logger.add_log(
+        Log::info(format!("Working directory : '{}'", env::current_dir()
+            .unwrap().display())
+        )
+    );
+
     logger.interpret();
 
     run_compiler(sources, options);
