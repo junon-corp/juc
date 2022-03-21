@@ -11,7 +11,8 @@ use crate::junon::{
             function::Function,
             variable::Variable,
         },
-        data::CompilerData
+        data::CompilerData,
+        linux::LinuxCompiler,
     },
     args::Args,
     logger::*,
@@ -73,7 +74,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     match platform {
         Platform::Android => { todo!() },
         Platform::IOS => { todo!() },
-        Platform::Linux => { todo!() },
+        Platform::Linux => { LinuxCompiler::new(data).run() },
         Platform::MacOS => { todo!() },
         Platform::Windows => { todo!() },
         _ => panic!(), // never happens

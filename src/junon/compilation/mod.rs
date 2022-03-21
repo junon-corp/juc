@@ -3,6 +3,7 @@
 // Copyright (c) Junon, Antonin Hérault
 
 pub mod objects;
+pub mod parsing;
 
 pub mod base;
 pub mod data;

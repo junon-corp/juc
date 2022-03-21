@@ -5,6 +5,7 @@
 use std::collections::HashMap as Dict;
 use std::env;
 use std::path::Path;
+use std::process;
 
 mod junon;
 use junon::{
@@ -70,4 +71,5 @@ fn help() {
     ;
 
     print!("\x1b[1m{}\x1b[0m", to_write);
+    process::exit(0);
 }
