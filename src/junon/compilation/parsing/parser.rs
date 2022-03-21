@@ -16,7 +16,7 @@ use crate::junon::{
 };
 
 pub struct Parser {
-    pub parsed: Vec<Vec<Token>>,
+    parsed: Vec<Vec<Token>>,
     source: String,
     content: String,
 }
@@ -144,5 +144,9 @@ impl Parser {
             },
             Ok(_) => {}
         }
+    }
+
+    pub fn parsed(&self) -> &Vec<Vec<Token>> {
+        &self.parsed
     }
 }

@@ -4,6 +4,7 @@
 
 use std::collections::HashMap as Dict;
 use std::io::Write;
+use std::fs::File;
 
 use crate::junon::{
     compilation::{
@@ -11,7 +12,12 @@ use crate::junon::{
             function::Function,
             variable::Variable,
         },
+        parsing::{
+            parser::Parser,
+            tokens::Token,
+        },
         data::CompilerData,
+        defaults,
         linux::LinuxCompiler,
     },
     args::Args,
@@ -68,6 +74,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         options: options.clone(),
         is_library,
         stream: None,
+        parser: None,
     };
 
     // Run the right compiler according to the platform
@@ -91,8 +98,50 @@ pub trait Compiler {
     /// Do some stuff useful 
     fn init(&mut self);
 
+    /// Starting point for each source file
+    fn init_one(&mut self, source: &String) {
+        self.data().stream = Some(File::create(format!("{}/{}.asm", 
+            defaults::BUILD_FOLDER, source)).unwrap()
+        );
+        
+        self.data().parser = Some(Parser::new(source));
+        match &mut self.data().parser {
+            Some(parser) => parser.run(),
+            None => panic!(), // never happens
+        }
+    }
+
     /// Main function where each source file is transformed to an objet file
-    fn run(&mut self);
+    fn run(&mut self) {
+        self.init();
+
+        for source in self.data().sources.clone() {
+            self.init_one(&source);
+            self.call();
+            self.finish_one(&source);
+        }
+    }
+
+    /// Methods caller according to the current token
+    fn call(&mut self) {
+        let parsed: Vec<Vec<Token>> = match &self.data().parser {
+            Some(parser) => parser.parsed().clone(),
+            None => panic!(), // never happens
+        };
+
+        let mut parsed_iter = parsed.iter();
+        for (i_line, line) in parsed_iter.clone().enumerate() {
+
+            let mut line_iter = line.iter();
+            for (i_token, token) in line_iter.clone().enumerate() {
+                use Token::*;
+
+                match token {
+                    _ => { /* not implemented yet */ },
+                }
+            }
+        }
+    }
 
     /// Link all generated files to one output file (library or binary according
     /// to the selected one)
@@ -101,6 +150,11 @@ pub trait Compiler {
     /// Exit point \
     /// Delete all temporary files and do linking
     fn finish(&mut self);
+
+    /// Exit point for each source file \
+    fn finish_one(&mut self, source: &String) {
+
+    }
     
     /// Data getter
     fn data(&mut self) -> &mut CompilerData; 

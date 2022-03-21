@@ -31,10 +31,6 @@ impl base::Compiler for LinuxCompiler {
     fn init(&mut self) {
 
     }
-
-    fn run(&mut self) {
-
-    }
     
     fn link(&mut self) {
 
