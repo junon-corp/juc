@@ -11,11 +11,12 @@ use crate::junon::{
     compilation::{
         objects::{
             function::Function,
+            params::Params,
             variable::Variable,
         },
         parsing::{
             parser::Parser,
-            tokens::Token,
+            tokens, tokens::*,
         },
         data::CompilerData,
         defaults::*,
@@ -141,9 +142,21 @@ pub trait Compiler {
 
             let mut line_iter = line.iter();
             for (i_token, token) in line_iter.clone().enumerate() {
-                use Token::*;
-
                 match token {
+                    Token::Function => {
+                        line_iter.next();
+                        let id = match line_iter.next() {
+                            Some(next) => get_string_token((*next).clone()),
+                            None => panic!(), // never happens
+                        };
+
+                        let params: Params = vec!();
+                        let return_type = String::new();
+
+                        let generated_function 
+                            = Function::new(id, params, return_type);
+                        self.add_function(generated_function);
+                    },
                     _ => { /* not implemented yet */ },
                 }
             }

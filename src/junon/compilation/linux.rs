@@ -114,7 +114,19 @@ impl base::Compiler for LinuxCompiler {
     }
     
     fn add_function(&mut self, function: Function) {
-
+        match &mut self.data().stream {
+            Some(stream) => {
+                write!(stream,
+                    "section .text\n\
+                    \tglobal {}\n\
+                    {}:\n\
+                    \tret\n\
+                    ",
+                    function.id(), function.id()
+                );
+            },
+            None => panic!(), // never happens
+        }
     }
 
     // fn add_structure(&mut self, structure: Structure) {}
