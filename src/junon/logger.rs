@@ -100,7 +100,7 @@ impl fmt::Display for Log {
                 for c in self.message.chars() {
                     new_message.push(c);
                     if c == '\n' {
-                        new_message += " |";
+                        new_message += " | ";
                     }
                 }
     

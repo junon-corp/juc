@@ -52,7 +52,7 @@ pub fn exec(program_id: String, arguments: &[String]) {
         .unwrap();
 
     let program_result: String = output.stderr.into_iter()
-        .map(|x| x as char)
+        .map(| x | x as char)
         .collect();
     
     if program_result != String::new() {
@@ -61,9 +61,10 @@ pub fn exec(program_id: String, arguments: &[String]) {
             Log::new(
                 LogLevel::Error,
                 format!("Execution of '{}' failed", program_id),
-                "The called program may be not installed. It could be a bug \
-                from 'juc' or the called program".to_string()
+                program_result,
             )
+            .add_hint("The called program may be not installed. It could be a \
+                bug from 'juc' or the called program".to_string())
         );
         logger.interpret();
     }
