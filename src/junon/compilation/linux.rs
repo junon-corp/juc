@@ -20,13 +20,15 @@ use crate::junon::{
 };
 
 pub struct LinuxCompiler {
-    data: CompilerData
+    data: CompilerData,
+    section_text: Vec<String>,
 }
 
 impl LinuxCompiler {
     pub fn new(data: CompilerData) -> Self {
         Self {
             data,
+            section_text: vec!()
         }
     }
 }
@@ -83,11 +85,16 @@ impl base::Compiler for LinuxCompiler {
         platform::exec(LINKER.to_string(), &args);
     }
 
-    fn finish(&mut self) {
-
-    }
+    fn finish(&mut self) {}
 
     fn finish_one(&mut self, source: &String) {
+        self.write_asm(format!(
+            "section .text\n{}", self.section_text.iter()
+                .map(| x | format!("\t{}\n", x)) // function id
+                .collect::<String>()
+        ));
+        self.section_text = vec!(); // reset for the next file
+
         platform::exec(ASSEMBLER.to_string(), 
             // Arguments 
             &[
@@ -114,19 +121,13 @@ impl base::Compiler for LinuxCompiler {
     }
     
     fn add_function(&mut self, function: Function) {
-        match &mut self.data().stream {
-            Some(stream) => {
-                write!(stream,
-                    "section .text\n\
-                    \tglobal {}\n\
-                    {}:\n\
-                    \tret\n\
-                    ",
-                    function.id(), function.id()
-                );
-            },
-            None => panic!(), // never happens
-        }
+        self.section_text.push(format!("global {}", function.id()));
+        let mut to_write: String = format!(
+            "{}:",
+            function.id(),
+        );
+
+        self.write_asm(to_write);
     }
 
     // fn add_structure(&mut self, structure: Structure) {}

@@ -157,6 +157,17 @@ pub trait Compiler {
                             = Function::new(id, params, return_type);
                         self.add_function(generated_function);
                     },
+                    Token::Return => {
+                        self.write_asm("\tret\n".to_string());
+                    },
+                    Token::AssemblyCode => {
+                        let mut line: Vec<Token> = vec!();
+                        line_iter.next();
+                        for (i_token, token) in line_iter.clone().enumerate() {
+                            line.push(token.clone());
+                        }
+                        self.write_line_to_asm(line);
+                    },
                     _ => { /* not implemented yet */ },
                 }
             }
@@ -187,7 +198,21 @@ pub trait Compiler {
     fn write_asm(&mut self, asm_code: String) {
         match &mut self.data().stream {
             Some(stream) => write!(stream, "{}\n", asm_code).unwrap(),
-            _ => panic!(), // never happens
+            None => panic!(), // never happens
+        }
+    }
+
+    /// Transform a tokens line to ASM code
+    fn write_line_to_asm(&mut self, line: Vec<Token>) {
+        match &mut self.data().stream {
+            Some(stream) => {
+                write!(stream, "\t").unwrap();
+                for token in line {
+                    write!(stream, "{} ", get_string_token(token));
+                }
+                write!(stream, "\n").unwrap();
+            },
+            None => panic!(), // never ahppens
         }
     }
 }
