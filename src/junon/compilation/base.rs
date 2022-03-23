@@ -5,6 +5,7 @@
 use std::collections::HashMap as Dict;
 use std::io::Write;
 use std::fs::File;
+use std::path::Path;
 
 use crate::junon::{
     compilation::{
@@ -17,7 +18,7 @@ use crate::junon::{
             tokens::Token,
         },
         data::CompilerData,
-        defaults,
+        defaults::*,
         linux::LinuxCompiler,
     },
     args::Args,
@@ -100,9 +101,12 @@ pub trait Compiler {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        self.data().stream = Some(File::create(format!("{}/{}.asm", 
-            defaults::BUILD_FOLDER, source)).unwrap()
-        );
+        let string_path = format!("{}/{}.asm", BUILD_FOLDER, source); 
+        let mut path = Path::new(&string_path);
+
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+
+        self.data().stream = Some(File::create(path).unwrap());
         
         self.data().parser = Some(Parser::new(source));
         match &mut self.data().parser {
@@ -120,6 +124,9 @@ pub trait Compiler {
             self.call();
             self.finish_one(&source);
         }
+
+        self.link();
+        self.finish();
     }
 
     /// Methods caller according to the current token
@@ -151,10 +158,8 @@ pub trait Compiler {
     /// Delete all temporary files and do linking
     fn finish(&mut self);
 
-    /// Exit point for each source file \
-    fn finish_one(&mut self, source: &String) {
-
-    }
+    /// Exit point for each source file 
+    fn finish_one(&mut self, source: &String);
     
     /// Data getter
     fn data(&mut self) -> &mut CompilerData; 
