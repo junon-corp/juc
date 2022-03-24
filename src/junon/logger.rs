@@ -89,29 +89,29 @@ impl fmt::Display for Log {
         }
 
         let mut to_write = format!("{}: {}\x1b[0m", self.level, self.title);
-
-        if self.level != LogLevel::Info {
-            if self.cause != String::new() {
-                to_write += format!("\n--> {}", self.cause).as_str();
-            }
-
-            if self.message != String::new() {
-                let mut new_message = String::new();
-                for c in self.message.chars() {
-                    new_message.push(c);
-                    if c == '\n' {
-                        new_message += " | ";
-                    }
-                }
-    
-                to_write += format!("\n |\n | {}", new_message).as_str();
-            }
-
-            if self.hint != String::new() {
-                to_write += format!("\n |\n\x1b[1;34m | ? {}", self.hint).as_str();
-            }
+        if self.level == LogLevel::Info {
+            return write!(f, "{}\x1b[0m\n", to_write);
         }
 
+        if self.cause != String::new() {
+            to_write += format!("\n--> {}", self.cause).as_str();
+        }
+
+        if self.message != String::new() {
+            let mut new_message = String::new();
+            for c in self.message.chars() {
+                new_message.push(c);
+                if c == '\n' {
+                    new_message += " | ";
+                }
+            }
+
+            to_write += format!("\n |\n | {}", new_message).as_str();
+        }
+
+        if self.hint != String::new() {
+            to_write += format!("\n |\n\x1b[1;34m | ? {}", self.hint).as_str();
+        }
         write!(f, "{}\n\x1b[0m\n", to_write)
     }
 }

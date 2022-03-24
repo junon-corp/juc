@@ -48,9 +48,28 @@ fn main() {
         )
     );
 
+    // Check after current directory set
+    for source in sources {
+        let path = Path::new(source);
+        if ! path.exists() {
+            logger.add_log(
+                Log::new(
+                    LogLevel::Error,
+                    "Source file does not exist".to_string(),
+                    format!("The given source file '{}' cannot be found in the current directory", source),
+                )
+            );
+        }
+    }
+
     logger.interpret();
 
     run_compiler(sources, options);
+
+    logger.add_log(
+        Log::info("Finished".to_string())
+    );
+    logger.interpret();
 }
 
 fn help() {

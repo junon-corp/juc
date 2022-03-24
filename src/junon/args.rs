@@ -4,6 +4,7 @@
 
 use std::collections::HashMap as Dict;
 use std::env;
+use std::path::Path;
 
 use crate::junon::logger::*;
 
@@ -77,7 +78,7 @@ impl Args {
         // Here, the first check is passed and `self.parse()` was called
 
         // Check for the options
-        for (option_flag, _option_value) in & *&self.options {
+        for (option_flag, _option_value) in &self.options {
             // Check if the option flag is contained into `OPTIONS` too
             let mut is_valid = false;
             for flag in OPTION_FLAGS {
