@@ -8,7 +8,7 @@ pub enum Type {
     UnsignedInteger,
     Float,
     Str,
-    
+
     NotNative(String),
 }
 
@@ -28,6 +28,7 @@ pub fn type_to_asm(type_: Type) -> String {
         Type::UnsignedInteger => "dw",
         Type::Float => "dd",
         Type::Str => "db",
-        Type::NotNative(ref type_as_string) => &*type_as_string
-    }.to_string()
+        Type::NotNative(ref type_as_string) => &*type_as_string,
+    }
+    .to_string()
 }

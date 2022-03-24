@@ -2,13 +2,7 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-use crate::junon::{
-    compilation::{
-        objects::{
-            params::Params,
-        },
-    },
-};
+use crate::junon::compilation::objects::params::Params;
 
 /// Structure used to create a function \
 /// Because it's not an interpreter, this is stored following the function, this
@@ -20,15 +14,11 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new(
-        id: String, 
-        params: Params, 
-        return_type: String
-    ) -> Self {
+    pub fn new(id: String, params: Params, return_type: String) -> Self {
         Self {
             id,
             params,
-            return_type
+            return_type,
         }
     }
 

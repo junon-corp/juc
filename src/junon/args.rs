@@ -14,7 +14,6 @@ const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help pa
 const OPTION_FLAGS: [char; 5] = [
     'h', // help
     'l', // library
-
     'p', // platform
     'o', // output
     'd', // directory
@@ -27,7 +26,7 @@ pub struct Args {
     options: Dict<String, String>,
 
     previous_is_option: bool, // it's an argument starting by '-'
-    check_step_1: bool, // if the check1 is passed
+    check_step_1: bool,       // if the check1 is passed
 }
 
 impl Args {
@@ -37,7 +36,7 @@ impl Args {
 
             sources: vec![],
             options: Dict::new(),
-            
+
             previous_is_option: false,
             check_step_1: false,
         }
@@ -55,9 +54,9 @@ impl Args {
     fn check(&mut self) {
         let mut logger = Logger::new();
 
-        // When the first check is not passed, do it and return to permit to 
+        // When the first check is not passed, do it and return to permit to
         // call `self.parse()`
-        if ! self.check_step_1 {
+        if !self.check_step_1 {
             if self.sys_args.len() == 1 {
                 logger.add_log(
                     Log::new(
@@ -84,11 +83,11 @@ impl Args {
             for flag in OPTION_FLAGS {
                 // Index 1 is the letter
                 // "-h", index 0 is "-" and index 1 is "h"
-                // `unwrap()` is called because here is no option's flag 
+                // `unwrap()` is called because here is no option's flag
                 // different than this writing: "-x": no error can be raised
                 if option_flag.chars().nth(1).unwrap() == flag {
                     is_valid = true;
-                    break; // yes it is, I stop the check 
+                    break; // yes it is, I stop the check
                 }
             }
             // The flag was not found in `OPTIONS`
@@ -97,9 +96,12 @@ impl Args {
                     Log::new(
                         LogLevel::Warning,
                         "Ignored option flag".to_string(),
-                        format!("The given option flag '{}' does not match with any valid flag", option_flag),
+                        format!(
+                            "The given option flag '{}' does not match with any valid flag",
+                            option_flag
+                        ),
                     )
-                    .add_hint(HELP_HINT.to_string())
+                    .add_hint(HELP_HINT.to_string()),
                 );
             }
         }
@@ -107,11 +109,11 @@ impl Args {
         logger.interpret()
     }
 
-    /// Initialize `self.options` with all options in the command line 
+    /// Initialize `self.options` with all options in the command line
     /// arguments as a `Dict` \
     /// Example: `[{"-o": "bin/prog"}, {"-l": "my_lib.so"}]`
     ///
-    /// And initialize `self.sources` with all arguments which are not 
+    /// And initialize `self.sources` with all arguments which are not
     /// an option (flag or value) \
     /// Example: `["src/main.ju", "foo.ju"]`
     fn parse(&mut self) {
@@ -123,14 +125,15 @@ impl Args {
                 key = arg;
                 self.options.insert(key.clone(), String::new());
                 continue;
-            } 
-            
+            }
+
             // The option has a value
-            if self.is_option(&arg) { // SEE `self.is_option()`
+            if self.is_option(&arg) {
+                // SEE `self.is_option()`
                 key = arg;
                 continue;
             }
-            
+
             // The current argument is the option value
             if self.previous_is_option {
                 self.previous_is_option = false;
@@ -138,9 +141,9 @@ impl Args {
                 self.options.insert(key.clone(), arg.clone());
                 continue;
             }
-            
+
             // It's not an option, so it's a source file
-            self.sources.push(arg.clone()); 
+            self.sources.push(arg.clone());
         }
 
         // Remove the first argument of `sources` because it's the binary path
@@ -152,7 +155,7 @@ impl Args {
     /// Update the value of `self.previous_is_option`
     ///
     /// NOTE an argument starting by the '-' character is an option flag
-    /// and the next argument is an option value. 
+    /// and the next argument is an option value.
     fn is_option(&mut self, arg: &String) -> bool {
         // an argument cannot be null, that why `unwrap()` is called
         if arg.chars().nth(0).unwrap() == '-' {
@@ -172,12 +175,10 @@ impl Args {
     }
 
     /// Associated function
-    pub fn when_flag<F: FnMut(String)>(flag: char, 
-        options: &Dict<String, String>, mut do_what: F) {
-        
+    pub fn when_flag<F: FnMut(String)>(flag: char, options: &Dict<String, String>, mut do_what: F) {
         match options.get(format!("-{}", flag).as_str()) {
             Some(value) => do_what(value.to_string()),
-            None => {},
+            None => {}
         }
     }
 }

@@ -3,27 +3,27 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
-use std::io::Write;
 use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 
 use crate::junon::{
+    args::Args,
     compilation::{
-        objects::{
-            function::Function,
-            params::Params,
-            type_, type_::Type,
-            variable::Variable,
-        },
-        parsing::{
-            parser::Parser,
-            tokens, tokens::*,
-        },
         data::CompilerData,
         defaults::*,
         linux::LinuxCompiler,
+        objects::{
+            function::Function, 
+            params::Params, 
+            type_, type_::Type, 
+            variable::Variable
+        },
+        parsing::{
+            parser::Parser, 
+            tokens, tokens::*
+        },
     },
-    args::Args,
     logger::*,
     platform, platform::Platform,
 };
@@ -34,15 +34,13 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     let mut logger = Logger::new();
 
     let mut is_library: bool = false;
-    Args::when_flag('l', options, | _ | {
+    Args::when_flag('l', options, |_| {
         is_library = true;
-        logger.add_log(
-            Log::info("Library building".to_string())
-        );    
+        logger.add_log(Log::info("Library building".to_string()));
     });
 
     let mut platform: Platform = platform::get_current();
-    Args::when_flag('p', options, | mut platform_id: String | {
+    Args::when_flag('p', options, |mut platform_id: String| {
         platform_id = platform_id.to_lowercase();
         platform = platform::get_from_id(platform_id)
     });
@@ -54,21 +52,23 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
                 Log::new(
                     LogLevel::Error,
                     "Invalid platform".to_string(),
-                    format!("Platform '{}' is not compatible with the current \
-                    version of 'juc'", invalid_platform_id)
+                    format!(
+                        "Platform '{}' is not compatible with the current \
+                    version of 'juc'",
+                        invalid_platform_id
+                    ),
                 )
-                .add_hint(format!("Available platforms : {}", 
+                .add_hint(format!(
+                    "Available platforms : {}",
                     platform::AVAILABLE_PLATFORMS
-                ))
+                )),
             );
-        },
+        }
         _ => {} // valid platform
     }
     logger.interpret();
 
-    logger.add_log(
-        Log::info(format!("Platform : '{:?}'", platform))
-    );
+    logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
     logger.interpret();
 
     // Set important information for the compiler
@@ -82,11 +82,19 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
     // Run the right compiler according to the platform
     match platform {
-        Platform::Android => { todo!() },
-        Platform::IOS => { todo!() },
-        Platform::Linux => { LinuxCompiler::new(data).run() },
-        Platform::MacOS => { todo!() },
-        Platform::Windows => { todo!() },
+        Platform::Android => {
+            todo!()
+        }
+        Platform::IOS => {
+            todo!()
+        }
+        Platform::Linux => LinuxCompiler::new(data).run(),
+        Platform::MacOS => {
+            todo!()
+        }
+        Platform::Windows => {
+            todo!()
+        }
         _ => panic!(), // never happens
     }
 }
@@ -98,14 +106,14 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 /// have its own documentation
 pub trait Compiler {
     /// Starting point \
-    /// Do some stuff useful 
+    /// Do some stuff useful
     fn init(&mut self);
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        let path: String = format!("{}/{}.asm", BUILD_FOLDER, source); 
+        let path: String = format!("{}/{}.asm", BUILD_FOLDER, source);
         self.data().stream = Some(File::create(path).unwrap());
-        
+
         self.data().parser = Some(Parser::new(source));
         match &mut self.data().parser {
             Some(parser) => parser.run(),
@@ -135,18 +143,17 @@ pub trait Compiler {
         };
 
         for (i_line, line) in parsed.iter().clone().enumerate() {
-
             let mut line_iter = line.iter();
             for (i_token, token) in line_iter.clone().enumerate() {
                 match token {
                     Token::AssemblyCode => {
-                        let mut line: Vec<Token> = vec!();
+                        let mut line: Vec<Token> = vec![];
                         line_iter.next();
                         for (i_token, token) in line_iter.clone().enumerate() {
                             line.push(token.clone());
                         }
                         self.write_line_to_asm(line);
-                    },
+                    }
                     Token::Function => {
                         line_iter.next(); // func
                         let id = match line_iter.next() {
@@ -154,18 +161,16 @@ pub trait Compiler {
                             None => panic!(), // never happens
                         };
 
-                        let params: Params = vec!();
+                        let params: Params = vec![];
                         let return_type = String::new();
 
-                        self.add_function(
-                            Function::new(id, params, return_type)
-                        );
-                    },
+                        self.add_function(Function::new(id, params, return_type));
+                    }
                     Token::Return => {
                         line_iter.next();
                         // TODO : get value
                         self.return_();
-                    },
+                    }
                     Token::Static => {
                         line_iter.next(); // static
                         let id = match line_iter.next() {
@@ -182,14 +187,14 @@ pub trait Compiler {
 
                         line_iter.next(); // =
 
+                        // let mut parser = Parser::from("a b c".to_string());
+                        // parser.run();
+                        // println!("{:?}", parser);
+
                         let init_value = "0".to_string();
 
-                        self.add_static_variable(Variable::new(
-                            id, 
-                            type_,
-                            init_value
-                        ));
-                    },
+                        self.add_static_variable(Variable::new(id, type_, init_value));
+                    }
                     Token::Variable => {
                         line_iter.next(); // let
                         let id = match line_iter.next() {
@@ -208,13 +213,9 @@ pub trait Compiler {
 
                         let init_value = "0".to_string();
 
-                        self.add_variable(Variable::new(
-                            id, 
-                            type_,
-                            init_value,
-                        ));
-                    },
-                    _ => { /* not implemented yet */ },
+                        self.add_variable(Variable::new(id, type_, init_value));
+                    }
+                    _ => { /* not implemented yet */ }
                 }
             }
         }
@@ -228,14 +229,14 @@ pub trait Compiler {
     /// Delete all temporary files and do linking
     fn finish(&mut self);
 
-    /// Exit point for each source file 
+    /// Exit point for each source file
     fn finish_one(&mut self, source: &String);
-    
+
     /// Data getter
-    fn data(&mut self) -> &mut CompilerData; 
+    fn data(&mut self) -> &mut CompilerData;
 
     // --- ASM code generators
-    
+
     fn add_variable(&mut self, variable: Variable);
     fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
@@ -259,7 +260,7 @@ pub trait Compiler {
                     write!(stream, "{} ", token_to_string(token)).unwrap();
                 }
                 write!(stream, "\n").unwrap();
-            },
+            }
             None => panic!(), // never ahppens
         }
     }

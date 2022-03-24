@@ -41,12 +41,13 @@ pub fn token_to_string(token: Token) -> String {
         Token::StringDot => "\"",
         Token::Variable => "variable",
         Token::RawString(ref val) => &*val,
-    }.to_string()
+    }
+    .to_string()
 }
 
-/// If the character is special (it means that it's not a letter from the Latin 
+/// If the character is special (it means that it's not a letter from the Latin
 /// alphabet or if it's not a number), it return "true": the character should be
-/// cut by the parser in a new case (should be not placed with the previous 
+/// cut by the parser in a new case (should be not placed with the previous
 /// character/word)
 pub fn should_be_cut(c: &char) -> bool {
     if (*c >= 'A' && *c <= 'Z') || (*c >= 'a' && *c <= 'z') {

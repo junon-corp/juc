@@ -9,10 +9,8 @@ use std::process;
 
 mod junon;
 use junon::{
-    compilation::{
-        base::*,
-    },
     args::Args, 
+    compilation::base::*, 
     logger::*
 };
 
@@ -25,40 +23,41 @@ fn main() {
 
     let mut logger = Logger::new();
 
-    Args::when_flag('h', options, | _ | help());
-    Args::when_flag('d', options, | path: String | {
+    Args::when_flag('h', options, |_| help());
+    Args::when_flag('d', options, |path: String| {
         let current_dir = Path::new(&path);
-        if ! current_dir.is_dir() || ! current_dir.exists() {
-            logger.add_log(
-                Log::new(
-                    LogLevel::Error,
-                    "Invalid path OR Not a directory".to_string(),
-                    format!("The given directory '{}' does not exist or it's not a directory", path),
-                )
-            );
+        if !current_dir.is_dir() || !current_dir.exists() {
+            logger.add_log(Log::new(
+                LogLevel::Error,
+                "Invalid path OR Not a directory".to_string(),
+                format!(
+                    "The given directory '{}' does not exist or it's not a directory",
+                    path
+                ),
+            ));
         }
         logger.interpret();
 
         env::set_current_dir(&current_dir).unwrap();
     });
 
-    logger.add_log(
-        Log::info(format!("Working directory : '{}'", env::current_dir()
-            .unwrap().display())
-        )
-    );
+    logger.add_log(Log::info(format!(
+        "Working directory : '{}'",
+        env::current_dir().unwrap().display()
+    )));
 
     // Check after current directory set
     for source in sources {
         let path = Path::new(source);
-        if ! path.exists() {
-            logger.add_log(
-                Log::new(
-                    LogLevel::Error,
-                    "Source file does not exist".to_string(),
-                    format!("The given source file '{}' cannot be found in the current directory", source),
-                )
-            );
+        if !path.exists() {
+            logger.add_log(Log::new(
+                LogLevel::Error,
+                "Source file does not exist".to_string(),
+                format!(
+                    "The given source file '{}' cannot be found in the current directory",
+                    source
+                ),
+            ));
         }
     }
 
@@ -66,9 +65,7 @@ fn main() {
 
     run_compiler(sources, options);
 
-    logger.add_log(
-        Log::info("Finished".to_string())
-    );
+    logger.add_log(Log::info("Finished".to_string()));
     logger.interpret();
 }
 
@@ -86,8 +83,7 @@ fn help() {
         + "\t-p <platform name> : Compile for this platform\n"
         + "\t\t(Android, IOS, Linux, MacOS, Windows)\n"
         + "\t-o <path> : Path for the output file\n"
-        + "\t-d <path> : Replace the current directory context location\n"
-    ;
+        + "\t-d <path> : Replace the current directory context location\n";
 
     print!("\x1b[1m{}\x1b[0m", to_write);
     process::exit(0);

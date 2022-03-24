@@ -7,17 +7,13 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::junon::{
-    compilation::{
-        parsing::{
-            tokens::*,
-        },
-    },
-    logger::*,
+    compilation::parsing::tokens::*, 
+    logger::*
 };
 
 pub struct Parser {
     parsed: Vec<Vec<Token>>,
-    source: String,
+    source: Option<String>,
     content: String,
 }
 
@@ -38,17 +34,28 @@ impl fmt::Debug for Parser {
 impl Parser {
     pub fn new(source: &String) -> Self {
         Self {
-            parsed: vec!(),
-            source: source.to_string(),
+            parsed: vec![],
+            source: Some(source.to_string()),
             content: String::new(),
         }
     }
 
+    pub fn from(content: String) -> Self {
+        Self {
+            parsed: vec![],
+            source: None,
+            content,
+        }
+    }
+
     pub fn run(&mut self) {
-        self.read_file_content();
+        match self.source {
+            None => {} // content is not from a source file
+            _ => self.read_file_content(),
+        }
 
         let mut token = String::new();
-        let mut line: Vec<Token> = vec!();
+        let mut line: Vec<Token> = vec![];
 
         let mut was_double_char = false;
         let mut is_string = false;
@@ -58,23 +65,25 @@ impl Parser {
 
         for (i, c) in self.content.chars().enumerate() {
             // String creation
-            
+
             // Get the first character because it's a String of one character
-            if c == token_to_string(Token::StringDot).chars().nth(0).unwrap() { 
-                if is_string { // ending of string
+            if c == token_to_string(Token::StringDot).chars().nth(0).unwrap() {
+                if is_string {
+                    // ending of string
                     is_string = false;
                     line.push(string_to_token(&string_content));
-                } else { // beginning of string
+                } else {
+                    // beginning of string
                     is_string = true;
                 }
                 continue;
-            } 
+            }
             if is_string {
                 string_content.push(c);
-                continue; // don't care of others possibilities, we want raw 
-                // characters in the String
+                continue; // don't care of others possibilities, we want raw
+                          // characters in the String
             }
-            
+
             // The user directly wrote ASM code
             if c == '@' {
                 token = "@".to_string();
@@ -82,7 +91,7 @@ impl Parser {
                 is_asm_code = true;
                 continue;
             }
-            
+
             // New line detected
             if c == '\n' {
                 // Push the last token of the line
@@ -90,14 +99,14 @@ impl Parser {
 
                 // Push the line into the parsed 2d list
                 self.parsed.push(line.clone());
-                line = vec!(); // reset line
-                
+                line = vec![]; // reset line
+
                 is_asm_code = false;
-                
+
                 continue; // and then '\n' will be not pushed
             }
 
-            // When it's a special character (not letter or number, not simple 
+            // When it's a special character (not letter or number, not simple
             // point).
             // SEE `tokens::should_be_cut()`
             if should_be_cut(&c) {
@@ -105,14 +114,13 @@ impl Parser {
 
                 // And push the special character detected as a new token
                 if c != ' ' && !was_double_char {
-                    if i != self.content.len() - 1 && 
-                        c == self.content.chars().nth(i + 1).unwrap()
+                    if i != self.content.len() - 1 && c == self.content.chars().nth(i + 1).unwrap()
                     {
                         line.push(string_to_token(&format!("{}{}", c, c)));
                         was_double_char = true;
                         continue;
                     }
-                    
+
                     if is_asm_code {
                         line.push(Token::RawString(format!("{}", c)));
                     } else {
@@ -144,8 +152,12 @@ impl Parser {
     /// Update the `content` attribute to the file's content by opening a new
     /// file stream (readable) on it.
     fn read_file_content(&mut self) {
-        let mut stream = File::open(&self.source).unwrap(); // `unwrap()` is 
-        // called because the source file was already checked before
+        let mut stream = File::open(match &self.source {
+            Some(source) => source,
+            None => panic!(),
+        })
+        .unwrap(); // already checked before
+
         match stream.read_to_string(&mut self.content) {
             Err(_) => {
                 let mut logger = Logger::new();
@@ -154,14 +166,13 @@ impl Parser {
                     Log::new(
                         LogLevel::Error,
                         "Unreadable file".to_string(),
-                        "The given source file cannot be read".to_string()
+                        "The given source file cannot be read".to_string(),
                     )
-                    .add_hint("It's probably corrupted or it's not a text file"
-                        .to_string()),
+                    .add_hint("It's probably corrupted or it's not a text file".to_string()),
                 );
 
                 logger.interpret();
-            },
+            }
             Ok(_) => {}
         }
     }

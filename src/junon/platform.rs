@@ -5,9 +5,7 @@
 use std::env;
 use std::process::Command;
 
-use crate::junon::{
-    logger::*,
-};
+use crate::junon::logger::*;
 
 pub const AVAILABLE_PLATFORMS: &str = "Android, IOS, Linux, MacOS, WIndows";
 
@@ -24,7 +22,7 @@ pub enum Platform {
 /// Get the platform where the compiler is currently running \
 /// SEE https://doc.rust-lang.org/std/env/consts/constant.OS.html
 pub fn get_current() -> Platform {
-    // The platform identifier is set as lowercase according to the 
+    // The platform identifier is set as lowercase according to the
     // documentation page (SEE this function's documentation)
     let platform_id: &str = env::consts::OS;
     get_from_id(platform_id.to_string())
@@ -39,7 +37,7 @@ pub fn get_from_id(platform_id: String) -> Platform {
         "linux" => Platform::Linux,
         "macos" => Platform::MacOS,
         "windows" => Platform::Windows,
-        _ => Platform::Unknown(platform_id)
+        _ => Platform::Unknown(platform_id),
     }
 }
 
@@ -51,10 +49,8 @@ pub fn exec(program_id: String, arguments: &[String]) {
         .output()
         .unwrap();
 
-    let program_result: String = output.stderr.into_iter()
-        .map(| x | x as char)
-        .collect();
-    
+    let program_result: String = output.stderr.into_iter().map(|x| x as char).collect();
+
     if program_result != String::new() {
         let mut logger = Logger::new();
         logger.add_log(
@@ -63,8 +59,11 @@ pub fn exec(program_id: String, arguments: &[String]) {
                 format!("Execution of '{}' failed", program_id),
                 program_result,
             )
-            .add_hint("The called program may be not installed. It could be a \
-                bug from 'juc' or the called program".to_string())
+            .add_hint(
+                "The called program may be not installed. It could be a \
+                bug from 'juc' or the called program"
+                    .to_string(),
+            ),
         );
         logger.interpret();
     }

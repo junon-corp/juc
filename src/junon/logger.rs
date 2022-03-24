@@ -14,7 +14,8 @@ pub enum LogLevel {
 
 impl fmt::Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "{}",
             match *self {
                 LogLevel::Error => "\x1b[1;31mError",
@@ -123,9 +124,7 @@ pub struct Logger {
 
 impl Logger {
     pub fn new() -> Self {
-        Logger {
-            logs: vec![],
-        }
+        Logger { logs: vec![] }
     }
 
     /// Add a `Log` object to the log list without checking
