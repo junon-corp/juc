@@ -60,10 +60,10 @@ impl Parser {
             // String creation
             
             // Get the first character because it's a String of one character
-            if c == get_string_token(Token::StringDot).chars().nth(0).unwrap() { 
+            if c == token_to_string(Token::StringDot).chars().nth(0).unwrap() { 
                 if is_string { // ending of string
                     is_string = false;
-                    line.push(get_token(&string_content));
+                    line.push(string_to_token(&string_content));
                 } else { // beginning of string
                     is_string = true;
                 }
@@ -108,7 +108,7 @@ impl Parser {
                     if i != self.content.len() - 1 && 
                         c == self.content.chars().nth(i + 1).unwrap()
                     {
-                        line.push(get_token(&format!("{}{}", c, c)));
+                        line.push(string_to_token(&format!("{}{}", c, c)));
                         was_double_char = true;
                         continue;
                     }
@@ -116,7 +116,7 @@ impl Parser {
                     if is_asm_code {
                         line.push(Token::RawString(format!("{}", c).into_boxed_str()));
                     } else {
-                        line.push(get_token(&format!("{}", c)));
+                        line.push(string_to_token(&format!("{}", c)));
                     }
                 }
                 was_double_char = false;
@@ -135,7 +135,7 @@ impl Parser {
             if is_asm_code {
                 line.push(Token::RawString(token.clone().into_boxed_str()));
             } else {
-                line.push(get_token(&token));
+                line.push(string_to_token(&token));
             }
             *token = String::new(); // reset
         }

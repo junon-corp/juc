@@ -150,7 +150,7 @@ pub trait Compiler {
                     Token::Function => {
                         line_iter.next(); // func
                         let id = match line_iter.next() {
-                            Some(next) => get_string_token((*next).clone()),
+                            Some(next) => token_to_string((*next).clone()),
                             None => panic!(), // never happens
                         };
 
@@ -169,13 +169,13 @@ pub trait Compiler {
                     Token::Variable => {
                         line_iter.next(); // let
                         let id = match line_iter.next() {
-                            Some(next) => get_string_token((*next).clone()),
+                            Some(next) => token_to_string((*next).clone()),
                             None => panic!(), // never happens
                         };
                         line_iter.next(); // :
 
                         let type_as_string = match line_iter.next() {
-                            Some(next) => get_string_token((*next).clone()),
+                            Some(next) => token_to_string((*next).clone()),
                             None => panic!(), // never happens
                         };
                         let type_: Type = type_::string_to_type(type_as_string);
@@ -224,7 +224,7 @@ pub trait Compiler {
             Some(stream) => {
                 write!(stream, "\t").unwrap();
                 for token in line {
-                    write!(stream, "{} ", get_string_token(token)).unwrap();
+                    write!(stream, "{} ", token_to_string(token)).unwrap();
                 }
                 write!(stream, "\n").unwrap();
             },
