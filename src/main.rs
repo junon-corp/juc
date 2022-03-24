@@ -65,6 +65,7 @@ fn main() {
 
     run_compiler(sources, options);
 
+    let mut logger = Logger::new();
     logger.add_log(Log::info("Finished".to_string()));
     logger.interpret();
 }

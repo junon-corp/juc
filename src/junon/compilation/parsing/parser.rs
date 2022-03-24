@@ -19,7 +19,6 @@ pub struct Parser {
 
 impl fmt::Debug for Parser {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "---\n")?;
         for line in &self.parsed {
             if line.len() < 1 {
                 write!(f, "\n")?;
@@ -133,6 +132,8 @@ impl Parser {
 
             token.push(c); // it's still the same "word"/"token"
         }
+        line.push(string_to_token(&token));
+        self.parsed.push(line.clone());
     }
 
     /// Push the token into the line whenever it's not a null token.
@@ -180,4 +181,13 @@ impl Parser {
     pub fn parsed(&self) -> &Vec<Vec<Token>> {
         &self.parsed
     }
+}
+
+/// NOTE you should run the test with parameters: "-- --nocapture" to see the
+/// outputs of the logs
+#[test]
+fn test() {
+    let mut parser = Parser::from("a b c func".to_string());
+    parser.run();
+    println!("output:\n{:?}", parser);
 }

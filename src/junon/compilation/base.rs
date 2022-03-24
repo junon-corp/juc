@@ -187,10 +187,6 @@ pub trait Compiler {
 
                         line_iter.next(); // =
 
-                        // let mut parser = Parser::from("a b c".to_string());
-                        // parser.run();
-                        // println!("{:?}", parser);
-
                         let init_value = "0".to_string();
 
                         self.add_static_variable(Variable::new(id, type_, init_value));
