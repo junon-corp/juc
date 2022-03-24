@@ -114,7 +114,7 @@ impl Parser {
                     }
                     
                     if is_asm_code {
-                        line.push(Token::RawString(format!("{}", c).into_boxed_str()));
+                        line.push(Token::RawString(format!("{}", c)));
                     } else {
                         line.push(string_to_token(&format!("{}", c)));
                     }
@@ -133,7 +133,7 @@ impl Parser {
     fn push_token(token: &mut String, line: &mut Vec<Token>, is_asm_code: bool) {
         if *token != String::new() {
             if is_asm_code {
-                line.push(Token::RawString(token.clone().into_boxed_str()));
+                line.push(Token::RawString(token.clone()));
             } else {
                 line.push(string_to_token(&token));
             }

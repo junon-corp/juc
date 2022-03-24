@@ -134,19 +134,20 @@ impl base::Compiler for LinuxCompiler {
     // --- ASM code generators
 
     fn add_variable(&mut self, variable: Variable) {
-        if *variable.type_() == Type::Str {
-            self.section_data.push(format!(
-                "{}: db \"\", 0",
-                variable.id()
-            ));
-            return;
-        }
-        
+
         let to_write: String = format!(
             "\tmov [rbp - 4], dword 0 ; {}",
             variable.id()
         );
         self.write_asm(to_write);
+    }
+
+    fn add_static_variable(&mut self, variable: Variable) {
+        self.section_data.push(format!(
+            "{}: {} {}",
+            variable.id(), type_::type_to_asm(variable.type_().clone()), 
+            variable.init_value()
+        ));
     }
     
     fn add_function(&mut self, function: Function) {

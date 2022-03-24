@@ -21,3 +21,13 @@ pub fn string_to_type(type_as_string: String) -> Type {
         _ => Type::NotNative(type_as_string),
     }
 }
+
+pub fn type_to_asm(type_: Type) -> String {
+    match type_ {
+        Type::Integer => "dw",
+        Type::UnsignedInteger => "dw",
+        Type::Float => "dd",
+        Type::Str => "db",
+        Type::NotNative(ref type_as_string) => &*type_as_string
+    }.to_string()
+}

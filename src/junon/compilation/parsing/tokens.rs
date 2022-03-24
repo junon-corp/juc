@@ -13,7 +13,7 @@ pub enum Token {
     Variable,
 
     // Something that is not a token
-    RawString(Box<str>),
+    RawString(String),
 }
 
 /// Get a `Token` enum object from the name as String
@@ -26,7 +26,7 @@ pub fn string_to_token(token_name: &String) -> Token {
         "static" => Token::Static,
         "\"" => Token::StringDot,
         "variable" => Token::Variable,
-        _ => Token::RawString(token_name.clone().into_boxed_str()),
+        _ => Token::RawString(token_name.clone()),
     }
 }
 

@@ -166,6 +166,30 @@ pub trait Compiler {
                         // TODO : get value
                         self.return_();
                     },
+                    Token::Static => {
+                        line_iter.next(); // static
+                        let id = match line_iter.next() {
+                            Some(next) => token_to_string((*next).clone()),
+                            None => panic!(), // never happens
+                        };
+                        line_iter.next(); // :
+
+                        let type_as_string = match line_iter.next() {
+                            Some(next) => token_to_string((*next).clone()),
+                            None => panic!(), // never happens
+                        };
+                        let type_: Type = type_::string_to_type(type_as_string);
+
+                        line_iter.next(); // =
+
+                        let init_value = "0".to_string();
+
+                        self.add_static_variable(Variable::new(
+                            id, 
+                            type_,
+                            init_value
+                        ));
+                    },
                     Token::Variable => {
                         line_iter.next(); // let
                         let id = match line_iter.next() {
@@ -180,7 +204,15 @@ pub trait Compiler {
                         };
                         let type_: Type = type_::string_to_type(type_as_string);
 
-                        self.add_variable(Variable::new(id, type_));
+                        line_iter.next(); // =
+
+                        let init_value = "0".to_string();
+
+                        self.add_variable(Variable::new(
+                            id, 
+                            type_,
+                            init_value,
+                        ));
                     },
                     _ => { /* not implemented yet */ },
                 }
@@ -205,8 +237,8 @@ pub trait Compiler {
     // --- ASM code generators
     
     fn add_variable(&mut self, variable: Variable);
+    fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
-    // fn add_structure(&mut self, structure: Structure);
 
     fn return_(&mut self);
 

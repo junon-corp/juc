@@ -10,6 +10,9 @@ use crate::junon::{
     },
 };
 
+/// Structure used to create a function \
+/// Because it's not an interpreter, this is stored following the function, this
+/// structure should only be used by defining a function in ASM
 pub struct Function {
     id: String,
     params: Params,
