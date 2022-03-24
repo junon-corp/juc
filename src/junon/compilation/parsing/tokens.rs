@@ -27,15 +27,6 @@ pub enum Token {
     False,
     Infinite,
 
-    // Types
-    Big, // type prefix
-    
-    Character,
-    Integer,
-    Float,
-    Table,
-    String, // NOTE fake type, it's a table of char
-
     // Programming operators
     Assign1,
     Assign2,
@@ -130,15 +121,6 @@ pub fn get_token(token_name: &String) -> Token {
         "false" => False,
         "infinite" => Infinite,
 
-        // Types
-        "big" => Big, // type prefix
-        
-        "char" => Character,
-        "int" => Integer,
-        "float" => Float,
-        "tab" => Table,
-        "str" => String, // NOTE fake type, it's a table of char
-        
         // Programming operators
         "=" => Assign1,
         "eq" => Assign2,
@@ -233,15 +215,6 @@ pub fn get_string_token(token: Token) -> String {
         False => "false",
         Infinite => "infinite",
 
-        // Types
-        Big => "big", // type prefix
-        
-        Character => "char",
-        Integer => "int",
-        Float => "float",
-        Table => "tab",
-        String => "str", // NOTE fake type, it's a table of char
-        
         // Programming operators
         Assign1 => "=",
         Assign2 => "eq",

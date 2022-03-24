@@ -54,6 +54,8 @@ impl Parser {
         let mut is_string = false;
         let mut string_content = String::new();
 
+        let mut is_asm_code = false;
+
         for (i, c) in self.content.chars().enumerate() {
             // String creation
             
@@ -73,14 +75,24 @@ impl Parser {
                 // characters in the String
             }
             
+            // The user directly wrote ASM code
+            if c == '@' {
+                token = "@".to_string();
+                Self::push_token(&mut token, &mut line, is_asm_code);
+                is_asm_code = true;
+                continue;
+            }
+            
             // New line detected
             if c == '\n' {
                 // Push the last token of the line
-                Self::push_token(&mut token, &mut line);
+                Self::push_token(&mut token, &mut line, is_asm_code);
 
                 // Push the line into the parsed 2d list
                 self.parsed.push(line.clone());
                 line = vec!(); // reset line
+                
+                is_asm_code = false;
                 
                 continue; // and then '\n' will be not pushed
             }
@@ -89,7 +101,7 @@ impl Parser {
             // point).
             // SEE `tokens::should_be_cut()`
             if should_be_cut(&c) {
-                Self::push_token(&mut token, &mut line);
+                Self::push_token(&mut token, &mut line, is_asm_code);
 
                 // And push the special character detected as a new token
                 if c != ' ' && !was_double_char {
@@ -100,8 +112,12 @@ impl Parser {
                         was_double_char = true;
                         continue;
                     }
-    
-                    line.push(get_token(&format!("{}", c)));
+                    
+                    if is_asm_code {
+                        line.push(Token::RawString(format!("{}", c).into_boxed_str()));
+                    } else {
+                        line.push(get_token(&format!("{}", c)));
+                    }
                 }
                 was_double_char = false;
                 continue;
@@ -114,9 +130,13 @@ impl Parser {
     /// Push the token into the line whenever it's not a null token.
     /// The given `token` name parameter is a String, and it is converted into
     /// a `Token` before pushing.
-    fn push_token(token: &mut String, line: &mut Vec<Token>) {
+    fn push_token(token: &mut String, line: &mut Vec<Token>, is_asm_code: bool) {
         if *token != String::new() {
-            line.push(get_token(&token));
+            if is_asm_code {
+                line.push(Token::RawString(token.clone().into_boxed_str()));
+            } else {
+                line.push(get_token(&token));
+            }
             *token = String::new(); // reset
         }
     }
