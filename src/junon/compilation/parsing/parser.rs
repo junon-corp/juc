@@ -71,6 +71,7 @@ impl Parser {
                     // ending of string
                     is_string = false;
                     line.push(string_to_token(&string_content));
+                    string_content = String::new(); // reset
                 } else {
                     // beginning of string
                     is_string = true;
@@ -186,8 +187,20 @@ impl Parser {
 /// NOTE you should run the test with parameters: "-- --nocapture" to see the
 /// outputs of the logs
 #[test]
-fn test() {
+fn test1() {
     let mut parser = Parser::from("a b c func".to_string());
+    parser.run();
+    println!("output:\n{:?}", parser);
+
+    let mut parser = Parser::from("a // f\n//g".to_string());
+    parser.run();
+    println!("output:\n{:?}", parser);
+
+    let mut parser = Parser::from("\"abc\" func \"def\"".to_string());
+    parser.run();
+    println!("output:\n{:?}", parser);
+
+    let mut parser = Parser::from("\"abc\"".to_string());
     parser.run();
     println!("output:\n{:?}", parser);
 }

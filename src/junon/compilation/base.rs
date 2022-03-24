@@ -145,6 +145,7 @@ pub trait Compiler {
         for (i_line, line) in parsed.iter().clone().enumerate() {
             let mut line_iter = line.iter();
             for (i_token, token) in line_iter.clone().enumerate() {
+                println!("{:?}", token);
                 match token {
                     Token::AssemblyCode => {
                         let mut line: Vec<Token> = vec![];
@@ -185,11 +186,21 @@ pub trait Compiler {
                         };
                         let type_: Type = type_::string_to_type(type_as_string);
 
-                        line_iter.next(); // =
+                        let mut init_value = "0".to_string();
+                        if line_iter.next() == Some(&Token::Assign) {
+                            init_value = match line_iter.next() {
+                                Some(next) => {
+                                    format!(
+                                        "\"{}\"", 
+                                        token_to_string((*next).clone())
+                                    )
+                                },
+                                None => panic!(), // never happens
+                            };
+                        }
 
-                        let init_value = "0".to_string();
-
-                        self.add_static_variable(Variable::new(id, type_, init_value));
+                        self.add_static_variable(
+                            Variable::new(id, type_, init_value));
                     }
                     Token::Variable => {
                         line_iter.next(); // let

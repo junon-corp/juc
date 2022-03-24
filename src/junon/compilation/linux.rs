@@ -148,11 +148,18 @@ impl base::Compiler for LinuxCompiler {
     }
 
     fn add_static_variable(&mut self, variable: Variable) {
+        let mut init_value: String = variable.init_value().clone();
+
+        // Auto terminate strings by NULL character
+        if *variable.type_() == Type::Str && init_value != "0".to_string() {
+            init_value += ", 0";
+        }
+
         self.section_data.push(format!(
             "{}: {} {}",
             variable.id(),
             type_::type_to_asm(variable.type_().clone()),
-            variable.init_value()
+            init_value
         ));
     }
 

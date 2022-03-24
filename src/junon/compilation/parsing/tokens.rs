@@ -3,9 +3,11 @@
 // Copyright (c) Junon, Antonin Hérault
 
 #[allow(unused)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Token {
     AssemblyCode,
+    Assign,
+    Comment,
     Function,
     Return,
     Static,
@@ -21,6 +23,8 @@ pub enum Token {
 pub fn string_to_token(token_name: &String) -> Token {
     match token_name.as_str() {
         "@" => Token::AssemblyCode,
+        "=" => Token::Assign,
+        "//" => Token::Comment,
         "func" => Token::Function,
         "ret" => Token::Return,
         "static" => Token::Static,
@@ -35,6 +39,8 @@ pub fn string_to_token(token_name: &String) -> Token {
 pub fn token_to_string(token: Token) -> String {
     match token {
         Token::AssemblyCode => "@",
+        Token::Assign => "=",
+        Token::Comment => "//",
         Token::Function => "func",
         Token::Return => "ret",
         Token::Static => "static",
