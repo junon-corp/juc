@@ -1,0 +1,22 @@
+// This file is part of "juc"
+// All rights reserved
+// Copyright (c) Junon, Antonin Hérault
+
+func exit
+    @ mov rax, 60
+    @ mov rdi, 0
+    @ syscall
+    ret
+
+func main
+    let a: str 
+    a = "hello world"
+
+    @ mov rax, 1
+    @ mov rdi, 1
+    @ mov rsi, a
+    @ mov rdx, 11
+    @ syscall
+
+    @ call exit
+    ret
