@@ -12,6 +12,7 @@ use crate::junon::{
         objects::{
             function::Function,
             params::Params,
+            type_, type_::Type,
             variable::Variable,
         },
         parsing::{
@@ -102,11 +103,7 @@ pub trait Compiler {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        let string_path = format!("{}/{}.asm", BUILD_FOLDER, source); 
-        let mut path = Path::new(&string_path);
-
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-
+        let path: String = format!("{}/{}.asm", BUILD_FOLDER, source); 
         self.data().stream = Some(File::create(path).unwrap());
         
         self.data().parser = Some(Parser::new(source));
@@ -137,14 +134,21 @@ pub trait Compiler {
             None => panic!(), // never happens
         };
 
-        let mut parsed_iter = parsed.iter();
-        for (i_line, line) in parsed_iter.clone().enumerate() {
+        for (i_line, line) in parsed.iter().clone().enumerate() {
 
             let mut line_iter = line.iter();
             for (i_token, token) in line_iter.clone().enumerate() {
                 match token {
-                    Token::Function => {
+                    Token::AssemblyCode => {
+                        let mut line: Vec<Token> = vec!();
                         line_iter.next();
+                        for (i_token, token) in line_iter.clone().enumerate() {
+                            line.push(token.clone());
+                        }
+                        self.write_line_to_asm(line);
+                    },
+                    Token::Function => {
+                        line_iter.next(); // func
                         let id = match line_iter.next() {
                             Some(next) => get_string_token((*next).clone()),
                             None => panic!(), // never happens
@@ -153,20 +157,30 @@ pub trait Compiler {
                         let params: Params = vec!();
                         let return_type = String::new();
 
-                        let generated_function 
-                            = Function::new(id, params, return_type);
-                        self.add_function(generated_function);
+                        self.add_function(
+                            Function::new(id, params, return_type)
+                        );
                     },
                     Token::Return => {
-                        self.write_asm("\tret\n".to_string());
-                    },
-                    Token::AssemblyCode => {
-                        let mut line: Vec<Token> = vec!();
                         line_iter.next();
-                        for (i_token, token) in line_iter.clone().enumerate() {
-                            line.push(token.clone());
-                        }
-                        self.write_line_to_asm(line);
+                        // TODO : get value
+                        self.return_();
+                    },
+                    Token::Variable => {
+                        line_iter.next(); // let
+                        let id = match line_iter.next() {
+                            Some(next) => get_string_token((*next).clone()),
+                            None => panic!(), // never happens
+                        };
+                        line_iter.next(); // :
+
+                        let type_as_string = match line_iter.next() {
+                            Some(next) => get_string_token((*next).clone()),
+                            None => panic!(), // never happens
+                        };
+                        let type_: Type = type_::string_to_type(type_as_string);
+
+                        self.add_variable(Variable::new(id, type_));
                     },
                     _ => { /* not implemented yet */ },
                 }
@@ -194,6 +208,8 @@ pub trait Compiler {
     fn add_function(&mut self, function: Function);
     // fn add_structure(&mut self, structure: Structure);
 
+    fn return_(&mut self);
+
     /// Directly write some ASM code
     fn write_asm(&mut self, asm_code: String) {
         match &mut self.data().stream {
@@ -208,7 +224,7 @@ pub trait Compiler {
             Some(stream) => {
                 write!(stream, "\t").unwrap();
                 for token in line {
-                    write!(stream, "{} ", get_string_token(token));
+                    write!(stream, "{} ", get_string_token(token)).unwrap();
                 }
                 write!(stream, "\n").unwrap();
             },

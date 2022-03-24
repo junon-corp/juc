@@ -4,11 +4,13 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 
 use crate::junon::{
     compilation::{
         objects::{
             function::Function,
+            type_, type_::Type,
             variable::Variable,
         },
         base,
@@ -22,13 +24,15 @@ use crate::junon::{
 pub struct LinuxCompiler {
     data: CompilerData,
     section_text: Vec<String>,
+    section_data: Vec<String>,
 }
 
 impl LinuxCompiler {
     pub fn new(data: CompilerData) -> Self {
         Self {
             data,
-            section_text: vec!()
+            section_text: vec!(),
+            section_data: vec!(),
         }
     }
 }
@@ -49,9 +53,14 @@ impl base::Compiler for LinuxCompiler {
             START_FUNCTION, ENTRY_POINT, START_FUNCTION, ENTRY_POINT,
         );
 
-        File::create(format!("{}/{}", BUILD_FOLDER, START_FILE)).unwrap()
+        let path: String = format!("{}/{}", BUILD_FOLDER, START_FILE);
+        let path = Path::new(&path);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+
+        File::create(path)
+            .unwrap() // already checked before
             .write_all(to_write.as_bytes())
-            .unwrap(); // already checked before
+            .unwrap();
 
         platform::exec(ASSEMBLER.to_string(), 
             /* arguments */ &[
@@ -93,7 +102,15 @@ impl base::Compiler for LinuxCompiler {
                 .map(| x | format!("\t{}\n", x)) // function id
                 .collect::<String>()
         ));
-        self.section_text = vec!(); // reset for the next file
+        self.write_asm(format!(
+            "section .data\n{}", self.section_data.iter()
+                .map(| x | format!("\t{}\n", x)) // variable id
+                .collect::<String>()
+        ));
+
+        // Reset for the next file
+        self.section_text = vec!();
+        self.section_data = vec!(); 
 
         platform::exec(ASSEMBLER.to_string(), 
             // Arguments 
@@ -117,18 +134,40 @@ impl base::Compiler for LinuxCompiler {
     // --- ASM code generators
 
     fn add_variable(&mut self, variable: Variable) {
-
+        if *variable.type_() == Type::Str {
+            self.section_data.push(format!(
+                "{}: db \"\", 0",
+                variable.id()
+            ));
+            return;
+        }
+        
+        let to_write: String = format!(
+            "\tmov [rbp - 4], dword 0 ; {}",
+            variable.id()
+        );
+        self.write_asm(to_write);
     }
     
     fn add_function(&mut self, function: Function) {
         self.section_text.push(format!("global {}", function.id()));
-        let mut to_write: String = format!(
-            "{}:",
+        
+        let to_write: String = format!(
+            "{}:\n\
+            \tpush rbp",
             function.id(),
         );
-
         self.write_asm(to_write);
     }
 
     // fn add_structure(&mut self, structure: Structure) {}
+
+    fn return_(&mut self) {
+        let to_write: String = format!(
+            // TODO return value
+            "\tpop rbp\n\
+            \tret",
+        );
+        self.write_asm(to_write);
+    }
 }
