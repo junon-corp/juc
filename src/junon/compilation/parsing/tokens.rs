@@ -30,7 +30,8 @@ pub fn string_to_token(token_name: &String) -> Token {
         "static" => Token::Static,
         "\"" => Token::StringDot,
         "variable" => Token::Variable,
-        _ => Token::RawString(token_name.clone()),
+        
+        _ => Token::RawString(token_name.clone())
     }
 }
 

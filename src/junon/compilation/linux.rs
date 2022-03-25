@@ -143,7 +143,12 @@ impl base::Compiler for LinuxCompiler {
     // --- ASM code generators
 
     fn add_variable(&mut self, variable: Variable) {
-        let to_write: String = format!("\tmov [rbp - 4], dword 0 ; {}", variable.id());
+        let mut init_value: String = variable.init_value().clone();
+        let to_write: String = format!(
+            "\tmov [rbp - 4], dword {} ; {}", 
+            init_value,
+            variable.id()
+        );
         self.write_asm(to_write);
     }
 
@@ -152,6 +157,7 @@ impl base::Compiler for LinuxCompiler {
 
         // Auto terminate strings by NULL character
         if *variable.type_() == Type::Str && init_value != "0".to_string() {
+            init_value = format!("`{}`", init_value);
             init_value += ", 0";
         }
 

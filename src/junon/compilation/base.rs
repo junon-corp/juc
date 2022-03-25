@@ -191,7 +191,7 @@ pub trait Compiler {
                             init_value = match line_iter.next() {
                                 Some(next) => {
                                     format!(
-                                        "\"{}\"", 
+                                        "{}", 
                                         token_to_string((*next).clone())
                                     )
                                 },
@@ -219,7 +219,19 @@ pub trait Compiler {
                         line_iter.next(); // =
 
                         let init_value = "0".to_string();
-
+                        let mut init_value = "0".to_string();
+                        if line_iter.next() == Some(&Token::Assign) {
+                            init_value = match line_iter.next() {
+                                Some(next) => {
+                                    format!(
+                                        "{}", 
+                                        token_to_string((*next).clone())
+                                    )
+                                },
+                                None => panic!(), // never happens
+                            };
+                        }
+                        
                         self.add_variable(Variable::new(id, type_, init_value));
                     }
                     _ => { /* not implemented yet */ }
