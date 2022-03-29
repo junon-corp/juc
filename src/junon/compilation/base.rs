@@ -5,7 +5,8 @@
 use std::collections::HashMap as Dict;
 use std::fs::File;
 use std::io::Write;
-use std::path::Path;
+
+use prev_iter::PrevPeekable;
 
 use crate::junon::{
     args::Args,
@@ -21,8 +22,9 @@ use crate::junon::{
         },
         parsing::{
             parser::Parser, 
-            tokens, tokens::*
+            tokens::*
         },
+        caller::Caller,
     },
     logger::*,
     platform, platform::Platform,
@@ -78,6 +80,14 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         is_library,
         stream: None,
         parser: None,
+
+        variable_stack: Dict::new(),
+        i_variable_stack: 0,
+
+        current_line: vec![],
+        current_token: Token::None,
+
+        current_scope: String::new(),
     };
 
     // Run the right compiler according to the platform
@@ -104,7 +114,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 /// The general documentation is written here to avoid to write the same
 /// documentation to each platform's compilers. But a specific compiler can
 /// have its own documentation
-pub trait Compiler {
+pub trait Compiler: Caller {
     /// Starting point \
     /// Do some stuff useful
     fn init(&mut self);
@@ -139,103 +149,33 @@ pub trait Compiler {
     fn call(&mut self) {
         let parsed: Vec<Vec<Token>> = match &self.data().parser {
             Some(parser) => parser.parsed().clone(),
-            None => panic!(), // never happens
+            None => panic!() // never happens
         };
 
-        for (i_line, line) in parsed.iter().clone().enumerate() {
+        for line in parsed.iter() {
+            self.data().current_line = line.clone();
+
             let mut line_iter = line.iter();
-            for (i_token, token) in line_iter.clone().enumerate() {
-                println!("{:?}", token);
-                match token {
+            let mut previous_token_instruction = Token::None;
+
+            for token in line_iter.clone() {
+                self.data().current_token = token.clone();
+
+                match previous_token_instruction {
                     Token::AssemblyCode => {
-                        let mut line: Vec<Token> = vec![];
                         line_iter.next();
-                        for (i_token, token) in line_iter.clone().enumerate() {
-                            line.push(token.clone());
-                        }
-                        self.write_line_to_asm(line);
-                    }
-                    Token::Function => {
-                        line_iter.next(); // func
-                        let id = match line_iter.next() {
-                            Some(next) => token_to_string((*next).clone()),
-                            None => panic!(), // never happens
-                        };
 
-                        let params: Params = vec![];
-                        let return_type = String::new();
-
-                        self.add_function(Function::new(id, params, return_type));
-                    }
-                    Token::Return => {
-                        line_iter.next();
-                        // TODO : get value
-                        self.return_();
-                    }
-                    Token::Static => {
-                        line_iter.next(); // static
-                        let id = match line_iter.next() {
-                            Some(next) => token_to_string((*next).clone()),
-                            None => panic!(), // never happens
-                        };
-                        line_iter.next(); // :
-
-                        let type_as_string = match line_iter.next() {
-                            Some(next) => token_to_string((*next).clone()),
-                            None => panic!(), // never happens
-                        };
-                        let type_: Type = type_::string_to_type(type_as_string);
-
-                        let mut init_value = "0".to_string();
-                        if line_iter.next() == Some(&Token::Assign) {
-                            init_value = match line_iter.next() {
-                                Some(next) => {
-                                    format!(
-                                        "{}", 
-                                        token_to_string((*next).clone())
-                                    )
-                                },
-                                None => panic!(), // never happens
-                            };
-                        }
-
-                        self.add_static_variable(
-                            Variable::new(id, type_, init_value));
-                    }
-                    Token::Variable => {
-                        line_iter.next(); // let
-                        let id = match line_iter.next() {
-                            Some(next) => token_to_string((*next).clone()),
-                            None => panic!(), // never happens
-                        };
-                        line_iter.next(); // :
-
-                        let type_as_string = match line_iter.next() {
-                            Some(next) => token_to_string((*next).clone()),
-                            None => panic!(), // never happens
-                        };
-                        let type_: Type = type_::string_to_type(type_as_string);
-
-                        line_iter.next(); // =
-
-                        let init_value = "0".to_string();
-                        let mut init_value = "0".to_string();
-                        if line_iter.next() == Some(&Token::Assign) {
-                            init_value = match line_iter.next() {
-                                Some(next) => {
-                                    format!(
-                                        "{}", 
-                                        token_to_string((*next).clone())
-                                    )
-                                },
-                                None => panic!(), // never happens
-                            };
-                        }
-                        
-                        self.add_variable(Variable::new(id, type_, init_value));
-                    }
-                    _ => { /* not implemented yet */ }
+                        self.when_assembly_code(
+                            line_iter.clone()
+                                .map(| x | x.clone() )
+                                .collect::<Vec<Token>>()
+                        );
+                    },
+                    Token::None => {},
+                    _ => self.when_other()
                 }
+
+                previous_token_instruction = token.clone();
             }
         }
     }
@@ -260,6 +200,8 @@ pub trait Compiler {
     fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
 
+    fn change_variable_value(&mut self, variable: &Variable);
+
     fn return_(&mut self);
 
     /// Directly write some ASM code
@@ -267,20 +209,6 @@ pub trait Compiler {
         match &mut self.data().stream {
             Some(stream) => write!(stream, "{}\n", asm_code).unwrap(),
             None => panic!(), // never happens
-        }
-    }
-
-    /// Transform a tokens line to ASM code
-    fn write_line_to_asm(&mut self, line: Vec<Token>) {
-        match &mut self.data().stream {
-            Some(stream) => {
-                write!(stream, "\t").unwrap();
-                for token in line {
-                    write!(stream, "{} ", token_to_string(token)).unwrap();
-                }
-                write!(stream, "\n").unwrap();
-            }
-            None => panic!(), // never ahppens
         }
     }
 }

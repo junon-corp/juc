@@ -2,7 +2,8 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[allow(unused)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
     Integer,
     UnsignedInteger,
@@ -31,4 +32,25 @@ pub fn type_to_asm(type_: Type) -> String {
         Type::NotNative(ref type_as_string) => &*type_as_string,
     }
     .to_string()
+}
+
+pub fn type_size_to_asm(type_: Type) -> String {
+    match type_ {
+        Type::Integer => "word",
+        Type::UnsignedInteger => "word",
+        Type::Float => "dword",
+        Type::Str => "byte",
+        Type::NotNative(ref _type_as_string) => todo!()
+    }
+    .to_string()
+}
+
+pub fn type_size_to_usize(type_: &Type) -> usize {
+    match type_ {
+        Type::Integer => 2,
+        Type::UnsignedInteger => 2,
+        Type::Float => 4,
+        Type::Str => 1,
+        Type::NotNative(ref _type_as_string) => todo!()
+    }
 }

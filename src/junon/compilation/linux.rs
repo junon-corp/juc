@@ -18,6 +18,7 @@ use crate::junon::{
             type_, type_::Type, 
             variable::Variable
         },
+        caller::Caller,
     },
     platform,
 };
@@ -37,6 +38,8 @@ impl LinuxCompiler {
         }
     }
 }
+
+impl Caller for LinuxCompiler {}
 
 /// SEE Functions' documentation from `base::Compiler` because they are not
 /// written here a new time
@@ -143,9 +146,15 @@ impl base::Compiler for LinuxCompiler {
     // --- ASM code generators
 
     fn add_variable(&mut self, variable: Variable) {
-        let mut init_value: String = variable.init_value().clone();
+        self.data().variable_stack.insert(
+            variable.id().to_string(), 
+            variable.clone()
+        );
+
+        let init_value: String = variable.current_value().clone();
         let to_write: String = format!(
-            "\tmov [rbp - 4], dword {} ; {}", 
+            "\tmov [rbp - {}], dword {} ; {}", 
+            type_::type_size_to_asm(variable.type_().clone()),
             init_value,
             variable.id()
         );
@@ -153,7 +162,7 @@ impl base::Compiler for LinuxCompiler {
     }
 
     fn add_static_variable(&mut self, variable: Variable) {
-        let mut init_value: String = variable.init_value().clone();
+        let mut init_value: String = variable.current_value().clone();
 
         // Auto terminate strings by NULL character
         if *variable.type_() == Type::Str && init_value != "0".to_string() {
@@ -180,7 +189,17 @@ impl base::Compiler for LinuxCompiler {
         self.write_asm(to_write);
     }
 
-    // fn add_structure(&mut self, structure: Structure) {}
+    fn change_variable_value(&mut self, variable: &Variable) {
+        let variable_size = 4;
+
+        let to_write: String = format!(
+            "\tmov [rbp - {}], dword {} ; {}", 
+            variable_size,
+            variable.current_value(),
+            variable.id()
+        );
+        self.write_asm(to_write);
+    }
 
     fn return_(&mut self) {
         let to_write: String = format!(

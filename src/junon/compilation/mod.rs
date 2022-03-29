@@ -6,6 +6,7 @@ pub mod objects;
 pub mod parsing;
 
 pub mod base;
+pub mod caller;
 pub mod data;
 pub mod defaults;
 pub mod linux;

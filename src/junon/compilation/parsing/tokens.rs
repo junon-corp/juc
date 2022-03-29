@@ -16,6 +16,8 @@ pub enum Token {
 
     // Something that is not a token
     RawString(String),
+
+    None, // to avoid the usage of an `Option`
 }
 
 /// Get a `Token` enum object from the name as String
@@ -29,7 +31,7 @@ pub fn string_to_token(token_name: &String) -> Token {
         "ret" => Token::Return,
         "static" => Token::Static,
         "\"" => Token::StringDot,
-        "variable" => Token::Variable,
+        "let" => Token::Variable,
         
         _ => Token::RawString(token_name.clone())
     }
@@ -46,8 +48,10 @@ pub fn token_to_string(token: Token) -> String {
         Token::Return => "ret",
         Token::Static => "static",
         Token::StringDot => "\"",
-        Token::Variable => "variable",
+        Token::Variable => "let",
         Token::RawString(ref val) => &*val,
+        
+        Token::None => panic!(), // never happens
     }
     .to_string()
 }
