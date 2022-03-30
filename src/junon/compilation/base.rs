@@ -6,8 +6,6 @@ use std::collections::HashMap as Dict;
 use std::fs::File;
 use std::io::Write;
 
-use prev_iter::PrevPeekable;
-
 use crate::junon::{
     args::Args,
     compilation::{
@@ -122,13 +120,13 @@ pub trait Compiler: Caller {
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
         let path: String = format!("{}/{}.asm", BUILD_FOLDER, source);
+        
         self.data().stream = Some(File::create(path).unwrap());
-
         self.data().parser = Some(Parser::new(source));
-        match &mut self.data().parser {
-            Some(parser) => parser.run(),
-            None => panic!(), // never happens
-        }
+
+        self.data().parser.as_mut()
+            .unwrap()
+            .run();
     }
 
     /// Main function where each source file is transformed to an objet file
@@ -161,18 +159,27 @@ pub trait Compiler: Caller {
             for token in line_iter.clone() {
                 self.data().current_token = token.clone();
 
+                let next_tokens: Vec<Token> = line_iter.clone()
+                    .map(| x | x.clone() )
+                    .collect(); // as vector
+                
+                line_iter.next(); // ignore current instruction token
+
                 match previous_token_instruction {
                     Token::AssemblyCode => {
-                        line_iter.next();
-
-                        self.when_assembly_code(
-                            line_iter.clone()
-                                .map(| x | x.clone() )
-                                .collect::<Vec<Token>>()
-                        );
-                    },
-                    Token::None => {},
-                    _ => self.when_other()
+                        self.when_assembly_code(next_tokens);
+                    }
+                    Token::Function => {
+                        self.when_function(next_tokens);
+                    }
+                    Token::Comment => {}
+                    Token::None => {}, // first token
+                    _ => {
+                        if cfg!(debug_assert) {
+                            println!("{:?}", previous_token_instruction);
+                        }
+                        self.when_other()
+                    }
                 }
 
                 previous_token_instruction = token.clone();
@@ -196,6 +203,7 @@ pub trait Compiler: Caller {
 
     // --- ASM code generators
 
+    /// Variable declaration, can 
     fn add_variable(&mut self, variable: Variable);
     fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
@@ -204,11 +212,12 @@ pub trait Compiler: Caller {
 
     fn return_(&mut self);
 
-    /// Directly write some ASM code
+    /// Directly write some ASM code into current stream file
     fn write_asm(&mut self, asm_code: String) {
-        match &mut self.data().stream {
-            Some(stream) => write!(stream, "{}\n", asm_code).unwrap(),
-            None => panic!(), // never happens
-        }
+        write!(
+            self.data().stream.as_mut().unwrap(), 
+            "{}\n", 
+            asm_code
+        ).unwrap();
     }
 }

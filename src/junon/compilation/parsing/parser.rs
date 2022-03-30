@@ -154,11 +154,8 @@ impl Parser {
     /// Update the `content` attribute to the file's content by opening a new
     /// file stream (readable) on it.
     fn read_file_content(&mut self) {
-        let mut stream = File::open(match &self.source {
-            Some(source) => source,
-            None => panic!(),
-        })
-        .unwrap(); // already checked before
+        let mut stream = File::open(self.source.as_ref().unwrap())
+            .unwrap(); // already checked before
 
         match stream.read_to_string(&mut self.content) {
             Err(_) => {
