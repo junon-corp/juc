@@ -7,6 +7,7 @@
 pub enum Token {
     AssemblyCode,
     Assign,
+    Comma,
     Comment,
     Function,
     ParenOpen,
@@ -14,6 +15,7 @@ pub enum Token {
     Return,
     Static,
     StringDot,
+    TypeDef,
     Variable,
 
     // Something that is not a token
@@ -28,6 +30,7 @@ pub fn string_to_token(token_name: &String) -> Token {
     match token_name.as_str() {
         "@" => Token::AssemblyCode,
         "=" => Token::Assign,
+        "," => Token::Comma,
         "//" => Token::Comment,
         "func" => Token::Function,
         "(" => Token::ParenOpen,
@@ -35,6 +38,7 @@ pub fn string_to_token(token_name: &String) -> Token {
         "ret" => Token::Return,
         "static" => Token::Static,
         "\"" => Token::StringDot,
+        ":" => Token::TypeDef,
         "let" => Token::Variable,
         
         _ => Token::RawString(token_name.clone())
@@ -43,10 +47,11 @@ pub fn string_to_token(token_name: &String) -> Token {
 
 /// Get the name as String of a `Token` enum object
 /// SEE `string_to_token()` (reversed function)
-pub fn token_to_string(token: Token) -> String {
-    match token {
+pub fn token_to_string(token: &Token) -> String {
+    match *token {
         Token::AssemblyCode => "@",
         Token::Assign => "=",
+        Token::Comma => ",",
         Token::Comment => "//",
         Token::Function => "func",
         Token::ParenOpen => "(",
@@ -55,6 +60,7 @@ pub fn token_to_string(token: Token) -> String {
         Token::Static => "static",
         Token::StringDot => "\"",
         Token::Variable => "let",
+        Token::TypeDef => ":",
         Token::RawString(ref val) => &*val,
         
         Token::None => panic!(), // never happens

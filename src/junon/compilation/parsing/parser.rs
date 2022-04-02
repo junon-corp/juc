@@ -66,7 +66,7 @@ impl Parser {
             // String creation
 
             // Get the first character because it's a String of one character
-            if c == token_to_string(Token::StringDot).chars().nth(0).unwrap() {
+            if c == token_to_string(&Token::StringDot).chars().nth(0).unwrap() {
                 if is_string {
                     // ending of string
                     is_string = false;
@@ -114,7 +114,8 @@ impl Parser {
 
                 // And push the special character detected as a new token
                 if c != ' ' && !was_double_char {
-                    if i != self.content.len() - 1 && c == self.content.chars().nth(i + 1).unwrap()
+                    if i != self.content.len() - 1 
+                        && c == self.content.chars().nth(i + 1).unwrap()
                     {
                         line.push(string_to_token(&format!("{}{}", c, c)));
                         was_double_char = true;
@@ -122,7 +123,12 @@ impl Parser {
                     }
 
                     if is_asm_code {
-                        line.push(Token::RawString(format!("{}", c)));
+                        let token_string = format!("{}", c);
+                        if string_to_token(&token_string) == Token::Comma {
+                            line.push(Token::Comma);
+                        } else {
+                            line.push(Token::RawString(format!("{}", c)));
+                        }
                     } else {
                         line.push(string_to_token(&format!("{}", c)));
                     }
