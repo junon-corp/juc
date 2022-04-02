@@ -157,6 +157,7 @@ pub trait Compiler: Caller {
 
             for token in line.iter() {
                 self.data().current_token = token.clone();
+                println!("{:?}", self.data().current_token);
 
                 let mut line_iter_for_next_tokens = line.iter();
                 line_iter_for_next_tokens.next();
@@ -171,14 +172,12 @@ pub trait Compiler: Caller {
                         self.when_assembly_code(next_tokens);
                         break;
                     }
-                    Token::Comment => break,
                     Token::Function => self.when_function(next_tokens),
                     Token::Return => self.when_return(next_tokens),
 
                     Token::None => {}, // first token
                     _ => self.when_other(),
                 }
-                println!("{:?}", previous_token_instruction);
 
                 previous_token_instruction = token.clone();
             }

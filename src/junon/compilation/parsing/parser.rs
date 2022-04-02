@@ -61,8 +61,13 @@ impl Parser {
         let mut string_content = String::new();
 
         let mut is_asm_code = false;
+        let mut is_comment = false;
 
         for (i, c) in self.content.chars().enumerate() {
+            if c != '\n' && is_comment {
+                continue;
+            }
+
             // String creation
 
             // Get the first character because it's a String of one character
@@ -98,10 +103,13 @@ impl Parser {
                 Self::push_token(&mut token, &mut line, is_asm_code);
 
                 // Push the line into the parsed 2d list
-                self.parsed.push(line.clone());
-                line = vec![]; // reset line
+                if line != vec![] { // can be if it was a comment
+                    self.parsed.push(line.clone());
+                    line = vec![]; // reset line
+                }
 
                 is_asm_code = false;
+                is_comment = false;
 
                 continue; // and then '\n' will be not pushed
             }
@@ -117,7 +125,15 @@ impl Parser {
                     if i != self.content.len() - 1 
                         && c == self.content.chars().nth(i + 1).unwrap()
                     {
-                        line.push(string_to_token(&format!("{}{}", c, c)));
+                        let double_char_as_token = string_to_token(
+                            &format!("{}{}", c, c)
+                        );
+                        if double_char_as_token == Token::Comment {
+                            is_comment = true;
+                            continue;
+                        }
+                        line.push(double_char_as_token);
+                        
                         was_double_char = true;
                         continue;
                     }
@@ -139,8 +155,15 @@ impl Parser {
 
             token.push(c); // it's still the same "word"/"token"
         }
-        line.push(string_to_token(&token));
-        self.parsed.push(line.clone());
+
+        if token != "" {
+            line.push(string_to_token(&token));
+        }
+        if line != vec![] {
+            self.parsed.push(line.clone());
+        }
+
+        println!("--> {:?}\n", self.parsed);
     }
 
     /// Push the token into the line whenever it's not a null token.
