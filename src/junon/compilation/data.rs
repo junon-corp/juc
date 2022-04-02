@@ -5,8 +5,6 @@
 use std::collections::HashMap as Dict;
 use std::fs::File;
 
-use prev_iter::PrevPeekable;
-
 use crate::junon::compilation::{
     objects::variable::Variable,
     parsing::{
