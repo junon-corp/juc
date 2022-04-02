@@ -1,0 +1,5 @@
+// This is a comment
+func main // this is code
+    ret // this too
+
+// Another comment
