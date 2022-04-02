@@ -154,33 +154,66 @@ pub trait Compiler: Caller {
             self.data().current_line = line.clone();
 
             let mut previous_token_instruction = Token::None;
+            let mut break_line = false; // to break the loop from the closure
 
             for token in line.iter() {
-                self.data().current_token = token.clone();
-                println!("{:?}", self.data().current_token);
-
-                let mut line_iter_for_next_tokens = line.iter();
-                line_iter_for_next_tokens.next();
-
-                let next_tokens: Vec<Token> = line_iter_for_next_tokens
-                    .map(| x | x.clone() )
-                    .collect(); // as vector
-
-                // NOTE "break" instructions means : stop reading the line
-                match previous_token_instruction {
-                    Token::AssemblyCode => {
-                        self.when_assembly_code(next_tokens);
-                        break;
-                    }
-                    Token::Function => self.when_function(next_tokens),
-                    Token::Return => self.when_return(next_tokens),
-
-                    Token::None => {}, // first token
-                    _ => self.when_other(),
+                if break_line {
+                    break_line = false;
+                    break;
                 }
 
+                self.data().current_token = token.clone();
+                self.check_for_instruction(
+                    line, 
+                    &mut break_line, 
+                    &token,
+                    &mut previous_token_instruction
+                );
                 previous_token_instruction = token.clone();
             }
+        }
+    }
+
+    fn check_for_instruction(
+        &mut self, 
+        line: &Vec<Token>, 
+        break_line: &mut bool,
+        token: &Token,
+        previous_token_instruction: &mut Token
+    ) {
+        let mut line_iter_for_next_tokens = line.iter();
+        line_iter_for_next_tokens.next();
+
+        let next_tokens: Vec<Token> = line_iter_for_next_tokens
+            .map(| x | x.clone() )
+            .collect(); // as vector
+            
+        // NOTE "break" instructions means : stop reading the line
+        match previous_token_instruction {
+            Token::AssemblyCode => {
+                self.when_assembly_code(next_tokens);
+                *break_line = true;
+                return;
+            }
+            Token::Function => self.when_function(next_tokens),
+            Token::Return => self.when_return(next_tokens),
+
+            // First token of the line
+            Token::None => {
+                // Lonely token, execute it right now
+                if line.len() == 1 {
+                    *previous_token_instruction = token.clone();
+                    
+                    // Call again with same arguments
+                    self.check_for_instruction(
+                        line, 
+                        break_line,
+                        token,
+                        previous_token_instruction
+                    );
+                }
+            },
+            _ => self.when_other(),
         }
     }
 

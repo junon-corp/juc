@@ -75,7 +75,9 @@ impl Parser {
                 if is_string {
                     // ending of string
                     is_string = false;
-                    line.push(string_to_token(&string_content));
+                    line.push(string_to_token(
+                        &format!("\"{}\"", string_content)
+                    ));
                     string_content = String::new(); // reset
                 } else {
                     // beginning of string
@@ -162,8 +164,6 @@ impl Parser {
         if line != vec![] {
             self.parsed.push(line.clone());
         }
-
-        println!("--> {:?}\n", self.parsed);
     }
 
     /// Push the token into the line whenever it's not a null token.

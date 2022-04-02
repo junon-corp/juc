@@ -60,11 +60,15 @@ pub trait Caller {
     {
         // Only implemented with "ret <value>" and not for an expression or
         // multiple values
-        self.return_(match next_tokens.iter().next().unwrap() {
-            // It could be a number, a `RawString` does not mean that it's a 
-            // string object
-            Token::RawString(return_value) => return_value.to_string(),
-            _ => panic!()
+        self.return_(match next_tokens.iter().next() {
+            Some(token) => match token {
+                // It could be a number, a `RawString` does not mean that it's a 
+                // string object
+                Token::RawString(return_value) => return_value.to_string(),
+                _ => panic!(), // never happens
+            }
+            None => String::from("0"), // "null" value
+            _ => panic!() // never happens
         });
     }
 

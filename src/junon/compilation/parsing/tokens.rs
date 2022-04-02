@@ -18,7 +18,7 @@ pub enum Token {
     TypeDef,
     Variable,
 
-    // Something that is not a token
+    // Example : "foo" or something that is not a real token
     RawString(String),
 
     None, // to avoid the usage of an `Option`

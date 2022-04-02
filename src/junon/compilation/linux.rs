@@ -203,9 +203,9 @@ impl base::Compiler for LinuxCompiler {
 
     fn return_(&mut self, value: String) {
         let to_write: Vec<String> = vec!(
-            format!("mov rax, {}", value),
             "nop".to_string(),
             "pop rbp".to_string(),
+            format!("mov rax, {}", value),
             "ret".to_string(),
         );
 
