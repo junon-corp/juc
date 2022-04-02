@@ -8,15 +8,19 @@ func exit
     @ syscall
     ret
 
-func main
-    let a: str 
-    a = "hello world"
+static a: str = "hello world\n"
+static b: str 
+static c: int = 5
 
+func main
     @ mov rax, 1
     @ mov rdi, 1
     @ mov rsi, a
-    @ mov rdx, 11
+    @ mov rdx, 12
     @ syscall
+
+    let d: int = 5 // test
+    d = 6
 
     @ call exit
     ret
