@@ -201,12 +201,18 @@ impl base::Compiler for LinuxCompiler {
         self.write_asm(to_write);
     }
 
-    fn return_(&mut self) {
-        let to_write: String = format!(
-            // TODO return value
-            "\tpop rbp\n\
-            \tret\n",
+    fn return_(&mut self, value: String) {
+        let to_write: Vec<String> = vec!(
+            format!("mov rax, {}", value),
+            "nop".to_string(),
+            "pop rbp".to_string(),
+            "ret".to_string(),
         );
-        self.write_asm(to_write);
+
+        self.write_asm(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+        );
     }
 }

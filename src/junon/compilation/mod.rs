@@ -5,6 +5,7 @@
 pub mod objects;
 pub mod parsing;
 
+pub mod asm;
 pub mod base;
 pub mod caller;
 pub mod data;

@@ -153,34 +153,32 @@ pub trait Compiler: Caller {
         for line in parsed.iter() {
             self.data().current_line = line.clone();
 
-            let mut line_iter = line.iter();
             let mut previous_token_instruction = Token::None;
 
-            for token in line_iter.clone() {
+            for token in line.iter() {
                 self.data().current_token = token.clone();
 
-                let next_tokens: Vec<Token> = line_iter.clone()
+                let mut line_iter_for_next_tokens = line.iter();
+                line_iter_for_next_tokens.next();
+
+                let next_tokens: Vec<Token> = line_iter_for_next_tokens
                     .map(| x | x.clone() )
                     .collect(); // as vector
-                
-                line_iter.next(); // ignore current instruction token
 
+                // NOTE "break" instructions means : stop reading the line
                 match previous_token_instruction {
                     Token::AssemblyCode => {
                         self.when_assembly_code(next_tokens);
+                        break;
                     }
-                    Token::Function => {
-                        self.when_function(next_tokens);
-                    }
-                    Token::Comment => {}
+                    Token::Comment => break,
+                    Token::Function => self.when_function(next_tokens),
+                    Token::Return => self.when_return(next_tokens),
+
                     Token::None => {}, // first token
-                    _ => {
-                        if cfg!(debug_assert) {
-                            println!("{:?}", previous_token_instruction);
-                        }
-                        self.when_other()
-                    }
+                    _ => self.when_other(),
                 }
+                println!("{:?}", previous_token_instruction);
 
                 previous_token_instruction = token.clone();
             }
@@ -210,14 +208,14 @@ pub trait Compiler: Caller {
 
     fn change_variable_value(&mut self, variable: &Variable);
 
-    fn return_(&mut self);
+    fn return_(&mut self, value: String);
 
     /// Directly write some ASM code into current stream file
-    fn write_asm(&mut self, asm_code: String) {
+    fn write_asm(&mut self, to_write: String) {
         write!(
             self.data().stream.as_mut().unwrap(), 
             "{}\n", 
-            asm_code
+            to_write
         ).unwrap();
     }
 }
