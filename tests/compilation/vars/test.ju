@@ -2,15 +2,12 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-func exit
-    @ mov rax, 60
-    @ mov rdi, 0
-    @ syscall
+func foo
     ret
 
 static a: str = "hello world\n"
 static b: str 
-static c: int = 5
+static c: int = 7
 
 func main
     @ mov rax, 1
@@ -19,8 +16,15 @@ func main
     @ mov rdx, 12
     @ syscall
 
-    let d: int = 5 // test
+    let e: int = 5211 // test
     d = 6
 
-    @ call exit
-    ret
+    let f: int = 8546471687
+
+    @ mov rax, 1
+    @ mov rdi, 1
+    @ mov rsi, a
+    @ mov rdx, 12
+    @ syscall
+
+    ret "abc"
