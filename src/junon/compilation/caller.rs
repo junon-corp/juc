@@ -129,7 +129,7 @@ pub trait Caller {
                     }.to_string()));
                 }
                 Token::None => {} // first token
-                Token::RawString(variable_id) => {} 
+                Token::RawString(_variable_id) => {} 
                 _ => panic!() // never happens
             }
             previous_token = token.clone();

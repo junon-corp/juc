@@ -49,27 +49,32 @@ impl base::Compiler for LinuxCompiler {
             return;
         }
 
-        let to_write: String = format!(
-            "section .text\n\
-                \tglobal {}\n\
-            extern {}\n\
-            {}:\n\
-                \tcall {}\n\
-                \tmov rax, 60\n\
-                \tmov rdi, 0\n\
-                \tsyscall\n\
-            ",
-            START_FUNCTION, ENTRY_POINT, START_FUNCTION, ENTRY_POINT,
-        );
-
         let path: String = format!("{}/{}", BUILD_FOLDER, START_FILE);
         let path = Path::new(&path);
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
 
-        File::create(path)
-            .unwrap() // already checked before
-            .write_all(to_write.as_bytes())
-            .unwrap();
+        let mut file = File::create(path).unwrap();
+        
+        file.write_all(
+            format!("section .text\n\tglobal {}\n", START_FUNCTION).as_bytes()
+        ).unwrap();
+
+        file.write_all(format!("extern {}\n", ENTRY_POINT).as_bytes()).unwrap();
+        file.write_all(format!("{}:\n", START_FUNCTION).as_bytes()).unwrap();
+        
+        let to_write: Vec<String> = vec!(
+            format!("call {}", ENTRY_POINT),
+            "mov rax, 60".to_string(),
+            "mov rdi, 0".to_string(),
+            "syscall".to_string(),
+        );
+        
+        file.write_all(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+                .as_bytes()
+        ).unwrap();
 
         platform::exec(
             ASSEMBLER.to_string(),
@@ -182,7 +187,7 @@ impl base::Compiler for LinuxCompiler {
         let to_write: Vec<String> = vec!(
             "push rbp".to_string(),
             "mov rbp, rsp".to_string(),
-            "sub rsp, 16".to_string()
+            format!("sub rsp, {}", "8")// TODO : self.data().i_variable_stack)
         );
 
         self.write_asm(
@@ -204,10 +209,9 @@ impl base::Compiler for LinuxCompiler {
 
     fn return_(&mut self, value: String) {
         let to_write: Vec<String> = vec!(
-            String::new(),
-            "mov esp, ebp".to_string(),
+            format!("mov rax, {}", value),
+            "mov rsp, rbp".to_string(),
             "pop rbp".to_string(),
-            format!(";mov rax, {}", value),
             "ret".to_string(),
         );
 
