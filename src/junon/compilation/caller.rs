@@ -75,6 +75,41 @@ pub trait Caller {
     fn when_static(&mut self, next_tokens: Vec<Token>) 
     where Self: base::Compiler 
     {
+        let (type_, current_value) 
+            = self.retrieve_variable_info(next_tokens);
+
+        let static_variable = Variable::static_(
+            tokens::token_to_string(&self.data().current_token),
+            type_.unwrap(),
+            current_value,
+        );
+        self.add_static_variable(static_variable);
+    }
+
+    fn when_variable(&mut self, next_tokens: Vec<Token>) 
+    where Self: base::Compiler 
+    {
+        let (type_, current_value) = 
+            self.retrieve_variable_info(next_tokens);
+        
+        self.data().i_variable_stack 
+            += type_::type_size_to_usize(&type_.as_ref().unwrap());
+
+        let variable = Variable::new(
+            tokens::token_to_string(&self.data().current_token),
+            type_.unwrap(),
+            current_value,
+            self.data().i_variable_stack.clone()
+        );
+        self.add_variable(variable);
+    }
+
+    fn retrieve_variable_info(
+        &mut self, 
+        next_tokens: Vec<Token>
+    ) -> (Option<Type>, String) 
+    where Self: base::Compiler
+    {
         let mut type_: Option<Type> = None;
         let mut current_value = "0".to_string();
 
@@ -94,20 +129,13 @@ pub trait Caller {
                     }.to_string()));
                 }
                 Token::None => {} // first token
+                Token::RawString(variable_id) => {} 
                 _ => panic!() // never happens
             }
             previous_token = token.clone();
         }
 
-        let static_variable = Variable::static_(
-            tokens::token_to_string(&self.data().current_token),
-            type_.unwrap(),
-            current_value,
-        );
-    }
-
-    fn when_variable(&mut self, _next_tokens: Vec<Token>) {
-
+        (type_, current_value)
     }
 
     fn when_other(&mut self) {

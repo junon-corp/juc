@@ -54,7 +54,11 @@ impl base::Compiler for LinuxCompiler {
                 \tglobal {}\n\
             extern {}\n\
             {}:\n\
-                \tcall {}",
+                \tcall {}\n\
+                \tmov rax, 60\n\
+                \tmov rdi, 0\n\
+                \tsyscall\n\
+            ",
             START_FUNCTION, ENTRY_POINT, START_FUNCTION, ENTRY_POINT,
         );
 
@@ -151,14 +155,7 @@ impl base::Compiler for LinuxCompiler {
             variable.clone()
         );
 
-        let init_value: String = variable.current_value().clone();
-        let to_write: String = format!(
-            "\tmov [rbp - {}], dword {} ; {}", 
-            type_::type_size_to_asm(variable.type_().clone()),
-            init_value,
-            variable.id()
-        );
-        self.write_asm(to_write);
+        self.change_variable_value(&variable);
     }
 
     fn add_static_variable(&mut self, variable: Variable) {
@@ -166,35 +163,39 @@ impl base::Compiler for LinuxCompiler {
 
         // Auto terminate strings by NULL character
         if *variable.type_() == Type::Str && init_value != "0".to_string() {
-            init_value = format!("`{}`", init_value);
+            init_value = format!("`{}`", &init_value[1..init_value.len() - 1]);
             init_value += ", 0";
         }
 
         self.section_data.push(format!(
             "{}: {} {}",
             variable.id(),
-            type_::type_to_asm(variable.type_().clone()),
+            type_::type_to_asm(&variable.type_()),
             init_value
         ));
     }
 
     fn add_function(&mut self, function: Function) {
         self.section_text.push(format!("global {}", function.id()));
+        self.write_asm(format!("{}:", function.id()));
 
-        let to_write: String = format!(
-            "{}:\n\
-            \tpush rbp",
-            function.id(),
+        let to_write: Vec<String> = vec!(
+            "push rbp".to_string(),
+            "mov rbp, rsp".to_string(),
+            "sub rsp, 16".to_string()
         );
-        self.write_asm(to_write);
+
+        self.write_asm(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+        );
     }
 
     fn change_variable_value(&mut self, variable: &Variable) {
-        let variable_size = 4;
-
         let to_write: String = format!(
-            "\tmov [rbp - {}], dword {} ; {}", 
-            variable_size,
+            "\tmov dword [rbp-{}], {} ; {}", 
+            self.data.i_variable_stack,
             variable.current_value(),
             variable.id()
         );
@@ -203,9 +204,10 @@ impl base::Compiler for LinuxCompiler {
 
     fn return_(&mut self, value: String) {
         let to_write: Vec<String> = vec!(
-            "nop".to_string(),
+            String::new(),
+            "mov esp, ebp".to_string(),
             "pop rbp".to_string(),
-            format!("mov rax, {}", value),
+            format!(";mov rax, {}", value),
             "ret".to_string(),
         );
 

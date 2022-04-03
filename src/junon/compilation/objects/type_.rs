@@ -5,40 +5,40 @@
 #[allow(unused)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
-    Integer,
-    UnsignedInteger,
-    Float,
-    Str,
+    Byte, // 1 Byte 
+    Integer, // 4 Bytes like an `i32`
+    BigInteger, // 8 bytes like an `i64`
 
+    Str, // len(str) * sizeof(Byte)
     NotNative(String),
 }
 
 pub fn string_to_type(type_as_string: String) -> Type {
     match type_as_string.as_str() {
+        "byte" => Type::Byte,
         "int" => Type::Integer,
-        "uint" => Type::UnsignedInteger,
-        "float" => Type::Float,
+        "bigint" => Type::BigInteger,
         "str" => Type::Str,
         _ => Type::NotNative(type_as_string),
     }
 }
 
-pub fn type_to_asm(type_: Type) -> String {
+pub fn type_to_asm(type_: &Type) -> String {
     match type_ {
-        Type::Integer => "dw",
-        Type::UnsignedInteger => "dw",
-        Type::Float => "dd",
+        Type::Byte => "db",
+        Type::Integer => "dd",
+        Type::BigInteger => "dq",
         Type::Str => "db",
         Type::NotNative(ref type_as_string) => &*type_as_string,
     }
     .to_string()
 }
 
-pub fn type_size_to_asm(type_: Type) -> String {
+pub fn type_size_to_asm(type_: &Type) -> String {
     match type_ {
-        Type::Integer => "word",
-        Type::UnsignedInteger => "word",
-        Type::Float => "dword",
+        Type::Byte => "byte",
+        Type::Integer => "dword",
+        Type::BigInteger => "qword",
         Type::Str => "byte",
         Type::NotNative(ref _type_as_string) => todo!()
     }
@@ -47,9 +47,9 @@ pub fn type_size_to_asm(type_: Type) -> String {
 
 pub fn type_size_to_usize(type_: &Type) -> usize {
     match type_ {
-        Type::Integer => 2,
-        Type::UnsignedInteger => 2,
-        Type::Float => 4,
+        Type::Byte => 1,
+        Type::Integer => 4,
+        Type::BigInteger => 8,
         Type::Str => 1,
         Type::NotNative(ref _type_as_string) => todo!()
     }

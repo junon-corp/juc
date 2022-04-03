@@ -197,6 +197,8 @@ pub trait Compiler: Caller {
             }
             Token::Function => self.when_function(next_tokens),
             Token::Return => self.when_return(next_tokens),
+            Token::Static => self.when_static(next_tokens),
+            Token::Variable => self.when_variable(next_tokens),
 
             // First token of the line
             Token::None => {
