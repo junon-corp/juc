@@ -9,6 +9,9 @@ static a: str = "hello world\n"
 static b: int 
 static c: str = "wello world\n"
 
+func z
+    ret
+
 func main
     @ mov rax, 1
     @ mov rdi, 1
@@ -17,14 +20,10 @@ func main
     @ syscall
 
     let e: int = 5211 // test
-    d = 6
+    e = 6
 
     let f: int = 8546471
+    let x: str = "A"
+    x = "F"
 
-    @ mov rax, 1
-    @ mov rdi, 1
-    @ mov rsi, c
-    @ mov rdx, 12
-    @ syscall
-
-    ret "abc"
+    ret 5
