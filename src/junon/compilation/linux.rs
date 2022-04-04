@@ -64,8 +64,8 @@ impl base::Compiler for LinuxCompiler {
         
         let to_write: Vec<String> = vec!(
             format!("call {}", ENTRY_POINT),
+            "mov rdi, rax".to_string(), // return of ENTRY_POINT
             "mov rax, 60".to_string(),
-            "mov rdi, 0".to_string(),
             "syscall".to_string(),
         );
         
@@ -187,7 +187,6 @@ impl base::Compiler for LinuxCompiler {
         let to_write: Vec<String> = vec!(
             "push rbp".to_string(),
             "mov rbp, rsp".to_string(),
-            format!("sub rsp, {}", "8")// TODO : self.data().i_variable_stack)
         );
 
         self.write_asm(
