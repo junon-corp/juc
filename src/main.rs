@@ -4,6 +4,7 @@
 
 use std::collections::HashMap as Dict;
 use std::env;
+use std::ffi::OsStr;
 use std::path::Path;
 use std::process;
 
@@ -58,6 +59,36 @@ fn main() {
                     source
                 ),
             ));
+        }
+        if path.extension() != Some(OsStr::new("ju")) {
+            let error_message = match path.extension() {
+                Some(extension) => {
+                    format!(
+                        "The given source file '{}' does not have right \
+                        extension, it should be '.ju' not {:?}",
+                        source,
+                        path.extension().unwrap()
+                    )
+                }
+                None => {
+                    format!(
+                        "The given source file '{}' should have an extension",
+                        source
+                    )
+                },
+            };
+            
+            logger.add_log(
+                Log::new(
+                    LogLevel::Error,
+                    "Invalid extension file".to_string(),
+                    error_message,
+                )
+                .add_hint(format!(
+                    "Rename '{}' by '{}.ju'", 
+                    source, source
+                ))
+            );
         }
     }
 
