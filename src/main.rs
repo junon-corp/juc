@@ -11,7 +11,10 @@ use std::process;
 mod junon;
 use junon::{
     args::Args, 
-    compilation::base::*, 
+    compilation::{
+        base::*,
+        defaults,
+    }, 
     logger::*
 };
 
@@ -65,9 +68,10 @@ fn main() {
                 Some(extension) => {
                     format!(
                         "The given source file '{}' does not have right \
-                        extension, it should be '.ju' not {:?}",
+                        extension, it should be '{}' not {:?}",
                         source,
-                        path.extension().unwrap()
+                        defaults::EXTENSION,
+                        extension
                     )
                 }
                 None => {
@@ -85,8 +89,8 @@ fn main() {
                     error_message,
                 )
                 .add_hint(format!(
-                    "Rename '{}' by '{}.ju'", 
-                    source, source
+                    "Rename '{}' by '{}.{}'", 
+                    source, source, defaults::EXTENSION
                 ))
             );
         }

@@ -4,6 +4,8 @@
 
 pub const BUILD_FOLDER: &str = ".junon";
 pub const ENTRY_POINT: &str = "main";
+pub const EXTENSION: &str = "ju";
+pub const EXTENSION_COMPLETE: &str = ".ju";
 
 pub mod linux_defaults {
     pub const ASSEMBLER: &str = "nasm";

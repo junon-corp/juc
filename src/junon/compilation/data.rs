@@ -27,5 +27,5 @@ pub struct CompilerData {
     pub current_line: Vec<Token>,
     pub current_token: Token,
 
-    pub current_scope: String, // example: "main::f" -> mod "main", function "f"
+    pub current_scope: Vec<String>,
 }

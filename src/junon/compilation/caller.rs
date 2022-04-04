@@ -2,8 +2,6 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-use std::fmt;
-
 use crate::junon::compilation::{
     objects::{
         function::Function,
@@ -37,8 +35,32 @@ pub trait Caller {
         self.write_asm(next_tokens_as_asm);
     }
 
-    fn when_assign(&mut self, _next_tokens: Vec<Token>) {
+    /// If the previous token is not an known identifier, it raises an error \
+    /// Need the `line` and not "next_tokens" because it uses a token placed
+    /// before the assign token  
+    fn when_assign(&mut self, line: Vec<Token>) 
+    where Self: base::Compiler 
+    {
+        let mut reversed_line_iter = line.into_iter().rev();
+        
+        let value: String = match reversed_line_iter.next().unwrap() {
+            Token::RawString(value) => value,
+            _ => panic!(), // never happens
+        };
+    
+        reversed_line_iter.next(); // Token::Assign
 
+        let to_assign = match reversed_line_iter.next().unwrap() {
+            Token::RawString(identifier) => identifier,
+            _ => todo!(), // not an identifier
+        };
+
+        let mut variable = match self.data().variable_stack.get(&to_assign) {
+            Some(v) => v.clone(),
+            None => panic!(), // invalid identifier
+        };
+        variable.set_current_value(value);
+        self.change_variable_value(&variable);
     }
     
     fn when_function(&mut self, _next_tokens: Vec<Token>) 
@@ -51,7 +73,7 @@ pub trait Caller {
             String::new(), // return type
         );
 
-        self.data().current_scope += format!("::{}", function.id()).as_str();
+        self.data().current_scope.push(function.id().to_string());
         self.add_function(function);
     }
 
@@ -68,8 +90,9 @@ pub trait Caller {
                 _ => panic!(), // never happens
             }
             None => String::from("0"), // "null" value
-            _ => panic!() // never happens
         });
+
+        self.data().current_scope.pop();
     }
 
     fn when_static(&mut self, next_tokens: Vec<Token>) 

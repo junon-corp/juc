@@ -10,7 +10,7 @@ use crate::junon::{
     args::Args,
     compilation::{
         data::CompilerData,
-        defaults::*,
+        defaults,
         linux::LinuxCompiler,
         objects::{
             function::Function, 
@@ -85,7 +85,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         current_line: vec![],
         current_token: Token::None,
 
-        current_scope: String::new(),
+        current_scope: vec![],
     };
 
     // Run the right compiler according to the platform
@@ -119,7 +119,7 @@ pub trait Compiler: Caller {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        let path: String = format!("{}/{}.asm", BUILD_FOLDER, source);
+        let path: String = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
         
         self.data().stream = Some(File::create(path).unwrap());
         self.data().parser = Some(Parser::new(source));
@@ -134,6 +134,13 @@ pub trait Compiler: Caller {
         self.init();
 
         for source in self.data().sources.clone() {
+            // Module name it's the filename without the ".ju" extension
+            self.data().current_scope = vec![
+                format!("{}", source)
+                    .split(defaults::EXTENSION_COMPLETE)
+                    .collect::<String>()
+            ];
+
             self.init_one(&source);
             self.call();
             self.finish_one(&source);
@@ -153,12 +160,11 @@ pub trait Compiler: Caller {
         for line in parsed.iter() {
             self.data().current_line = line.clone();
 
-            let mut previous_token_instruction = Token::None;
+            let mut previous_token = Token::None;
             let mut break_line = false; // to break the loop from the closure
 
             for token in line.iter() {
                 if break_line {
-                    break_line = false;
                     break;
                 }
 
@@ -167,19 +173,20 @@ pub trait Compiler: Caller {
                     line, 
                     &mut break_line, 
                     &token,
-                    &mut previous_token_instruction
+                    &mut previous_token
                 );
-                previous_token_instruction = token.clone();
+                previous_token = token.clone();
             }
         }
     }
 
+    /// Function "linked" with `call()` because it does the `Caller` calls
     fn check_for_instruction(
         &mut self, 
         line: &Vec<Token>, 
         break_line: &mut bool,
         token: &Token,
-        previous_token_instruction: &mut Token
+        previous_token: &mut Token
     ) {
         let mut line_iter_for_next_tokens = line.iter();
         line_iter_for_next_tokens.next();
@@ -189,29 +196,38 @@ pub trait Compiler: Caller {
             .collect(); // as vector
             
         // NOTE "break" instructions means : stop reading the line
-        match previous_token_instruction {
+        match previous_token {
             Token::AssemblyCode => {
                 self.when_assembly_code(next_tokens);
                 *break_line = true;
                 return;
             }
+            Token::Assign => self.when_assign(line.to_vec()),
             Token::Function => self.when_function(next_tokens),
             Token::Return => self.when_return(next_tokens),
-            Token::Static => self.when_static(next_tokens),
-            Token::Variable => self.when_variable(next_tokens),
+            Token::Static => {
+                self.when_static(next_tokens);
+                *break_line = true;
+                return;
+            }
+            Token::Variable => {
+                self.when_variable(next_tokens);
+                *break_line = true;
+                return;
+            }
 
             // First token of the line
             Token::None => {
                 // Lonely token, execute it right now
                 if line.len() == 1 {
-                    *previous_token_instruction = token.clone();
+                    *previous_token = token.clone();
                     
                     // Call again with same arguments
                     self.check_for_instruction(
                         line, 
                         break_line,
                         token,
-                        previous_token_instruction
+                        previous_token
                     );
                 }
             },
