@@ -113,6 +113,7 @@ impl base::Compiler for LinuxCompiler {
     fn finish(&mut self) {}
 
     fn finish_one(&mut self, source: &String) {
+        // Write "global" definitions for functions
         self.write_asm(format!(
             "section .text\n{}",
             self.section_text
@@ -120,6 +121,8 @@ impl base::Compiler for LinuxCompiler {
                 .map(|x| format!("\t{}\n", x)) // function id
                 .collect::<String>()
         ));
+
+        // Write all static data
         self.write_asm(format!(
             "section .data\n{}",
             self.section_data
@@ -182,7 +185,7 @@ impl base::Compiler for LinuxCompiler {
 
     fn add_function(&mut self, function: Function) {
         self.section_text.push(format!("global {}", function.id()));
-        self.write_asm(format!("{}:", function.id()));
+        self.write_asm(format!("{}:", function.id()));        
 
         let to_write: Vec<String> = vec!(
             "push rbp".to_string(),

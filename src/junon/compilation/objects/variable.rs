@@ -44,9 +44,6 @@ impl Variable {
     pub fn set_current_value(&mut self, current_value: String) {
         self.current_value = current_value;
     }
-    pub fn set_stack_pos(&mut self, stack_pos: usize) {
-        self.stack_pos = stack_pos
-    }
 
     pub fn id(&self) -> &String {
         &self.id

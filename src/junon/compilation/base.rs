@@ -14,8 +14,6 @@ use crate::junon::{
         linux::LinuxCompiler,
         objects::{
             function::Function, 
-            params::Params, 
-            type_, type_::Type, 
             variable::Variable
         },
         parsing::{
@@ -23,6 +21,7 @@ use crate::junon::{
             tokens::*
         },
         caller::Caller,
+        scope::Scope,
     },
     logger::*,
     platform, platform::Platform,
@@ -73,19 +72,20 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
     // Set important information for the compiler
     let data = CompilerData {
+        is_library,
+
         sources: sources.clone(),
         options: options.clone(),
-        is_library,
+
         stream: None,
         parser: None,
-
-        variable_stack: Dict::new(),
-        i_variable_stack: 0,
-
+        
+        current_scope: Scope::new(),
         current_line: vec![],
         current_token: Token::None,
 
-        current_scope: vec![],
+        variable_stack: Dict::new(),
+        i_variable_stack: 0,
     };
 
     // Run the right compiler according to the platform
@@ -103,7 +103,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         Platform::Windows => {
             todo!()
         }
-        _ => panic!(), // never happens
+        Platform::Unknown(_platform) => panic!() // never happens
     }
 }
 
@@ -135,11 +135,11 @@ pub trait Compiler: Caller {
 
         for source in self.data().sources.clone() {
             // Module name it's the filename without the ".ju" extension
-            self.data().current_scope = vec![
+            self.data().current_scope = Scope::from(vec![
                 format!("{}", source)
                     .split(defaults::EXTENSION_COMPLETE)
                     .collect::<String>()
-            ];
+            ]);
 
             self.init_one(&source);
             self.call();

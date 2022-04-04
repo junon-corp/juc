@@ -66,15 +66,26 @@ pub trait Caller {
     fn when_function(&mut self, _next_tokens: Vec<Token>) 
     where Self: base::Compiler 
     {
-        let function = Function::new(
-            tokens::token_to_string(&self.data().current_token),
+        let mut id: String = tokens::token_to_string(&self.data().current_token);
+
+ 
+        self.data().current_scope.push(id.to_string());
+        let current_scope_copy = self.data().current_scope.clone();
+        
+        if id == "main" {
+            self.data().current_scope.reset();
+            self.data().current_scope.push("main".to_string());
+        }
+
+        let mut function = Function::new(
+            self.data().current_scope.to_string(),
             // TODO :
             vec![], // params
             String::new(), // return type
         );
 
-        self.data().current_scope.push(function.id().to_string());
         self.add_function(function);
+        self.data().current_scope = current_scope_copy;
     }
 
     fn when_return(&mut self, next_tokens: Vec<Token>)
