@@ -9,7 +9,7 @@ use std::path::Path;
 use crate::junon::{
     args::Args,
     compilation::{
-        base,
+        base::Compiler,
         data::CompilerData,
         defaults::linux_defaults::*,
         defaults::*,
@@ -23,6 +23,8 @@ use crate::junon::{
     platform,
 };
 
+
+/// Compiler for 64 bits Linux platforms
 pub struct LinuxCompiler {
     data: CompilerData,
     section_text: Vec<String>,
@@ -41,9 +43,9 @@ impl LinuxCompiler {
 
 impl Caller for LinuxCompiler {}
 
-/// SEE Functions' documentation from `base::Compiler` because they are not
+/// SEE Functions' documentation from `Compiler` because they are not
 /// written here a new time
-impl base::Compiler for LinuxCompiler {
+impl Compiler for LinuxCompiler {
     fn init(&mut self) {
         if self.data().is_library {
             return;

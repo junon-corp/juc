@@ -7,7 +7,6 @@ use std::fs::File;
 
 use crate::junon::compilation::{
     objects::{
-        function::Function,
         variable::Variable,
     },
     parsing::{

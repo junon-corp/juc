@@ -7,3 +7,6 @@ pub mod compilation;
 pub mod args;
 pub mod logger;
 pub mod platform;
+
+/// Usage : `use crate::junon::Dict;`
+pub type Dict<K, V> = std::collections::HashMap<K, V>;

@@ -66,8 +66,7 @@ pub trait Caller {
     fn when_function(&mut self, _next_tokens: Vec<Token>) 
     where Self: base::Compiler 
     {
-        let mut id: String = tokens::token_to_string(&self.data().current_token);
-
+        let id: String = tokens::token_to_string(&self.data().current_token);
  
         self.data().current_scope.push(id.to_string());
         let current_scope_copy = self.data().current_scope.clone();
@@ -77,7 +76,7 @@ pub trait Caller {
             self.data().current_scope.push("main".to_string());
         }
 
-        let mut function = Function::new(
+        let function = Function::new(
             self.data().current_scope.to_string(),
             // TODO :
             vec![], // params

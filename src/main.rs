@@ -11,8 +11,8 @@ use std::process;
 mod junon;
 use junon::{
     args::Args, 
+    compilation,
     compilation::{
-        base::*,
         defaults,
     }, 
     logger::*
@@ -98,7 +98,7 @@ fn main() {
 
     logger.interpret();
 
-    run_compiler(sources, options);
+    compilation::run_compiler(sources, options);
 
     let mut logger = Logger::new();
     logger.add_log(Log::info("Finished".to_string()));

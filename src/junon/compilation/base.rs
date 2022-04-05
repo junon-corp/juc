@@ -2,16 +2,13 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-use std::collections::HashMap as Dict;
 use std::fs::File;
 use std::io::Write;
 
 use crate::junon::{
-    args::Args,
     compilation::{
         data::CompilerData,
         defaults,
-        linux::LinuxCompiler,
         objects::{
             function::Function, 
             variable::Variable
@@ -23,89 +20,7 @@ use crate::junon::{
         caller::Caller,
         scope::Scope,
     },
-    logger::*,
-    platform, platform::Platform,
 };
-
-/// Run the right compiler according to the platform and set some important
-/// parameters as a `CompilerData` object sent to the platform's compiler
-pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
-    let mut logger = Logger::new();
-
-    let mut is_library: bool = false;
-    Args::when_flag('l', options, |_| {
-        is_library = true;
-        logger.add_log(Log::info("Library building".to_string()));
-    });
-
-    let mut platform: Platform = platform::get_current();
-    Args::when_flag('p', options, |mut platform_id: String| {
-        platform_id = platform_id.to_lowercase();
-        platform = platform::get_from_id(platform_id)
-    });
-
-    // Raise an error before printing the log saying the platform
-    match platform.clone() {
-        Platform::Unknown(invalid_platform_id) => {
-            logger.add_log(
-                Log::new(
-                    LogLevel::Error,
-                    "Invalid platform".to_string(),
-                    format!(
-                        "Platform '{}' is not compatible with the current \
-                    version of 'juc'",
-                        invalid_platform_id
-                    ),
-                )
-                .add_hint(format!(
-                    "Available platforms : {}",
-                    platform::AVAILABLE_PLATFORMS
-                )),
-            );
-        }
-        _ => {} // valid platform
-    }
-    logger.interpret();
-
-    logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
-    logger.interpret();
-
-    // Set important information for the compiler
-    let data = CompilerData {
-        is_library,
-
-        sources: sources.clone(),
-        options: options.clone(),
-
-        stream: None,
-        parser: None,
-        
-        current_scope: Scope::new(),
-        current_line: vec![],
-        current_token: Token::None,
-
-        variable_stack: Dict::new(),
-        i_variable_stack: 0,
-    };
-
-    // Run the right compiler according to the platform
-    match platform {
-        Platform::Android => {
-            todo!()
-        }
-        Platform::IOS => {
-            todo!()
-        }
-        Platform::Linux => LinuxCompiler::new(data).run(),
-        Platform::MacOS => {
-            todo!()
-        }
-        Platform::Windows => {
-            todo!()
-        }
-        Platform::Unknown(_platform) => panic!() // never happens
-    }
-}
 
 /// Trait for a Compiler followed by all platform's compilers \
 /// Some functions are already defined because they are cross-platform \
@@ -152,10 +67,10 @@ pub trait Compiler: Caller {
 
     /// Methods caller according to the current token
     fn call(&mut self) {
-        let parsed: Vec<Vec<Token>> = match &self.data().parser {
-            Some(parser) => parser.parsed().clone(),
-            None => panic!() // never happens
-        };
+        let parsed: Vec<Vec<Token>> = self.data().parser.as_ref()
+            .unwrap()
+            .parsed()
+            .to_vec();
 
         for line in parsed.iter() {
             self.data().current_line = line.clone();
