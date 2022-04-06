@@ -10,5 +10,5 @@ func exit
 
 func main
     // out << "hello world"
-    @ call exit
+    @ call test.exit
     ret

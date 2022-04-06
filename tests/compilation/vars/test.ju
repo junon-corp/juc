@@ -27,3 +27,7 @@ func main
     x = "F"
 
     ret 5
+
+func b
+    let e: int = 35
+    ret
