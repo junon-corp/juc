@@ -5,6 +5,11 @@
 use std::fmt;
 use std::process;
 
+use crate::junon::compilation::parsing::{
+    tokens,
+    tokens::Token,
+};
+
 #[derive(Clone, PartialEq)]
 pub enum LogLevel {
     Error,
@@ -196,6 +201,16 @@ impl Logger {
             self.print_all();
         }
     }
+}
+
+/// Transform a line of tokens to a printable string for a log
+pub fn line_to_string(line: &Vec<Token>) -> String {
+    let mut result = String::new();
+    for token in line {
+        result += &format!("{} ", tokens::token_to_string(token));
+    }
+    result += "\n";
+    result
 }
 
 /// NOTE you should run the test with parameters: "-- --nocapture" to see the

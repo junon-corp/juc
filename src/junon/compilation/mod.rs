@@ -2,7 +2,7 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-pub mod checker;
+pub mod checking;
 pub mod objects;
 pub mod parsing;
 

@@ -7,8 +7,8 @@ use std::io::Write;
 
 use crate::junon::{
     compilation::{
-        data::CompilerData,
-        defaults,
+        checking,
+        checking::data::CheckerData,
         objects::{
             function::Function, 
             variable::Variable
@@ -18,8 +18,11 @@ use crate::junon::{
             tokens::*
         },
         caller::Caller,
+        data::CompilerData,
+        defaults,
         scope::Scope,
     },
+    logger::*,
 };
 
 /// Trait for a Compiler followed by all platform's compilers \
@@ -42,6 +45,13 @@ pub trait Compiler: Caller {
         self.data().parser.as_mut()
             .unwrap()
             .run();
+
+        // run all checkers for the current source file
+        let checker_data = CheckerData {
+            parsed: self.data().parser.as_ref().unwrap().parsed().clone(),
+            logger: Logger::new()
+        };
+        checking::run_checkers(checker_data);
     }
 
     /// Main function where each source file is transformed to an objet file
