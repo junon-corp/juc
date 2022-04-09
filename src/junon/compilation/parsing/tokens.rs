@@ -73,11 +73,5 @@ pub fn token_to_string(token: &Token) -> String {
 /// cut by the parser in a new case (should be not placed with the previous
 /// character/word)
 pub fn should_be_cut(c: &char) -> bool {
-    if (*c >= 'A' && *c <= 'Z') || (*c >= 'a' && *c <= 'z') {
-        false
-    } else if (*c >= '0' && *c <= '9') || (*c == '.') {
-        false
-    } else {
-        true
-    }
+    !c.is_alphanumeric()
 }
