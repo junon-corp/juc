@@ -44,6 +44,7 @@ impl Checker for SyntaxChecker {
             let mut previous_token = Token::None;
             let mut break_line = false; // to break the loop from the closure
 
+            self.data().token_i = 0;
             for token in line.iter() {
                 if break_line {
                     break;
@@ -53,10 +54,12 @@ impl Checker for SyntaxChecker {
                     line, 
                     &mut break_line, 
                     &token,
-                    &mut previous_token
+                    &mut previous_token,
                 );
                 previous_token = token.clone();
+                self.data().token_i += 1;
             }
+            self.data().line_i += 1;
         }
     }
 
@@ -70,19 +73,16 @@ impl Checker for SyntaxChecker {
         let mut line_iter_for_next_tokens = line.iter();
         line_iter_for_next_tokens.next();
 
+        let cause: String = source_to_string(
+            self.data().source.clone(), 
+            self.data().line_i.clone(), 
+            self.data().token_i.clone(),
+        );
+
+        let token_i: usize = self.data().token_i.clone();
+
         match previous_token {
-            Token::Variable => {
-                println!("var: {:?}", token);
-                // self.data().logger.add_log(Log::new(
-                //     LogLevel::Error,
-                //     "Expected token".to_string(),
-                //     format!(
-                //         "No token was found next token to {:?} but expected",
-                //         token   
-                //     )
-                // ));
-                // return;
-                
+            Token::Variable => {                
                 let mut error = false;
                 match token {
                     Token::RawString(variable_id) => {
@@ -95,22 +95,62 @@ impl Checker for SyntaxChecker {
                 }
                 
                 if error {
-                    self.data().logger.add_log(Log::new(
-                        LogLevel::Error,
-                        "Invalid identifier for variable".to_string(),
-                        format!(
-                            "{}Found '{}' but it cannot be used as a variable identifier",
-                            line_to_string(line),
-                            tokens::token_to_string(token)
+                    self.data().logger.add_log(
+                        Log::new(
+                            LogLevel::Error,
+                            "Invalid identifier for variable".to_string(),
+                            format!(
+                                "{}Found '{}' but it cannot be used as a variable identifier",
+                                line_to_string(line, token_i + 1),
+                                tokens::token_to_string(token)
+                            )
                         )
-                    ));
+                        .add_cause(cause)
+                        .finish()
+                    );
                 }
 
                 *break_line = true;
             }
-            // Because there is no token before the line's first token
-            Token::None => {},
-            _ => {},
+            // First token of the line
+            Token::None => {
+                // Lonely token
+                if line.len() == 1 {
+                    match token {
+                        Token::Variable => {},
+                        _ => return,
+                    }
+
+                    self.data().logger.add_log(
+                        Log::new(
+                            LogLevel::Error,
+                            "Expected token".to_string(),
+                            format!(
+                                "{}No token was found next to '{}' but expected",
+                                line_to_string(line, token_i + 1),
+                                tokens::token_to_string(token)
+                            )
+                        )
+                        .add_cause(cause)
+                        .finish()
+                    );
+                }
+            },
+            _ => {
+                self.data().logger.add_log(
+                    Log::new(
+                        LogLevel::Error,
+                        "Invalid token instruction".to_string(),
+                        format!(
+                            "{}No valid instruction found for token '{}'",
+                            line_to_string(line, token_i),
+                            tokens::token_to_string(previous_token)
+                        )
+                    )
+                    .add_cause(cause)
+                    .finish()
+                );
+            },
         }
     }
 

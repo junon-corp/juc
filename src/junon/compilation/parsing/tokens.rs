@@ -68,7 +68,7 @@ pub fn token_to_string(token: &Token) -> String {
     .to_string()
 }
 
-/// If the character is special (it means that it's not a letter from the Latin
+/// If the character is special (it means that it's not a letter from any
 /// alphabet or if it's not a number), it return "true": the character should be
 /// cut by the parser in a new case (should be not placed with the previous
 /// character/word)

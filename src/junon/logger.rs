@@ -86,6 +86,10 @@ impl Log {
         self.hint += hint.as_str();
         self.clone()
     }
+
+    pub fn finish(&mut self) -> Self {
+        self.clone()
+    }
 }
 
 impl fmt::Display for Log {
@@ -204,13 +208,23 @@ impl Logger {
 }
 
 /// Transform a line of tokens to a printable string for a log
-pub fn line_to_string(line: &Vec<Token>) -> String {
-    let mut result = String::new();
+pub fn line_to_string(line: &Vec<Token>, token_i: usize) -> String {
+    let mut result = String::from("\t");
+    
+    let mut i = 0;
     for token in line {
-        result += &format!("{} ", tokens::token_to_string(token));
+        if token_i > 0 && i == token_i - 1 {
+            result += &"\x1b[31m";
+        }
+        result += &format!("{}\x1b[0m ", tokens::token_to_string(token));
+        i += 1;
     }
-    result += "\n";
+    result += "\n\n";
     result
+}
+
+pub fn source_to_string(source: String, line_i: usize, token_i: usize) -> String {
+    format!("in '{}' at ({}, {})", source, line_i + 1, token_i + 1)
 }
 
 /// NOTE you should run the test with parameters: "-- --nocapture" to see the

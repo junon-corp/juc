@@ -12,6 +12,9 @@ use crate::junon::{
 
 /// Information for all checker structures
 pub struct CheckerData {
+    pub source: String,
     pub parsed: Vec<Vec<Token>>,
     pub logger: Logger,
+    pub line_i: usize,
+    pub token_i: usize,
 }
