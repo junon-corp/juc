@@ -24,12 +24,23 @@ pub trait Caller {
     {    
         let mut next_tokens_as_asm = String::from("\t");
 
+        let first = next_tokens.first().unwrap().clone();
+
         for token in next_tokens {
-            next_tokens_as_asm += &match token {
-                Token::Comma => ", ".to_string(),
-                Token::RawString(string) => format!("{} ", string),
-                _ => panic!() // never happens
-            };
+            next_tokens_as_asm += &tokens::token_to_string(&token);
+            
+            // Do not put space when it's a function label
+            match first {
+                Token::RawString(ref string) => {
+                    match string.as_str() {
+                        "call" | "jmp" => if first != token { continue; },
+                        _ => {}
+                    }
+                },
+                _ => {}
+            }
+
+            next_tokens_as_asm += &" ";
         }
 
         self.write_asm(next_tokens_as_asm);

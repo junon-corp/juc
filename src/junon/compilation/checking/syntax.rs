@@ -82,7 +82,14 @@ impl Checker for SyntaxChecker {
         let token_i: usize = self.data().token_i.clone();
 
         match previous_token {
-            Token::Variable => {                
+            Token::AssemblyCode => {
+                *break_line = true;
+            },
+            Token::Assign => {},
+            Token::Function => {},
+            Token::Return => {},
+            Token::Variable | Token::Static => {
+                // Check for an identifier         
                 let mut error = false;
                 match token {
                     Token::RawString(variable_id) => {
@@ -93,7 +100,7 @@ impl Checker for SyntaxChecker {
                     }
                     _ => error = true,
                 }
-                
+
                 if error {
                     self.data().logger.add_log(
                         Log::new(
@@ -105,9 +112,53 @@ impl Checker for SyntaxChecker {
                                 tokens::token_to_string(token)
                             )
                         )
-                        .add_cause(cause)
+                        .add_cause(cause.clone())
                         .finish()
                     );
+                    *break_line = true;
+                    return;
+                }
+
+                // Check for type definition
+                line_iter_for_next_tokens.next();
+                let next = line_iter_for_next_tokens.next();
+                match next {
+                    Some(token) => match token {
+                        Token::TypeDef => {}
+                        _ => {
+                            self.data().logger.add_log(
+                                Log::new(
+                                    LogLevel::Error,
+                                    "Invalid token".to_string(),
+                                    format!(
+                                        "{}Found '{}' but it's not a type definition token",
+                                        line_to_string(line, token_i + 2),
+                                        tokens::token_to_string(token)
+                                    )
+                                )
+                                .add_cause(cause)
+                                .finish()
+                            )
+                        }
+                    }
+                    None => {
+                        self.data().logger.add_log(
+                            Log::new(
+                                LogLevel::Error,
+                                "Expected token".to_string(), 
+                                format!(
+                                    "{}No token was found next to '{}' but expected",
+                                    line_to_string(line, token_i + 1),
+                                    tokens::token_to_string(token)
+                                )
+                            )
+                            .add_cause(cause)
+                            .add_hint(format!(
+                                "Specify the variable's type with '{}' + <type>",
+                                tokens::token_to_string(&Token::TypeDef)
+                            ))
+                        )
+                    }
                 }
 
                 *break_line = true;
@@ -117,7 +168,7 @@ impl Checker for SyntaxChecker {
                 // Lonely token
                 if line.len() == 1 {
                     match token {
-                        Token::Variable => {},
+                        Token::Variable | Token::Static => {},
                         _ => return,
                     }
 

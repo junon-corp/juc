@@ -48,8 +48,11 @@ pub trait Compiler: Caller {
 
         // run all checkers for the current source file
         let checker_data = CheckerData {
+            source: source.clone(),
             parsed: self.data().parser.as_ref().unwrap().parsed().clone(),
-            logger: Logger::new()
+            logger: Logger::new(),
+            line_i: 0,
+            token_i: 0,
         };
         checking::run_checkers(checker_data);
     }
