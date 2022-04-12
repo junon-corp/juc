@@ -4,6 +4,7 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::process;
 
 use crate::junon::{
     compilation::{
@@ -36,7 +37,7 @@ pub trait Compiler: Caller {
     fn init(&mut self);
 
     /// Starting point for each source file
-    fn init_one(&mut self, source: &String) {
+    fn init_one(&mut self, source: &String) -> Result<(), Logger> {
         let path: String = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
         
         self.data().stream = Some(File::create(path).unwrap());
@@ -54,12 +55,15 @@ pub trait Compiler: Caller {
             line_i: 0,
             token_i: 0,
         };
-        checking::run_checkers(checker_data);
+        checking::run_checkers(checker_data)
     }
 
     /// Main function where each source file is transformed to an objet file
     fn run(&mut self) {
         self.init();
+
+        /// Returned logs
+        let mut loggers: Vec<Logger> = vec!();
 
         for source in self.data().sources.clone() {
             // Module name it's the filename without the ".ju" extension
@@ -69,9 +73,32 @@ pub trait Compiler: Caller {
                     .collect::<String>()
             ]);
 
-            self.init_one(&source);
+            match self.init_one(&source) {
+                Ok(()) => {},
+                Err(logger) => {
+                    loggers.push(logger.clone());
+
+                    // When it doesn't contain only warnings
+                    if logger.get_result() != Ok(()) {
+                        continue;
+                    }
+                }
+            }
             self.call();
             self.finish_one(&source);
+        }
+
+        let mut should_be_stopped = false;
+        for logger in loggers {
+            // `should_be_stopped` is not updated as the function call return 
+            // value because it could be `false`
+            if logger.print_all(false) {
+                should_be_stopped = true;
+            }
+        }
+
+        if should_be_stopped {
+            process::exit(1);
         }
 
         self.link();

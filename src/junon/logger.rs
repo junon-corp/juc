@@ -10,7 +10,7 @@ use crate::junon::compilation::parsing::{
     tokens::Token,
 };
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum LogLevel {
     Error,
     Warning,
@@ -31,7 +31,7 @@ impl fmt::Display for LogLevel {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Log {
     level: LogLevel,
 
@@ -126,7 +126,7 @@ impl fmt::Display for Log {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Logger {
     logs: Vec<Log>,
 }
@@ -143,12 +143,15 @@ impl Logger {
 
     /// When it's time to reveal all the stocked logs to the user \
     /// Print each contained logs in the log list \
-    /// When the logger is set as a killer, the program is stopped after
-    /// having printed all logs
+    /// The program is stopped after having printed all logs but the parameter 
+    /// `exit_if_error` can override that, if it's set as true, the program will be 
+    /// killed if the logs are errors, else the program isn't killed
+    /// even if logs are errors. \
+    /// But if the logs contain errors, the function will return "true"
     ///
     /// NOTE The function is super simple because each log has a way to be
     /// printed, implemented from `fmt::Display`
-    pub fn print_all(&self) {
+    pub fn print_all(&self, exit_if_error: bool) -> bool {
         let mut is_killer = false;
 
         for log in &self.logs {
@@ -158,13 +161,16 @@ impl Logger {
             print!("{}", log);
         }
 
-        if is_killer {
+        if exit_if_error && is_killer {
             process::exit(1);
         }
+
+        is_killer
     }
 
     /// Designed to be used in the others functions (which need to return a
     /// specific result with the Logger or with nothing) \
+    /// Return if the logger contains error logs or not \
     /// ```
     /// fn foo() -> Result<(), Logger> {
     ///     let mut logger = Logger::new();
@@ -173,7 +179,6 @@ impl Logger {
     ///     logger.get_result()
     /// }
     /// ```
-    #[allow(unused)]
     pub fn get_result(&self) -> Result<(), Self> {
         self.get_result_with_value::<()>(())
     }
@@ -190,19 +195,19 @@ impl Logger {
     /// ```
     #[allow(unused)]
     pub fn get_result_with_value<T>(&self, value: T) -> Result<T, Self> {
-        if self.logs.len() == 0 {
-            Err(self.clone())
-        } else {
-            Ok(value)
-        }
+        for log in &self.logs {
+            if log.level == LogLevel::Error {
+                return Err(self.clone());
+            }
+        } // else
+        Ok(value)
     }
 
     /// When it's useless to return a `Result` structure with
     /// `Self::get_result()`
-    #[allow(unused)]
     pub fn interpret(&self) {
         if self.logs.len() != 0 {
-            self.print_all();
+            self.print_all(true);
         }
     }
 }

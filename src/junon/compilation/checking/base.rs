@@ -2,19 +2,22 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use crate::junon::compilation::{
-    checking::data::CheckerData,
-    parsing::tokens::Token,
+use crate::junon::{
+    compilation::{
+        checking::data::CheckerData,
+        parsing::tokens::Token,
+    },
+    logger::Logger,
 };
 
 pub trait Checker {
     /// Entry point with useful stuff did here
     fn init(&mut self);
 
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<(), Logger> {
         self.init();
         self.check();
-        self.finish();
+        self.finish()
     }
 
     fn check(&mut self);
@@ -27,7 +30,7 @@ pub trait Checker {
     );
 
     /// Exit point with useful stuff did here
-    fn finish(&mut self);
+    fn finish(&mut self) -> Result<(), Logger>;
 
     /// Data getter
     fn data(&mut self) -> &mut CheckerData;

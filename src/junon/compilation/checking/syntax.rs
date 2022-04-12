@@ -205,8 +205,8 @@ impl Checker for SyntaxChecker {
         }
     }
 
-    fn finish(&mut self) {
-        self.data().logger.interpret();
+    fn finish(&mut self) -> Result<(), Logger> {
+        self.data().logger.get_result()
     }
 
     fn data(&mut self) -> &mut CheckerData {
