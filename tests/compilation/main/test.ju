@@ -9,6 +9,6 @@ func exit
     ret
 
 func main
-    // out << "hello world"
+    // print "hello world"
     @ call test.exit
     ret

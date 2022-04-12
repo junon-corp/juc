@@ -1,0 +1,4 @@
+func main
+    print "hello world\n"
+    exit 65
+    ret
