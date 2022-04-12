@@ -116,22 +116,12 @@ impl Compiler for LinuxCompiler {
 
     fn finish_one(&mut self, source: &String) {
         // Write "global" definitions for functions
-        self.write_asm(format!(
-            "section .text\n{}",
-            self.section_text
-                .iter()
-                .map(|x| format!("\t{}\n", x)) // function id
-                .collect::<String>()
-        ));
+        self.write_asm("section .text".to_string());
+        self.write_formatted_asm(&self.section_text.clone());
 
         // Write all static data
-        self.write_asm(format!(
-            "section .data\n{}",
-            self.section_data
-                .iter()
-                .map(|x| format!("\t{}\n", x)) // variable id
-                .collect::<String>()
-        ));
+        self.write_asm("section .data".to_string());
+        self.write_formatted_asm(&self.section_data.clone());
 
         // Reset for the next file
         self.section_text = vec![];
@@ -194,11 +184,7 @@ impl Compiler for LinuxCompiler {
             "mov rbp, rsp".to_string(),
         );
 
-        self.write_asm(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-        );
+        self.write_formatted_asm(&to_write);
     }
 
     fn change_variable_value(&mut self, variable: &Variable) {
@@ -219,11 +205,7 @@ impl Compiler for LinuxCompiler {
             "ret".to_string(),
         );
 
-        self.write_asm(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-        );
+        self.write_formatted_asm(&to_write);
     }
 
     fn print(&mut self, to_print: String) {
@@ -253,11 +235,7 @@ impl Compiler for LinuxCompiler {
             "syscall".to_string()
         );
 
-        self.write_asm(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-        );
+        self.write_formatted_asm(&to_write);
     }
 
     fn exit(&mut self, value: String) {
@@ -267,10 +245,6 @@ impl Compiler for LinuxCompiler {
             "syscall".to_string()
         );
 
-        self.write_asm(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-        );
+        self.write_formatted_asm(&to_write);
     }
 }
