@@ -19,6 +19,9 @@ pub enum Token {
     TypeDef,
     Variable,
 
+    Print,
+    Exit,
+
     // Example : "foo" or something that is not a real token
     RawString(String),
 
@@ -42,6 +45,9 @@ pub fn string_to_token(token_name: &String) -> Token {
         "\"" => Token::StringDot,
         ":" => Token::TypeDef,
         "let" => Token::Variable,
+
+        "print" => Token::Print,
+        "exit" => Token::Exit,
         
         _ => Token::RawString(token_name.clone())
     }
@@ -64,6 +70,10 @@ pub fn token_to_string(token: &Token) -> String {
         Token::StringDot => "\"",
         Token::Variable => "let",
         Token::TypeDef => ":",
+
+        Token::Print => "print",
+        Token::Exit => "exit",
+        
         Token::RawString(ref val) => &*val,
         
         Token::None => panic!(), // never happens

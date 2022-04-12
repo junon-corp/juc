@@ -225,4 +225,52 @@ impl Compiler for LinuxCompiler {
                 .collect::<String>()
         );
     }
+
+    fn print(&mut self, to_print: String) {
+        let to_print_id = format!("_string_");
+
+        self.add_static_variable(
+            Variable::static_(
+                to_print_id.clone(),
+                Type::Str,
+                to_print
+            )
+        );
+
+        let to_write: Vec<String> = vec!(
+            format!("mov rdi, {}", to_print_id),
+            "xor rcx, rcx".to_string(),
+            "not rcx".to_string(),
+            "xor al, al".to_string(),
+            "cld".to_string(),
+            "repnz scasb".to_string(),
+            "not rcx".to_string(),
+            "dec rcx".to_string(),
+            "mov rdx, rcx".to_string(),
+            format!("mov rsi, {}", to_print_id),
+            "mov rax, 1".to_string(),
+            "mov rdi, rax".to_string(),
+            "syscall".to_string()
+        );
+
+        self.write_asm(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+        );
+    }
+
+    fn exit(&mut self, value: String) {
+        let to_write = vec!(
+            "mov rax, 60".to_string(),
+            format!("mov rdi, {}", value),
+            "syscall".to_string()
+        );
+
+        self.write_asm(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+        );
+    }
 }

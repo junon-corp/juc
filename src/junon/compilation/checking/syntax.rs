@@ -163,6 +163,10 @@ impl Checker for SyntaxChecker {
 
                 *break_line = true;
             }
+
+            Token::Print => *break_line = true,
+            Token::Exit => *break_line = true,
+
             // First token of the line
             Token::None => {
                 // Lonely token

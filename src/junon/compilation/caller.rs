@@ -182,6 +182,44 @@ pub trait Caller {
         (type_, current_value)
     }
 
+    fn when_print(&mut self, next_tokens: Vec<Token>) 
+    where Self: base::Compiler
+    {
+        if next_tokens.len() == 0 {
+            self.print(String::new());
+        }
+
+        let mut to_print: Vec<String> = vec![];
+        for token in next_tokens.iter() {
+            match token {
+                // It could be a number, a `RawString` does not mean that it's a 
+                // string object
+                Token::RawString(x) => to_print.push(x.to_string()),
+                _ => panic!(), // never happens
+            }
+        }
+
+        for x in to_print {
+            self.print(x);
+        }
+    }
+
+    fn when_exit(&mut self, next_tokens: Vec<Token>)
+    where Self: base::Compiler
+    {
+        // Only implemented with "exit <value>" and not for an expression or
+        // multiple values
+        self.exit(match next_tokens.iter().next() {
+            Some(token) => match token {
+                // It could be a number, a `RawString` does not mean that it's a 
+                // string object
+                Token::RawString(exit_value) => exit_value.to_string(),
+                _ => panic!(), // never happens
+            }
+            None => String::from("0"), // "null" value
+        });
+    }
+
     fn when_other(&mut self) {
         // panic!() // never happens
     }

@@ -171,6 +171,17 @@ pub trait Compiler: Caller {
                 return;
             }
 
+            Token::Print => {
+                self.when_print(next_tokens);
+                *break_line = true;
+                return;
+            }
+            Token::Exit => {
+                self.when_exit(next_tokens);
+                *break_line = true;
+                return;
+            }
+
             // First token of the line
             Token::None => {
                 // Lonely token, execute it right now
@@ -214,6 +225,9 @@ pub trait Compiler: Caller {
     fn change_variable_value(&mut self, variable: &Variable);
 
     fn return_(&mut self, value: String);
+
+    fn print(&mut self, to_print: String);
+    fn exit(&mut self, value: String);
 
     /// Directly write some ASM code into current stream file
     fn write_asm(&mut self, to_write: String) {
