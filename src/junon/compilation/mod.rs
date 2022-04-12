@@ -1,5 +1,5 @@
 // This file is part of "juc"
-// All rights reserved
+// Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
 pub mod checking;
