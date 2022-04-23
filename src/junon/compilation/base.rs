@@ -237,4 +237,13 @@ pub trait Compiler: Caller {
             to_write
         ).unwrap();
     }
+
+    // Directly write already formatted ASM code into current stream file
+    fn write_formatted_asm(&mut self, to_write: &Vec<String>) {
+        self.write_asm(
+            to_write.iter()
+                .map(| x | format!("\t{}\n", x))
+                .collect::<String>()
+        );
+    }
 }
