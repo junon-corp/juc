@@ -5,3 +5,11 @@ version = 3
 [[package]]
 name = "juc"
 version = "0.1.0"
+dependencies = [
+ "jup",
+]
+
+[[package]]
+name = "jup"
+version = "0.1.0"
+source = "git+https://github.com/junon-corp/jup#21d5f3024bc3e8f35dc67d98ae37bd2e30f0b70d"
