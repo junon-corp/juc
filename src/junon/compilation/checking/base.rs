@@ -2,10 +2,11 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+use jup::tokens::Token;
+
 use crate::junon::{
     compilation::{
         checking::data::CheckerData,
-        parsing::tokens::Token,
     },
     logger::Logger,
 };

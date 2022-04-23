@@ -5,10 +5,7 @@
 use std::fmt;
 use std::process;
 
-use crate::junon::compilation::parsing::{
-    tokens,
-    tokens::Token,
-};
+use jup::tokens::Token;
 
 #[derive(Clone, PartialEq, Eq)]
 pub enum LogLevel {
@@ -221,7 +218,7 @@ pub fn line_to_string(line: &Vec<Token>, token_i: usize) -> String {
         if token_i > 0 && i == token_i - 1 {
             result += &"\x1b[31m";
         }
-        result += &format!("{}\x1b[0m ", tokens::token_to_string(token));
+        result += &format!("{}\x1b[0m ", token.to_string());
         i += 1;
     }
     result += "\n\n";

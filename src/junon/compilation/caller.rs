@@ -2,16 +2,14 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+use jup::tokens::Token;
+
 use crate::junon::compilation::{
     objects::{
         function::Function,
         type_, 
         type_::Type,
         variable::Variable,
-    },
-    parsing::{
-        tokens,
-        tokens::Token,
     },
     base,
 };
@@ -27,11 +25,11 @@ pub trait Caller {
         let first = next_tokens.first().unwrap().clone();
 
         for token in next_tokens {
-            next_tokens_as_asm += &tokens::token_to_string(&token);
+            next_tokens_as_asm += &token.to_string();
             
             // Do not put space when it's a function label
             match first {
-                Token::RawString(ref string) => {
+                Token::Other(ref string) => {
                     match string.as_str() {
                         "call" | "jmp" => if first != token { continue; },
                         _ => {}
@@ -55,14 +53,14 @@ pub trait Caller {
         let mut reversed_line_iter = line.into_iter().rev();
         
         let value: String = match reversed_line_iter.next().unwrap() {
-            Token::RawString(value) => value,
+            Token::Other(value) => value,
             _ => panic!(), // never happens
         };
     
         reversed_line_iter.next(); // Token::Assign
 
         let to_assign = match reversed_line_iter.next().unwrap() {
-            Token::RawString(identifier) => identifier,
+            Token::Other(identifier) => identifier,
             _ => todo!(), // not an identifier
         };
 
@@ -77,7 +75,7 @@ pub trait Caller {
     fn when_function(&mut self, _next_tokens: Vec<Token>) 
     where Self: base::Compiler 
     {
-        let id: String = tokens::token_to_string(&self.data().current_token);
+        let id: String = self.data().current_token.to_string();
  
         self.data().current_scope.push(id.to_string());
         let current_scope_copy = self.data().current_scope.clone();
@@ -105,9 +103,9 @@ pub trait Caller {
         // multiple values
         self.return_(match next_tokens.iter().next() {
             Some(token) => match token {
-                // It could be a number, a `RawString` does not mean that it's a 
+                // It could be a number, a `Other` does not mean that it's a 
                 // string object
-                Token::RawString(return_value) => return_value.to_string(),
+                Token::Other(return_value) => return_value.to_string(),
                 _ => panic!(), // never happens
             }
             None => String::from("0"), // "null" value
@@ -123,7 +121,7 @@ pub trait Caller {
             = self.retrieve_variable_info(next_tokens);
 
         let static_variable = Variable::static_(
-            tokens::token_to_string(&self.data().current_token),
+            self.data().current_token.to_string(),
             type_.unwrap(),
             current_value,
         );
@@ -140,7 +138,7 @@ pub trait Caller {
             += type_::type_size_to_usize(&type_.as_ref().unwrap());
 
         let variable = Variable::new(
-            tokens::token_to_string(&self.data().current_token),
+            self.data().current_token.to_string(),
             type_.unwrap(),
             current_value,
             self.data().i_variable_stack.clone()
@@ -162,18 +160,18 @@ pub trait Caller {
             match previous_token {
                 Token::Assign => {
                     current_value = match token {
-                        Token::RawString(value_as_string) => value_as_string,
+                        Token::Other(value_as_string) => value_as_string,
                         _ => panic!(), // never happens
                     }.to_string();
                 }
                 Token::TypeDef => {
                     type_ = Some(type_::string_to_type(match token {
-                        Token::RawString(type_as_string) => type_as_string,
+                        Token::Other(type_as_string) => type_as_string,
                         _ => panic!(), // never happens
                     }.to_string()));
                 }
                 Token::None => {} // first token
-                Token::RawString(_variable_id) => {} 
+                Token::Other(_variable_id) => {} 
                 _ => panic!() // never happens
             }
             previous_token = token.clone();
@@ -192,9 +190,9 @@ pub trait Caller {
         let mut to_print: Vec<String> = vec![];
         for token in next_tokens.iter() {
             match token {
-                // It could be a number, a `RawString` does not mean that it's a 
+                // It could be a number, a `Other` does not mean that it's a 
                 // string object
-                Token::RawString(x) => to_print.push(x.to_string()),
+                Token::Other(x) => to_print.push(x.to_string()),
                 _ => panic!(), // never happens
             }
         }
@@ -211,9 +209,9 @@ pub trait Caller {
         // multiple values
         self.exit(match next_tokens.iter().next() {
             Some(token) => match token {
-                // It could be a number, a `RawString` does not mean that it's a 
+                // It could be a number, a `Other` does not mean that it's a 
                 // string object
-                Token::RawString(exit_value) => exit_value.to_string(),
+                Token::Other(exit_value) => exit_value.to_string(),
                 _ => panic!(), // never happens
             }
             None => String::from("0"), // "null" value

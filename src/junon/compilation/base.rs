@@ -4,7 +4,13 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 use std::process;
+
+use jup::{
+    parser::Parser, 
+    tokens::Token,
+};
 
 use crate::junon::{
     compilation::{
@@ -13,10 +19,6 @@ use crate::junon::{
         objects::{
             function::Function, 
             variable::Variable
-        },
-        parsing::{
-            parser::Parser, 
-            tokens::*
         },
         caller::Caller,
         data::CompilerData,
@@ -41,7 +43,9 @@ pub trait Compiler: Caller {
         let path: String = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
         
         self.data().stream = Some(File::create(path).unwrap());
-        self.data().parser = Some(Parser::new(source));
+        self.data().parser = Some(
+            Parser::from_path(Path::new(source)).unwrap()
+        );
 
         self.data().parser.as_mut()
             .unwrap()
@@ -152,7 +156,7 @@ pub trait Compiler: Caller {
             
         // NOTE "break" instructions means : stop reading the line
         match previous_token {
-            Token::AssemblyCode => {
+            Token::Assembly => {
                 self.when_assembly_code(next_tokens);
                 *break_line = true;
                 return;

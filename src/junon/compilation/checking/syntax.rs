@@ -2,15 +2,13 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+use jup::tokens::Token;
+
 use crate::junon::{
     compilation::{
         checking::{
             data::CheckerData,
             base::Checker,
-        },
-        parsing::{
-            tokens,
-            tokens::Token,
         },
         data::CompilerData,
     },
@@ -82,7 +80,7 @@ impl Checker for SyntaxChecker {
         let token_i: usize = self.data().token_i.clone();
 
         match previous_token {
-            Token::AssemblyCode => {
+            Token::Assembly => {
                 *break_line = true;
             },
             Token::Assign => {},
@@ -92,7 +90,7 @@ impl Checker for SyntaxChecker {
                 // Check for an identifier         
                 let mut error = false;
                 match token {
-                    Token::RawString(variable_id) => {
+                    Token::Other(variable_id) => {
                         match variable_id.parse::<i64>() {
                             Ok(_) => error = true,
                             Err(_) => {},
@@ -109,7 +107,7 @@ impl Checker for SyntaxChecker {
                             format!(
                                 "{}Found '{}' but it cannot be used as a variable identifier",
                                 line_to_string(line, token_i + 1),
-                                tokens::token_to_string(token)
+                                token.to_string()
                             )
                         )
                         .add_cause(cause.clone())
@@ -133,7 +131,7 @@ impl Checker for SyntaxChecker {
                                     format!(
                                         "{}Found '{}' but it's not a type definition token",
                                         line_to_string(line, token_i + 2),
-                                        tokens::token_to_string(token)
+                                        token.to_string()
                                     )
                                 )
                                 .add_cause(cause)
@@ -149,13 +147,13 @@ impl Checker for SyntaxChecker {
                                 format!(
                                     "{}No token was found next to '{}' but expected",
                                     line_to_string(line, token_i + 1),
-                                    tokens::token_to_string(token)
+                                    token.to_string()
                                 )
                             )
                             .add_cause(cause)
                             .add_hint(format!(
                                 "Specify the variable's type with '{}' + <type>",
-                                tokens::token_to_string(&Token::TypeDef)
+                                &Token::TypeDef.to_string()
                             ))
                         )
                     }
@@ -183,7 +181,7 @@ impl Checker for SyntaxChecker {
                             format!(
                                 "{}No token was found next to '{}' but expected",
                                 line_to_string(line, token_i + 1),
-                                tokens::token_to_string(token)
+                                token.to_string()
                             )
                         )
                         .add_cause(cause)
@@ -199,7 +197,7 @@ impl Checker for SyntaxChecker {
                         format!(
                             "{}No valid instruction found for token '{}'",
                             line_to_string(line, token_i),
-                            tokens::token_to_string(previous_token)
+                            previous_token.to_string()
                         )
                     )
                     .add_cause(cause)

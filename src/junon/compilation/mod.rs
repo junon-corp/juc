@@ -4,7 +4,6 @@
 
 pub mod checking;
 pub mod objects;
-pub mod parsing;
 
 pub mod base;
 pub mod caller;
@@ -13,6 +12,8 @@ pub mod defaults;
 pub mod linux;
 pub mod scope;
 
+use jup::tokens::Token;
+
 use crate::junon::{
     Dict,
     args::Args,
@@ -20,7 +21,6 @@ use crate::junon::{
         base::Compiler,
         data::CompilerData,
         linux::LinuxCompiler,
-        parsing::tokens::*,
         scope::Scope,
     },
     logger::*,

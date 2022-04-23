@@ -5,13 +5,14 @@
 use std::collections::HashMap as Dict;
 use std::fs::File;
 
+use jup::{
+    parser::Parser, 
+    tokens::Token,
+};
+
 use crate::junon::compilation::{
     objects::{
         variable::Variable,
-    },
-    parsing::{
-        parser::Parser,
-        tokens::Token,
     },
     scope::Scope,
 };
