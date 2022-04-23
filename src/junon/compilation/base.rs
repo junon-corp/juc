@@ -62,7 +62,7 @@ pub trait Compiler: Caller {
     fn run(&mut self) {
         self.init();
 
-        /// Returned logs
+        // Returned logs
         let mut loggers: Vec<Logger> = vec!();
 
         for source in self.data().sources.clone() {
