@@ -1,4 +1,4 @@
 func main
     print "hello world\n"
-    exit 65
+    exit "A"
     ret
