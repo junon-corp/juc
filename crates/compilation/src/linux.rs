@@ -196,6 +196,8 @@ impl Compiler for LinuxCompiler {
             i!(Push, reg!(Rbp)),
             i!(Mov, reg!(Rbp), reg!(Rsp))
         ]);
+
+        self.data().i_variable_stack = 0;
     }
 
     fn change_variable_value(&mut self, variable: &Variable) {
