@@ -1,2 +1,3 @@
 build/
 .junon/
+/crates/*/Cargo.lock

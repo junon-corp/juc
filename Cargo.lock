@@ -3,13 +3,63 @@
 version = 3
 
 [[package]]
-name = "juc"
+name = "args"
+version = "0.1.0"
+dependencies = [
+ "logging",
+]
+
+[[package]]
+name = "checking"
 version = "0.1.0"
 dependencies = [
  "jup",
+ "logging",
+]
+
+[[package]]
+name = "compilation"
+version = "0.1.0"
+dependencies = [
+ "args",
+ "checking",
+ "jup",
+ "logging",
+ "objects",
+ "platform",
+]
+
+[[package]]
+name = "juc"
+version = "0.1.0"
+dependencies = [
+ "args",
+ "checking",
+ "compilation",
+ "jup",
+ "logging",
+ "objects",
 ]
 
 [[package]]
 name = "jup"
 version = "0.1.0"
 source = "git+https://github.com/junon-corp/jup#21d5f3024bc3e8f35dc67d98ae37bd2e30f0b70d"
+
+[[package]]
+name = "logging"
+version = "0.1.0"
+dependencies = [
+ "jup",
+]
+
+[[package]]
+name = "objects"
+version = "0.1.0"
+
+[[package]]
+name = "platform"
+version = "0.1.0"
+dependencies = [
+ "logging",
+]

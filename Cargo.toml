@@ -1,8 +1,13 @@
 [package]
 name = "juc"
-authors = ["Junon Corp.", "Antonin Hérault <antonherault@gmail.com>"]
+authors = ["Junon", "Antonin Hérault <antonherault@gmail.com>"]
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 jup = { git = "https://github.com/junon-corp/jup" }
+args = { path = "crates/args/" }
+checking = { path = "crates/checking/" }
+compilation = { path = "crates/compilation/" }
+logging = { path = "crates/logging/" }
+objects = { path = "crates/objects/" }
