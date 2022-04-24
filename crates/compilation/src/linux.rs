@@ -204,8 +204,8 @@ impl Compiler for LinuxCompiler {
         self.data().asm_formatter.add_instruction(
             i!(
                 Mov, 
-                Op::Dword, 
                 Op::Expression(format!("[rbp-{}]", i_variable_stack)),
+                Op::Dword, 
                 Op::Expression(variable.current_value().to_string())
             )
             .with_comment(variable.id().to_string())
