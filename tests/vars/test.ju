@@ -5,9 +5,9 @@
 func foo
     ret
 
-static a: str = "hello world\n"
+static a: str = 'hello world\n'
 static b: int 
-static c: str = "wello world\n"
+static c: str = 'wello world\n'
 
 func z
     ret
@@ -20,11 +20,11 @@ func main
     @ syscall
 
     let e: int = 5211 // test
-    e = 6
+    //e = 6
 
     let f: int = 8546471
-    let x: str = "A"
-    x = "F"
+    let x: str = 'A'
+    //x = 'F'
 
     ret 5
 

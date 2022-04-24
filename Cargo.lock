@@ -45,7 +45,7 @@ dependencies = [
 [[package]]
 name = "jup"
 version = "0.1.0"
-source = "git+https://github.com/junon-corp/jup#21d5f3024bc3e8f35dc67d98ae37bd2e30f0b70d"
+source = "git+https://github.com/junon-corp/jup#e18b86fef54848a8d994aa2301970f082c641039"
 
 [[package]]
 name = "logging"
@@ -68,4 +68,4 @@ dependencies = [
 [[package]]
 name = "x64asm"
 version = "0.1.0"
-source = "git+https://github.com/antoninhrlt/x64asm#4fc0fdcb6e76756b248076d3b8a70dac88213261"
+source = "git+https://github.com/antoninhrlt/x64asm#e0fc8a38c1ee323335a14b0b7539001b9b343d6c"
