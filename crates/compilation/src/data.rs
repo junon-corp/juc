@@ -10,6 +10,8 @@ use jup::{
     tokens::Token,
 };
 
+use x64asm::formatter::Formatter;
+
 use objects::{
     variable::Variable,
 };
@@ -23,9 +25,10 @@ pub struct CompilerData {
     pub sources: Vec<String>,
     pub options: Dict<String, String>,
     
-    pub stream: Option<File>,
     pub parser: Option<Parser>,
+    pub asm_formatter: Formatter,
 
+    pub current_source: String,
     pub current_scope: Scope,
     pub current_line: Vec<Token>,
     pub current_token: Token,

@@ -6,6 +6,17 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+use x64asm::{
+    ddirective, ddirective::DefineDirective::*, 
+    formatter::Formatter, 
+    instruction::Instruction,
+    instruction as i, label,
+    mnemonic::Mnemonic::*, 
+    operand::Op, 
+    reg, register::Register::*, 
+    section, section::Section::*,
+};
+
 use args::Args;
 
 use objects::{
@@ -28,15 +39,13 @@ use crate::{
 /// Compiler for 64 bits Linux platforms
 pub struct LinuxCompiler {
     data: CompilerData,
-    section_text: Vec<String>,
-    section_data: Vec<String>,
+    section_data: Vec<Instruction>,
 }
 
 impl LinuxCompiler {
     pub fn new(data: CompilerData) -> Self {
         Self {
             data,
-            section_text: vec![],
             section_data: vec![],
         }
     }
@@ -113,20 +122,23 @@ impl Compiler for LinuxCompiler {
         platform::exec(LINKER.to_string(), &args);
     }
 
-    fn finish(&mut self) {}
-
     fn finish_one(&mut self, source: &String) {
-        // Write "global" definitions for functions
-        self.write_asm("section .text".to_string());
-        self.write_formatted_asm(&self.section_text.clone());
-
         // Write all static data
-        self.write_asm("section .data".to_string());
-        self.write_formatted_asm(&self.section_data.clone());
+        self.data().asm_formatter.add_instruction(i!(section!(Data)));
+        
+        let mut section_data = self.section_data.clone();
+        self.data().asm_formatter.add_instructions(&mut section_data);
 
         // Reset for the next file
-        self.section_text = vec![];
         self.section_data = vec![];
+
+        // Write assembly
+        {
+            let current_source = self.data().current_source.clone();
+            let path = Path::new(&current_source);
+            self.data().asm_formatter.to_file(&path);
+        }
+        self.data().asm_formatter.reset();
 
         platform::exec(
             ASSEMBLER.to_string(),
@@ -168,45 +180,46 @@ impl Compiler for LinuxCompiler {
             init_value += ", 0";
         }
 
-        self.section_data.push(format!(
-            "{}: {} {}",
-            variable.id(),
-            type_::type_to_asm(&variable.type_()),
-            init_value
-        ));
+        self.section_data.push(
+            i!(
+                label!(variable.id()), 
+                Op::Expression(type_::type_to_asm(&variable.type_())), 
+                Op::Expression(init_value)
+            )
+        )
     }
 
     fn add_function(&mut self, function: Function) {
-        self.section_text.push(format!("global {}", function.id()));
-        self.write_asm(format!("{}:", function.id()));        
-
-        let to_write: Vec<String> = vec!(
-            "push rbp".to_string(),
-            "mov rbp, rsp".to_string(),
-        );
-
-        self.write_formatted_asm(&to_write);
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Global, Op::Label(function.id().to_string())),
+            i!(label!(function.id())),
+            i!(Push, reg!(Rbp)),
+            i!(Mov, reg!(Rbp), reg!(Rsp))
+        ]);
     }
 
     fn change_variable_value(&mut self, variable: &Variable) {
-        let to_write: String = format!(
-            "\tmov dword [rbp-{}], {} ; {}", 
-            self.data.i_variable_stack,
-            variable.current_value(),
-            variable.id()
+        let i_variable_stack = self.data().i_variable_stack;
+
+        self.data().asm_formatter.add_instruction(
+            i!(
+                Mov, 
+                Op::Dword, 
+                Op::Expression(format!("[rbp-{}]", i_variable_stack)),
+                Op::Expression(variable.current_value().to_string())
+            )
+            .with_comment(variable.id().to_string())
+            .clone()
         );
-        self.write_asm(to_write);
     }
 
     fn return_(&mut self, value: String) {
-        let to_write: Vec<String> = vec!(
-            format!("mov rax, {}", value),
-            "mov rsp, rbp".to_string(),
-            "pop rbp".to_string(),
-            "ret".to_string(),
-        );
-
-        self.write_formatted_asm(&to_write);
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(Rax), Op::Expression(value)),
+            i!(Mov, reg!(Rsp), reg!(Rbp)),
+            i!(Pop, reg!(Rbp)),
+            i!(Ret),
+        ]);
     }
 
     fn print(&mut self, to_print: String) {
@@ -220,32 +233,28 @@ impl Compiler for LinuxCompiler {
             )
         );
 
-        let to_write: Vec<String> = vec!(
-            format!("mov rdi, {}", to_print_id),
-            "xor rcx, rcx".to_string(),
-            "not rcx".to_string(),
-            "xor al, al".to_string(),
-            "cld".to_string(),
-            "repnz scasb".to_string(),
-            "not rcx".to_string(),
-            "dec rcx".to_string(),
-            "mov rdx, rcx".to_string(),
-            format!("mov rsi, {}", to_print_id),
-            "mov rax, 1".to_string(),
-            "mov rdi, rax".to_string(),
-            "syscall".to_string()
-        );
-
-        self.write_formatted_asm(&to_write);
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(Rdi), Op::Label(to_print_id.clone())),
+            i!(Xor, reg!(Rcx), reg!(Rcx)),
+            i!(Not, reg!(Rcx)),
+            i!(Xor, reg!(Al), reg!(Al)),
+            i!(Expression("cld".to_string())),
+            i!(Expression("repnz".to_string()), Op::Expression("scasb".to_string())),
+            i!(Not, reg!(Rcx)),
+            i!(Expression("dec".to_string()), reg!(Rcx)),
+            i!(Mov, reg!(Rdx), reg!(Rcx)),
+            i!(Mov, reg!(Rsi), Op::Label(to_print_id.clone())),
+            i!(Mov, reg!(Rax), Op::Literal(1)),
+            i!(Mov, reg!(Rdi), reg!(Rax)),
+            i!(Syscall)
+        ]);
     }
 
     fn exit(&mut self, value: String) {
-        let to_write = vec!(
-            "mov rax, 60".to_string(),
-            format!("mov rdi, {}", value),
-            "syscall".to_string()
-        );
-
-        self.write_formatted_asm(&to_write);
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(Rax), Op::Literal(60)),
+            i!(Mov, reg!(Rdi), Op::Expression(value)),
+            i!(Syscall)
+        ]);
     }
 }

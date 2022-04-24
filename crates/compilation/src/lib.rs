@@ -13,6 +13,8 @@ use std::collections::HashMap as Dict;
 
 use jup::tokens::Token;
 
+use x64asm::formatter::Formatter;
+
 use args::Args;
 
 use logging::{
@@ -78,9 +80,10 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         sources: sources.clone(),
         options: options.clone(),
 
-        stream: None,
         parser: None,
-        
+        asm_formatter: Formatter::new(false),
+
+        current_source: String::new(),
         current_scope: Scope::new(),
         current_line: vec![],
         current_token: Token::None,

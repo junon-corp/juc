@@ -18,29 +18,27 @@ use crate::base;
 pub trait Caller {
     fn when_assembly_code(&mut self, next_tokens: Vec<Token>) 
     where Self: base::Compiler
-    {    
-        let mut next_tokens_as_asm = String::from("\t");
+    {
+        // TODO : adapt this by parsing an asm line as one token
 
-        let first = next_tokens.first().unwrap().clone();
+        // let first = next_tokens.first().unwrap().clone();
 
-        for token in next_tokens {
-            next_tokens_as_asm += &token.to_string();
+        // for token in next_tokens {
+        //     next_tokens_as_asm += &token.to_string();
             
-            // Do not put space when it's a function label
-            match first {
-                Token::Other(ref string) => {
-                    match string.as_str() {
-                        "call" | "jmp" => if first != token { continue; },
-                        _ => {}
-                    }
-                },
-                _ => {}
-            }
+        //     // Do not put space when it's a function label
+        //     match first {
+        //         Token::Other(ref string) => {
+        //             match string.as_str() {
+        //                 "call" | "jmp" => if first != token { continue; },
+        //                 _ => {}
+        //             }
+        //         },
+        //         _ => {}
+        //     }
 
-            next_tokens_as_asm += &" ";
-        }
-
-        self.write_asm(next_tokens_as_asm);
+        //     next_tokens_as_asm += &" ";
+        // }
     }
 
     /// If the previous token is not an known identifier, it raises an error \

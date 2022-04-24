@@ -43,9 +43,12 @@ pub trait Compiler: Caller {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) -> Result<(), Logger> {
-        let path: String = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
+        self.data().current_source = format!(
+            "{}/{}.asm", 
+            defaults::BUILD_FOLDER, 
+            source
+        );
         
-        self.data().stream = Some(File::create(path).unwrap());
         self.data().parser = Some(
             Parser::from_path(Path::new(source)).unwrap()
         );
@@ -214,7 +217,7 @@ pub trait Compiler: Caller {
 
     /// Exit point \
     /// Delete all temporary files and do linking
-    fn finish(&mut self);
+    fn finish(&mut self) {}
 
     /// Exit point for each source file
     fn finish_one(&mut self, source: &String);
@@ -235,22 +238,4 @@ pub trait Compiler: Caller {
 
     fn print(&mut self, to_print: String);
     fn exit(&mut self, value: String);
-
-    /// Directly write some ASM code into current stream file
-    fn write_asm(&mut self, to_write: String) {
-        write!(
-            self.data().stream.as_mut().unwrap(), 
-            "{}\n", 
-            to_write
-        ).unwrap();
-    }
-
-    // Directly write already formatted ASM code into current stream file
-    fn write_formatted_asm(&mut self, to_write: &Vec<String>) {
-        self.write_asm(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-        );
-    }
 }
