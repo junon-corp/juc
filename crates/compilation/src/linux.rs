@@ -6,23 +6,24 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-use crate::junon::{
-    args::Args,
-    compilation::{
-        base::Compiler,
-        data::CompilerData,
-        defaults::linux_defaults::*,
-        defaults::*,
-        objects::{
-            function::Function, 
-            type_, type_::Type, 
-            variable::Variable
-        },
-        caller::Caller,
-    },
-    platform,
+use args::Args;
+
+use objects::{
+    function::Function, 
+    type_, type_::Type, 
+    variable::Variable
 };
 
+use platform;
+
+use crate::{
+    base::Compiler,
+    data::CompilerData,
+    defaults::linux_defaults::*,
+    defaults::*,
+
+    caller::Caller,
+};
 
 /// Compiler for 64 bits Linux platforms
 pub struct LinuxCompiler {

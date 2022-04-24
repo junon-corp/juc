@@ -8,15 +8,13 @@ use std::ffi::OsStr;
 use std::path::Path;
 use std::process;
 
-mod junon;
-use junon::{
-    args::Args, 
-    compilation,
-    compilation::{
-        defaults,
-    }, 
-    logger::*
-};
+use args::Args;
+
+use compilation::defaults;
+
+use logging::level::LogLevel;
+use logging::log::Log;
+use logging::logger::Logger;
 
 fn main() {
     let mut args = Args::new();

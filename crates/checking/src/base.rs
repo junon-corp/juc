@@ -4,12 +4,9 @@
 
 use jup::tokens::Token;
 
-use crate::junon::{
-    compilation::{
-        checking::data::CheckerData,
-    },
-    logger::Logger,
-};
+use logging::logger::Logger;
+
+use crate::data::CheckerData;
 
 pub trait Checker {
     /// Entry point with useful stuff did here

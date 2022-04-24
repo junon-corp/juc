@@ -12,20 +12,23 @@ use jup::{
     tokens::Token,
 };
 
-use crate::junon::{
-    compilation::{
-        checking,
-        checking::data::CheckerData,
-        objects::{
-            function::Function, 
-            variable::Variable
-        },
-        caller::Caller,
-        data::CompilerData,
-        defaults,
-        scope::Scope,
-    },
-    logger::*,
+use checking;
+use checking::data::CheckerData;
+
+use crate::{
+    caller::Caller,
+    data::CompilerData,
+    defaults,
+    scope::Scope,
+};
+
+use logging::level::LogLevel;
+use logging::log::Log;
+use logging::logger::Logger;
+
+use objects::{
+    function::Function, 
+    variable::Variable
 };
 
 /// Trait for a Compiler followed by all platform's compilers \

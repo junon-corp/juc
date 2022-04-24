@@ -10,12 +10,11 @@ use jup::{
     tokens::Token,
 };
 
-use crate::junon::compilation::{
-    objects::{
-        variable::Variable,
-    },
-    scope::Scope,
+use objects::{
+    variable::Variable,
 };
+
+use crate::scope::Scope;
 
 /// Important information given to the compiler
 pub struct CompilerData {

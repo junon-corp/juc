@@ -4,15 +4,14 @@
 
 use jup::tokens::Token;
 
-use crate::junon::compilation::{
-    objects::{
-        function::Function,
-        type_, 
-        type_::Type,
-        variable::Variable,
-    },
-    base,
+use objects::{
+    function::Function,
+    type_, 
+    type_::Type,
+    variable::Variable,
 };
+
+use crate::base;
 
 /// All implementations for tokens \
 /// SEE `parsing::token`

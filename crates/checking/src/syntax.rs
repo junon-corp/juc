@@ -4,16 +4,13 @@
 
 use jup::tokens::Token;
 
-use crate::junon::{
-    compilation::{
-        checking::{
-            data::CheckerData,
-            base::Checker,
-        },
-        data::CompilerData,
-    },
-    logger::*,
-};
+use logging::*;
+use logging::level::LogLevel;
+use logging::log::Log;
+use logging::logger::Logger;
+
+use crate::base::Checker;
+use crate::data::CheckerData;
 
 /// Check syntax of a given source file content
 pub struct SyntaxChecker {

@@ -5,7 +5,9 @@
 use std::env;
 use std::process::Command;
 
-use crate::junon::logger::*;
+use logging::level::LogLevel;
+use logging::log::Log;
+use logging::logger::Logger;
 
 pub const AVAILABLE_PLATFORMS: &str = "Android, IOS, Linux, MacOS, WIndows";
 

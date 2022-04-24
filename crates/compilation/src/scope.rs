@@ -4,7 +4,7 @@
 
 use std::string::ToString;
 
-use crate::junon::compilation::defaults;
+use crate::defaults;
 
 /// Simple structure to manage a scope, an indicator to where we are in the 
 /// junon program \

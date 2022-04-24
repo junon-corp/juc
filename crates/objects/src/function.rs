@@ -2,7 +2,7 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use crate::junon::compilation::objects::params::Params;
+use crate::params::Params;
 
 /// Structure used to create a function \
 /// Because it's not an interpreter, this is stored following the function, this

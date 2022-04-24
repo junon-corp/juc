@@ -2,7 +2,7 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use crate::junon::compilation::objects::type_::Type;
+use crate::type_::Type;
 
 /// Structure used to create a variable \
 /// Because it's not an interpreter, this is stored following the variable, this

@@ -2,9 +2,6 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-pub mod checking;
-pub mod objects;
-
 pub mod base;
 pub mod caller;
 pub mod data;
@@ -12,20 +9,24 @@ pub mod defaults;
 pub mod linux;
 pub mod scope;
 
+use std::collections::HashMap as Dict;
+
 use jup::tokens::Token;
 
-use crate::junon::{
-    Dict,
-    args::Args,
-    compilation::{
-        base::Compiler,
-        data::CompilerData,
-        linux::LinuxCompiler,
-        scope::Scope,
-    },
-    logger::*,
-    platform, platform::Platform,
+use args::Args;
+
+use logging::{
+    level::LogLevel,
+    log::Log,
+    logger::Logger,
 };
+
+use platform::Platform;
+
+use crate::base::Compiler;
+use crate::data::CompilerData;
+use crate::linux::LinuxCompiler;
+use crate::scope::Scope;
 
 /// Run the right compiler according to the platform and set some important
 /// parameters as a `CompilerData` object sent to the platform's compiler

@@ -4,9 +4,7 @@
 
 use jup::tokens::Token;
 
-use crate::junon::{
-    logger::*,
-};
+use logging::logger::Logger;
 
 /// Information for all checker structures
 pub struct CheckerData {
