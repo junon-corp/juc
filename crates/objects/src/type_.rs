@@ -2,6 +2,10 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+use x64asm::ddirective;
+use x64asm::ddirective::DefineDirective::*;
+use x64asm::operand::Operand;
+
 #[allow(unused)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
@@ -13,44 +17,35 @@ pub enum Type {
     NotNative(String),
 }
 
-pub fn string_to_type(type_as_string: String) -> Type {
-    match type_as_string.as_str() {
-        "byte" => Type::Byte,
-        "int" => Type::Integer,
-        "bigint" => Type::BigInteger,
-        "str" => Type::Str,
-        _ => Type::NotNative(type_as_string),
+impl Type {
+    pub fn from_string(type_as_string: String) -> Self {
+        match type_as_string.as_str() {
+            "byte" => Type::Byte,
+            "int" => Type::Integer,
+            "bigint" => Type::BigInteger,
+            "str" => Type::Str,
+            _ => Type::NotNative(type_as_string),
+        }
     }
-}
 
-pub fn type_to_asm(type_: &Type) -> String {
-    match type_ {
-        Type::Byte => "db",
-        Type::Integer => "dd",
-        Type::BigInteger => "dq",
-        Type::Str => "db",
-        Type::NotNative(ref type_as_string) => &*type_as_string,
+    pub fn to_asm_operand(&self) -> Operand {
+        // The `ddirective!()` macro create an operand object
+        ddirective!(match *self {
+            Type::Byte => Db,
+            Type::Integer => Dd,
+            Type::BigInteger => Dq,
+            Type::Str => Db,
+            Type::NotNative(ref _type_as_string)=> todo!(),
+        })
     }
-    .to_string()
-}
 
-pub fn type_size_to_asm(type_: &Type) -> String {
-    match type_ {
-        Type::Byte => "byte",
-        Type::Integer => "dword",
-        Type::BigInteger => "qword",
-        Type::Str => "byte",
-        Type::NotNative(ref _type_as_string) => todo!()
-    }
-    .to_string()
-}
-
-pub fn type_size_to_usize(type_: &Type) -> usize {
-    match type_ {
-        Type::Byte => 1,
-        Type::Integer => 4,
-        Type::BigInteger => 8,
-        Type::Str => 1,
-        Type::NotNative(ref _type_as_string) => todo!()
+    pub fn to_usize(&self) -> usize {
+        match *self {
+            Type::Byte => 1,
+            Type::Integer => 4,
+            Type::BigInteger => 8,
+            Type::Str => 1,
+            Type::NotNative(ref _type_as_string) => todo!()
+        }
     }
 }

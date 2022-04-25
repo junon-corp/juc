@@ -132,7 +132,7 @@ pub trait Caller {
             self.retrieve_variable_info(next_tokens);
         
         self.data().i_variable_stack 
-            += type_::type_size_to_usize(&type_.as_ref().unwrap());
+            += type_.as_ref().unwrap().to_usize();
 
         let variable = Variable::new(
             self.data().current_token.to_string(),
@@ -162,7 +162,7 @@ pub trait Caller {
                     }.to_string();
                 }
                 Token::TypeDef => {
-                    type_ = Some(type_::string_to_type(match token {
+                    type_ = Some(Type::from_string(match token {
                         Token::Other(type_as_string) => type_as_string,
                         _ => panic!(), // never happens
                     }.to_string()));

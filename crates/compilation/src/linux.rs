@@ -183,7 +183,7 @@ impl Compiler for LinuxCompiler {
         self.section_data.push(
             i!(
                 label!(variable.id()), 
-                Op::Expression(type_::type_to_asm(&variable.type_())), 
+                variable.type_().to_asm_operand(), 
                 Op::Expression(init_value)
             )
         )

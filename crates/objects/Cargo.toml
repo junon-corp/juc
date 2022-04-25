@@ -5,3 +5,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+x64asm = { git = "https://github.com/antoninhrlt/x64asm" }
