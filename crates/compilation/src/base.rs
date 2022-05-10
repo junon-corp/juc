@@ -121,7 +121,8 @@ pub trait Compiler: Caller {
 
             Token::Print => self.when_print(),
             Token::Exit => self.when_exit(),
-            _ => self.when_other(),
+            
+            _ => return 0,
         }
     }
 

@@ -220,11 +220,4 @@ pub trait Caller {
         // });
         return 0;
     }
-
-    fn when_other(&mut self) -> usize
-    where Self: base::Compiler 
-    {
-        // panic!() // never happens
-        return 0;
-    }
 }
