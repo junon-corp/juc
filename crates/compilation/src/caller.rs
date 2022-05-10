@@ -15,9 +15,9 @@ use crate::base;
 
 /// All implementations for tokens \
 /// SEE `parsing::token`
-pub trait Caller<'a> {
+pub trait Caller {
     fn when_assembly_code(&mut self) -> usize
-    where Self: base::Compiler<'a>
+    where Self: base::Compiler
     {
         // TODO : adapt this by parsing an asm line as one token
 
@@ -46,7 +46,7 @@ pub trait Caller<'a> {
     /// Need the `line` and not "next_tokens" because it uses a token placed
     /// before the assign token  
     fn when_assign(&mut self) -> usize
-    where Self: base::Compiler<'a>
+    where Self: base::Compiler
     {
         // let mut reversed_line_iter = line.into_iter().rev();
         
@@ -72,7 +72,7 @@ pub trait Caller<'a> {
     }
     
     fn when_function(&mut self) -> usize
-    where Self: base::Compiler<'a> 
+    where Self: base::Compiler 
     {
         // let id: String = self.data().current_token.to_string();
  
@@ -97,7 +97,7 @@ pub trait Caller<'a> {
     }
 
     fn when_return(&mut self) -> usize
-    where Self: base::Compiler<'a> 
+    where Self: base::Compiler 
     {
         // // Only implemented with "ret <value>" and not for an expression or
         // // multiple values
@@ -116,7 +116,7 @@ pub trait Caller<'a> {
     }
 
     fn when_static(&mut self) -> usize 
-    where Self: base::Compiler<'a> 
+    where Self: base::Compiler 
     {
         // let (type_, current_value) 
         //     = self.retrieve_variable_info(next_tokens);
@@ -131,7 +131,7 @@ pub trait Caller<'a> {
     }
 
     fn when_variable(&mut self) -> usize 
-    where Self: base::Compiler<'a> 
+    where Self: base::Compiler 
     {
         // let (type_, current_value) = 
         //     self.retrieve_variable_info(next_tokens);
@@ -150,7 +150,7 @@ pub trait Caller<'a> {
     }
 
     fn retrieve_variable_info(&mut self) -> usize //-> (Option<Type>, String) 
-    where Self: base::Compiler<'a>
+    where Self: base::Compiler
     {
         // let mut type_: Option<Type> = None;
         // let mut current_value = "0".to_string();
@@ -182,7 +182,7 @@ pub trait Caller<'a> {
     }
 
     fn when_print(&mut self) -> usize 
-    where Self: base::Compiler<'a>
+    where Self: base::Compiler
     {
         // if next_tokens.len() == 0 {
         //     self.print(String::new());
@@ -205,7 +205,7 @@ pub trait Caller<'a> {
     }
 
     fn when_exit(&mut self) -> usize
-    where Self: base::Compiler<'a>
+    where Self: base::Compiler
     {
         // // Only implemented with "exit <value>" and not for an expression or
         // // multiple values
@@ -222,7 +222,7 @@ pub trait Caller<'a> {
     }
 
     fn when_other(&mut self) -> usize
-    where Self: base::Compiler<'a> 
+    where Self: base::Compiler 
     {
         // panic!() // never happens
         return 0;

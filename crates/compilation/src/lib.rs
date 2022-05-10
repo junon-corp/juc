@@ -87,8 +87,8 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
         current_source: String::new(),
         current_scope: Scope::new(),
-        current_token: &Token::None,
-        current_parsed: &vec![],
+        current_token: Token::None,
+        current_parsed: vec![],
 
         variable_stack: Dict::new(),
         i_variable_stack: 0,

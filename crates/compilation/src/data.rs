@@ -19,7 +19,7 @@ use objects::{
 use crate::scope::Scope;
 
 /// Important information given to the compiler
-pub struct CompilerData<'a> {
+pub struct CompilerData {
     pub is_library: bool,
 
     pub sources: Vec<String>,
@@ -29,9 +29,9 @@ pub struct CompilerData<'a> {
 
     pub current_source: String,
     pub current_scope: Scope,
-    pub current_token: &'a Token,
+    pub current_token: Token,
     /// Current source's content but parsed
-    pub current_parsed: &'a Vec<Token>,
+    pub current_parsed: Vec<Token>,
 
     //                        id
     pub variable_stack: Dict<String, Variable>,

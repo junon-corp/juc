@@ -37,7 +37,7 @@ use objects::{
 /// The general documentation is written here to avoid to write the same
 /// documentation to each platform's compilers. But a specific compiler can
 /// have its own documentation
-pub trait Compiler<'a>: Caller<'a> {
+pub trait Compiler: Caller {
     /// Starting point \
     /// Do some stuff useful
     fn init(&mut self);
@@ -53,13 +53,13 @@ pub trait Compiler<'a>: Caller<'a> {
         let mut parser = Parser::from_path(Path::new(source)).unwrap();
         parser.run();
 
-        // NOTE : `Parser::parsed()` returns `&Vec<Token>`
-        // SEE : https://github.com/junon-corp/jup/blob/main/src/parser.rs
-        let parsed = parser.parsed().clone();
-        self.data().current_parsed = &'a parsed;
+        self.data().current_parsed = parser.parsed().clone();
 
         // Run syntax checker for the current source file
-        let mut checker = SyntaxChecker::new(source, self.data().current_parsed);
+        let mut checker = SyntaxChecker::new(
+            source, 
+            &self.data().current_parsed
+        );
         checker.run();
     }
 
@@ -93,14 +93,14 @@ pub trait Compiler<'a>: Caller<'a> {
         // If tokens have to be skipped + how much to skip?
         let mut skip_mode: (bool, usize) = (false, 0);
 
-        for token in self.data().current_parsed.iter() {
+        for token in self.data().current_parsed.clone().iter() {
             // Skip until all asked tokens for skipping while be skipped
             if skip_mode.0 {
                 skip_mode.1 -= 1;
                 continue;
             }
 
-            self.data().current_token = &token;
+            self.data().current_token = token.clone();
 
             let to_skip: usize = self.check();
             skip_mode = (if to_skip > 0 { true } else { false }, to_skip);
@@ -137,7 +137,7 @@ pub trait Compiler<'a>: Caller<'a> {
     fn finish_one(&mut self, source: &String);
 
     /// Data getter
-    fn data(&mut self) -> &mut CompilerData<'a>;
+    fn data(&mut self) -> &mut CompilerData;
 
     // --- ASM code generators
 
