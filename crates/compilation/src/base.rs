@@ -49,17 +49,14 @@ pub trait Compiler<'a>: Caller<'a> {
             defaults::BUILD_FOLDER, 
             source
         );
-        
-        self.data().parser = Some(
-            Parser::from_path(Path::new(source)).unwrap()
-        );
-        self.data().parser.as_mut().unwrap().run();
+
+        let mut parser = Parser::from_path(Path::new(source)).unwrap();
+        parser.run();
 
         // NOTE : `Parser::parsed()` returns `&Vec<Token>`
         // SEE : https://github.com/junon-corp/jup/blob/main/src/parser.rs
-        
-        self.data().current_parsed = &self.data().parser.as_ref().unwrap().parsed().clone();
-
+        let parsed = parser.parsed().clone();
+        self.data().current_parsed = &'a parsed;
 
         // Run syntax checker for the current source file
         let mut checker = SyntaxChecker::new(source, self.data().current_parsed);

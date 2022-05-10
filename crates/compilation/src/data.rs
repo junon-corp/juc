@@ -25,7 +25,6 @@ pub struct CompilerData<'a> {
     pub sources: Vec<String>,
     pub options: Dict<String, String>,
     
-    pub parser: Option<Parser>,
     pub asm_formatter: Formatter,
 
     pub current_source: String,

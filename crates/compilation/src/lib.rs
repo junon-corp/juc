@@ -83,7 +83,6 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         sources: sources.clone(),
         options: options.clone(),
 
-        parser: None,
         asm_formatter: Formatter::new(false),
 
         current_source: String::new(),
