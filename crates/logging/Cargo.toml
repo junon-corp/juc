@@ -1,8 +1,0 @@
-[package]
-name = "logging"
-authors = ["Junon", "Antonin Hérault <antonherault@gmail.com>"]
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-jup = { git = "https://github.com/junon-corp/jup" }

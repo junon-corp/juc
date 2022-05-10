@@ -5,4 +5,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-logging = { path = "../logging/" }
+rslog = { git = "https://github.com/antoninhrlt/rslog" }

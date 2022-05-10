@@ -6,15 +6,7 @@ version = 3
 name = "args"
 version = "0.1.0"
 dependencies = [
- "logging",
-]
-
-[[package]]
-name = "checking"
-version = "0.1.0"
-dependencies = [
- "jup",
- "logging",
+ "rslog",
 ]
 
 [[package]]
@@ -22,11 +14,10 @@ name = "compilation"
 version = "0.1.0"
 dependencies = [
  "args",
- "checking",
  "jup",
- "logging",
  "objects",
  "platform",
+ "rslog",
  "x64asm",
 ]
 
@@ -35,37 +26,40 @@ name = "juc"
 version = "0.1.0"
 dependencies = [
  "args",
- "checking",
  "compilation",
  "jup",
- "logging",
  "objects",
+ "rslog",
 ]
 
 [[package]]
 name = "jup"
 version = "0.1.0"
-source = "git+https://github.com/junon-corp/jup#e18b86fef54848a8d994aa2301970f082c641039"
-
-[[package]]
-name = "logging"
-version = "0.1.0"
+source = "git+https://github.com/junon-corp/jup#36e610c26097a99393abb14a78f2f9581fc008c9"
 dependencies = [
- "jup",
+ "rslog",
 ]
 
 [[package]]
 name = "objects"
 version = "0.1.0"
+dependencies = [
+ "x64asm",
+]
 
 [[package]]
 name = "platform"
 version = "0.1.0"
 dependencies = [
- "logging",
+ "rslog",
 ]
 
 [[package]]
-name = "x64asm"
+name = "rslog"
 version = "0.1.0"
-source = "git+https://github.com/antoninhrlt/x64asm#e0fc8a38c1ee323335a14b0b7539001b9b343d6c"
+source = "git+https://github.com/antoninhrlt/rslog#905b6304c0673ac2230294f5aa7e5ed7ea27bdc1"
+
+[[package]]
+name = "x64asm"
+version = "0.1.1"
+source = "git+https://github.com/antoninhrlt/x64asm#2f2b08a1a0d64086a0cc9879079339aac4b22fea"

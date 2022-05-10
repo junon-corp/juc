@@ -6,8 +6,7 @@ edition = "2021"
 
 [dependencies]
 jup = { git = "https://github.com/junon-corp/jup" }
+rslog = { git = "https://github.com/antoninhrlt/rslog" }
 args = { path = "crates/args/" }
-checking = { path = "crates/checking/" }
 compilation = { path = "crates/compilation/" }
-logging = { path = "crates/logging/" }
 objects = { path = "crates/objects/" }
