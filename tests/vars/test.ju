@@ -2,17 +2,15 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-func foo
+func foo {
     ret
+}
 
 static a: str = 'hello world\n'
 static b: int 
 static c: str = 'wello world\n'
 
-func z
-    ret
-
-func main
+func main {
     @ mov rax, 1
     @ mov rdi, 1
     @ mov rsi, a
@@ -20,14 +18,16 @@ func main
     @ syscall
 
     let e: int = 5211 // test
-    //e = 6
+    e = 6
 
     let f: int = 8546471
     let x: str = 'A'
     //x = 'F'
 
     ret 5
+}
 
-func b
+func b {
     let e: int = 35
     ret
+}

@@ -1,0 +1,28 @@
+func a {
+    ret
+}
+
+func b() {
+    ret
+}
+
+func c()
+    ret
+
+func d(
+    ret
+
+func e)
+    ret
+
+func f( {
+    ret
+}
+
+func g) {
+    ret
+}
+
+func main {
+    ret
+}
