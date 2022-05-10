@@ -12,9 +12,12 @@ use args::Args;
 
 use compilation::defaults;
 
-use logging::level::LogLevel;
-use logging::log::Log;
-use logging::logger::Logger;
+use rslog::{
+    *,
+    level::LogLevel,
+    log::Log,
+    logger::Logger,
+};
 
 fn main() {
     let mut args = Args::new();

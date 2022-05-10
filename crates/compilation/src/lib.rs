@@ -11,13 +11,14 @@ pub mod scope;
 
 use std::collections::HashMap as Dict;
 
-use jup::tokens::Token;
+use jup::lang::tokens::Token;
 
 use x64asm::formatter::Formatter;
 
 use args::Args;
 
-use logging::{
+use rslog::{
+    *,
     level::LogLevel,
     log::Log,
     logger::Logger,
@@ -35,19 +36,24 @@ use crate::scope::Scope;
 pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     let mut logger = Logger::new();
 
+    // Retrieve the output mode from `Args`
     let mut is_library: bool = false;
     Args::when_flag('l', options, |_| {
         is_library = true;
         logger.add_log(Log::info("Library building".to_string()));
     });
 
+    // Retrieve the platform from `Args`
     let mut platform: Platform = platform::get_current();
     Args::when_flag('p', options, |mut platform_id: String| {
         platform_id = platform_id.to_lowercase();
         platform = platform::get_from_id(platform_id)
     });
 
-    // Raise an error before printing the log saying the platform
+    // Tell the current platform. It can be wrong (checked above)
+    logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
+    
+    // Platform checking for wrong not compatible platforms
     match platform.clone() {
         Platform::Unknown(invalid_platform_id) => {
             logger.add_log(
@@ -70,9 +76,6 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     }
     logger.interpret();
 
-    logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
-    logger.interpret();
-
     // Set important information for the compiler
     let data = CompilerData {
         is_library,
@@ -85,8 +88,8 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
         current_source: String::new(),
         current_scope: Scope::new(),
-        current_line: vec![],
-        current_token: Token::None,
+        current_token: &Token::None,
+        current_parsed: &vec![],
 
         variable_stack: Dict::new(),
         i_variable_stack: 0,
@@ -94,19 +97,13 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
     // Run the right compiler according to the platform
     match platform {
-        Platform::Android => {
-            todo!()
-        }
-        Platform::IOS => {
-            todo!()
-        }
+        Platform::Android => todo!(),
+        Platform::IOS => todo!(),
         Platform::Linux => LinuxCompiler::new(data).run(),
-        Platform::MacOS => {
-            todo!()
-        }
-        Platform::Windows => {
-            todo!()
-        }
+        Platform::MacOS => todo!(),
+        Platform::Windows => todo!(),
+
+        // Already checked previously in this own function
         Platform::Unknown(_platform) => panic!() // never happens
     }
 }

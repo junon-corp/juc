@@ -7,7 +7,7 @@ use std::fs::File;
 
 use jup::{
     parser::Parser, 
-    tokens::Token,
+    lang::tokens::Token,
 };
 
 use x64asm::formatter::Formatter;
@@ -19,7 +19,7 @@ use objects::{
 use crate::scope::Scope;
 
 /// Important information given to the compiler
-pub struct CompilerData {
+pub struct CompilerData<'a> {
     pub is_library: bool,
 
     pub sources: Vec<String>,
@@ -30,8 +30,10 @@ pub struct CompilerData {
 
     pub current_source: String,
     pub current_scope: Scope,
-    pub current_line: Vec<Token>,
-    pub current_token: Token,
+    pub current_token: &'a Token,
+    /// Current source's content but parsed
+    pub current_parsed: &'a Vec<Token>,
+
     //                        id
     pub variable_stack: Dict<String, Variable>,
     pub i_variable_stack: usize,

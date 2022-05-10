@@ -37,13 +37,13 @@ use crate::{
 };
 
 /// Compiler for 64 bits Linux platforms
-pub struct LinuxCompiler {
-    data: CompilerData,
+pub struct LinuxCompiler<'a> {
+    data: CompilerData<'a>,
     section_data: Vec<Instruction>,
 }
 
-impl LinuxCompiler {
-    pub fn new(data: CompilerData) -> Self {
+impl<'a> LinuxCompiler<'a> {
+    pub fn new(data: CompilerData<'a>) -> Self {
         Self {
             data,
             section_data: vec![],
@@ -51,11 +51,11 @@ impl LinuxCompiler {
     }
 }
 
-impl Caller for LinuxCompiler {}
+impl<'a> Caller<'a> for LinuxCompiler<'a> {}
 
 /// SEE Functions' documentation from `Compiler` because they are not
 /// written here a new time
-impl Compiler for LinuxCompiler {
+impl<'a> Compiler<'a> for LinuxCompiler<'a> {
     fn init(&mut self) {
         if self.data().is_library {
             return;
@@ -156,7 +156,7 @@ impl Compiler for LinuxCompiler {
         );
     }
 
-    fn data(&mut self) -> &mut CompilerData {
+    fn data(&mut self) -> &mut CompilerData<'a> {
         &mut self.data
     }
 
