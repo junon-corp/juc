@@ -32,6 +32,7 @@ pub struct CompilerData {
     pub current_token: Token,
     /// Current source's content but parsed
     pub current_parsed: Vec<Token>,
+    pub i_current_token: usize,
 
     //                        id
     pub variable_stack: Dict<String, Variable>,

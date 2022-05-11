@@ -94,10 +94,16 @@ pub trait Compiler: Caller {
         let mut skip_mode: (bool, usize) = (false, 0);
 
         for token in self.data().current_parsed.clone().iter() {
+            self.data().i_current_token += 1;
+
             // Skip until all asked tokens for skipping while be skipped
             if skip_mode.0 {
-                skip_mode.1 -= 1;
-                continue;
+                if skip_mode.1 == 0 {
+                    skip_mode.0 = false;
+                } else {
+                    skip_mode.1 -= 1;
+                    continue;
+                }
             }
 
             self.data().current_token = token.clone();
