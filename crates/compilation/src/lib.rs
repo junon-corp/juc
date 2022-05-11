@@ -2,11 +2,11 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+pub mod compilers;
 pub mod base;
 pub mod caller;
 pub mod data;
 pub mod defaults;
-pub mod linux;
 pub mod scope;
 
 use std::collections::HashMap as Dict;
@@ -26,9 +26,9 @@ use rslog::{
 
 use platform::Platform;
 
+use crate::compilers::linux::LinuxCompiler;
 use crate::base::Compiler;
 use crate::data::CompilerData;
-use crate::linux::LinuxCompiler;
 use crate::scope::Scope;
 
 /// Run the right compiler according to the platform and set some important
