@@ -2,13 +2,13 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-fun exit
-    @ mov rax, 60
-    @ mov rdi, 0
-    @ syscall
-    ret
+static z: int = 3
+
+fun a
+    let b: int = 2
+    ret 5
 
 fun main
-    // print "hello world"
-    @ call test.exit
+    print 'hello world\n'
+    @ call test.a
     ret
