@@ -61,5 +61,5 @@ source = "git+https://github.com/antoninhrlt/rslog#905b6304c0673ac2230294f5aa7e5
 
 [[package]]
 name = "x64asm"
-version = "0.1.1"
-source = "git+https://github.com/antoninhrlt/x64asm#2f2b08a1a0d64086a0cc9879079339aac4b22fea"
+version = "0.1.2"
+source = "git+https://github.com/antoninhrlt/x64asm#48052c18f7f765e53b104bb70aaf4b8b97e9d401"
