@@ -6,7 +6,6 @@ use std::env;
 use std::process::Command;
 
 use rslog::{
-    *,
     level::LogLevel,
     log::Log,
     logger::Logger,

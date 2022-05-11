@@ -13,7 +13,6 @@ use args::Args;
 use compilation::defaults;
 
 use rslog::{
-    *,
     level::LogLevel,
     log::Log,
     logger::Logger,

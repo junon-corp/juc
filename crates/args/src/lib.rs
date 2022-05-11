@@ -6,7 +6,6 @@ use std::collections::HashMap as Dict;
 use std::env;
 
 use rslog::{
-    *,
     level::LogLevel,
     log::Log,
     logger::Logger,

@@ -18,7 +18,6 @@ use x64asm::formatter::Formatter;
 use args::Args;
 
 use rslog::{
-    *,
     level::LogLevel,
     log::Log,
     logger::Logger,

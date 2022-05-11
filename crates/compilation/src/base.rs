@@ -2,22 +2,12 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
-use std::process;
 
 use jup::{
     checking::syntax::SyntaxChecker,
     parser::Parser, 
     lang::tokens::Token,
-};
-
-use rslog::{
-    *,
-    level::LogLevel,
-    log::Log,
-    logger::Logger,
 };
 
 use crate::{

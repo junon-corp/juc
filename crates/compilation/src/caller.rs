@@ -5,25 +5,17 @@
 use jup::lang::tokens::Token;
 
 use x64asm::{
-    ddirective, ddirective::DefineDirective::*, 
-    formatter::Formatter, 
-    instruction as i, label,
-    mnemonic::Mnemonic::*, 
-    operand::Op, 
-    reg, register::Register::*, 
-    section, section::Section::*,
+    instruction as i,
+    mnemonic::Mnemonic::*,
 };
 
 use objects::{
     function::Function,
-    type_, 
     type_::Type,
     variable::Variable,
 };
 
 use crate::base;
-
-
 
 /// All implementations for tokens \
 /// SEE `parsing::token`
@@ -187,7 +179,7 @@ pub trait Caller {
     {
         let next_tokens = &self.data().current_parsed.clone()[
             self.data().i_current_token..];
-        let mut next_tokens_iter = next_tokens.iter();
+        let next_tokens_iter = next_tokens.iter();
         // ---
 
         let mut type_: Option<Type> = None;
@@ -275,6 +267,7 @@ pub trait Caller {
                 _ => panic!(),
             }
         );
-        return 0;
+
+        to_skip
     }
 }

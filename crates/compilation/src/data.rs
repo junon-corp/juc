@@ -3,12 +3,8 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
-use std::fs::File;
 
-use jup::{
-    parser::Parser, 
-    lang::tokens::Token,
-};
+use jup::lang::tokens::Token;
 
 use x64asm::formatter::Formatter;
 

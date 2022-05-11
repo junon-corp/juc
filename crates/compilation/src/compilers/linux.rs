@@ -7,8 +7,6 @@ use std::io::Write;
 use std::path::Path;
 
 use x64asm::{
-    ddirective, ddirective::DefineDirective::*, 
-    formatter::Formatter, 
     instruction::Instruction,
     instruction as i, label,
     mnemonic::Mnemonic::*, 
@@ -21,7 +19,7 @@ use args::Args;
 
 use objects::{
     function::Function, 
-    type_, type_::Type, 
+    type_::Type, 
     variable::Variable
 };
 
@@ -136,7 +134,7 @@ impl Compiler for LinuxCompiler {
         {
             let current_source = self.data().current_source.clone();
             let path = Path::new(&current_source);
-            self.data().asm_formatter.to_file(&path);
+            self.data().asm_formatter.to_file(&path).unwrap();
         }
         self.data().asm_formatter.reset();
 
