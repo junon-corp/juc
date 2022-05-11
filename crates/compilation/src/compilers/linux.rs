@@ -5,32 +5,18 @@
 use std::path::Path;
 
 use x64asm::{
-    formatter::Formatter,
-    instruction::Instruction,
-    instruction as i, label,
-    mnemonic::Mnemonic::*, 
-    operand::Op, 
-    reg, register::Register::*, 
-    section, section::Section::*,
+    formatter::Formatter, instruction as i, instruction::Instruction, label, mnemonic::Mnemonic::*,
+    operand::Op, reg, register::Register::*, section, section::Section::*,
 };
 
 use args::Args;
 
-use objects::{
-    function::Function, 
-    type_::Type, 
-    variable::Variable
-};
+use objects::{function::Function, type_::Type, variable::Variable};
 
 use platform;
 
 use crate::{
-    base::Compiler,
-    data::CompilerData,
-    defaults::linux_defaults::*,
-    defaults::*,
-
-    caller::Caller,
+    base::Compiler, caller::Caller, data::CompilerData, defaults::linux_defaults::*, defaults::*,
 };
 
 /// Compiler for 64 bits Linux platforms
@@ -72,7 +58,7 @@ impl Compiler for LinuxCompiler {
             i!(Call, Op::Label(ENTRY_POINT.to_string())),
             i!(Mov, reg!(Rdi), reg!(Rax)), // return of ENTRY_POINT function
             i!(Mov, reg!(Rax), Op::Literal(60)),
-            i!(Syscall)
+            i!(Syscall),
         ]);
 
         asm_start_file.to_file(&start_file).unwrap();
@@ -113,10 +99,14 @@ impl Compiler for LinuxCompiler {
 
     fn finish_one(&mut self, source: &String) {
         // Write all static data
-        self.data().asm_formatter.add_instruction(i!(section!(Data)));
-        
+        self.data()
+            .asm_formatter
+            .add_instruction(i!(section!(Data)));
+
         let mut section_data = self.section_data.clone();
-        self.data().asm_formatter.add_instructions(&mut section_data);
+        self.data()
+            .asm_formatter
+            .add_instructions(&mut section_data);
 
         // Reset for the next file
         self.section_data = vec![];
@@ -152,10 +142,9 @@ impl Compiler for LinuxCompiler {
     // --- ASM code generators
 
     fn add_variable(&mut self, variable: Variable) {
-        self.data().variable_stack.insert(
-            variable.id().to_string(), 
-            variable.clone()
-        );
+        self.data()
+            .variable_stack
+            .insert(variable.id().to_string(), variable.clone());
 
         self.change_variable_value(&variable);
     }
@@ -169,13 +158,11 @@ impl Compiler for LinuxCompiler {
             init_value += ", 0";
         }
 
-        self.section_data.push(
-            i!(
-                label!(variable.id()), 
-                variable.type_().to_asm_operand(), 
-                Op::Expression(init_value)
-            )
-        )
+        self.section_data.push(i!(
+            label!(variable.id()),
+            variable.type_().to_asm_operand(),
+            Op::Expression(init_value)
+        ))
     }
 
     fn add_function(&mut self, function: Function) {
@@ -183,7 +170,7 @@ impl Compiler for LinuxCompiler {
             i!(Global, Op::Label(function.id().to_string())),
             i!(label!(function.id())),
             i!(Push, reg!(Rbp)),
-            i!(Mov, reg!(Rbp), reg!(Rsp))
+            i!(Mov, reg!(Rbp), reg!(Rsp)),
         ]);
 
         self.data().i_variable_stack = 0;
@@ -194,13 +181,13 @@ impl Compiler for LinuxCompiler {
 
         self.data().asm_formatter.add_instruction(
             i!(
-                Mov, 
+                Mov,
                 Op::Expression(format!("[rbp-{}]", i_variable_stack)),
-                Op::Dword, 
+                Op::Dword,
                 Op::Expression(variable.current_value().to_string())
             )
             .with_comment(variable.id().to_string())
-            .clone()
+            .clone(),
         );
     }
 
@@ -216,13 +203,7 @@ impl Compiler for LinuxCompiler {
     fn print(&mut self, to_print: String) {
         let to_print_id = format!("_string_");
 
-        self.add_static_variable(
-            Variable::static_(
-                to_print_id.clone(),
-                Type::Str,
-                to_print
-            )
-        );
+        self.add_static_variable(Variable::static_(to_print_id.clone(), Type::Str, to_print));
 
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Mov, reg!(Rdi), Op::Label(to_print_id.clone())),
@@ -230,14 +211,17 @@ impl Compiler for LinuxCompiler {
             i!(Not, reg!(Rcx)),
             i!(Xor, reg!(Al), reg!(Al)),
             i!(Expression("cld".to_string())),
-            i!(Expression("repnz".to_string()), Op::Expression("scasb".to_string())),
+            i!(
+                Expression("repnz".to_string()),
+                Op::Expression("scasb".to_string())
+            ),
             i!(Not, reg!(Rcx)),
             i!(Expression("dec".to_string()), reg!(Rcx)),
             i!(Mov, reg!(Rdx), reg!(Rcx)),
             i!(Mov, reg!(Rsi), Op::Label(to_print_id.clone())),
             i!(Mov, reg!(Rax), Op::Literal(1)),
             i!(Mov, reg!(Rdi), reg!(Rax)),
-            i!(Syscall)
+            i!(Syscall),
         ]);
     }
 
@@ -245,7 +229,7 @@ impl Compiler for LinuxCompiler {
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Mov, reg!(Rax), Op::Literal(60)),
             i!(Mov, reg!(Rdi), Op::Expression(value)),
-            i!(Syscall)
+            i!(Syscall),
         ]);
     }
 }

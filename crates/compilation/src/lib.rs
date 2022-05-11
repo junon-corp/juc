@@ -2,9 +2,9 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-pub mod compilers;
 pub mod base;
 pub mod caller;
+pub mod compilers;
 pub mod data;
 pub mod defaults;
 pub mod scope;
@@ -17,16 +17,12 @@ use x64asm::formatter::Formatter;
 
 use args::Args;
 
-use rslog::{
-    level::LogLevel,
-    log::Log,
-    logger::Logger,
-};
+use rslog::{level::LogLevel, log::Log, logger::Logger};
 
 use platform::Platform;
 
-use crate::compilers::linux::LinuxCompiler;
 use crate::base::Compiler;
+use crate::compilers::linux::LinuxCompiler;
 use crate::data::CompilerData;
 use crate::scope::Scope;
 
@@ -51,7 +47,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
     // Tell the current platform. It can be wrong (checked above)
     logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
-    
+
     // Platform checking for wrong not compatible platforms
     match platform.clone() {
         Platform::Unknown(invalid_platform_id) => {
@@ -103,6 +99,6 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         Platform::Windows => todo!(),
 
         // Already checked previously in this own function
-        Platform::Unknown(_platform) => panic!() // never happens
+        Platform::Unknown(_platform) => panic!(), // never happens
     }
 }

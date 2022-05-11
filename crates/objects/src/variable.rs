@@ -17,13 +17,7 @@ pub struct Variable {
 }
 
 impl Variable {
-    pub fn new(
-        id: String, 
-        type_: Type, 
-        current_value: String, 
-        stack_pos: usize
-    ) -> Self {
-        
+    pub fn new(id: String, type_: Type, current_value: String, stack_pos: usize) -> Self {
         Self {
             id,
             type_,
@@ -37,7 +31,7 @@ impl Variable {
             id,
             type_,
             current_value: value,
-            stack_pos: 0
+            stack_pos: 0,
         }
     }
 

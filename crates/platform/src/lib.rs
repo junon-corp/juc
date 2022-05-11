@@ -5,11 +5,7 @@
 use std::env;
 use std::process::Command;
 
-use rslog::{
-    level::LogLevel,
-    log::Log,
-    logger::Logger,
-};
+use rslog::{level::LogLevel, log::Log, logger::Logger};
 
 pub const AVAILABLE_PLATFORMS: &str = "Android, IOS, Linux, MacOS, WIndows";
 

@@ -4,16 +4,9 @@
 
 use jup::lang::tokens::Token;
 
-use x64asm::{
-    instruction as i,
-    mnemonic::Mnemonic::*,
-};
+use x64asm::{instruction as i, mnemonic::Mnemonic::*};
 
-use objects::{
-    function::Function,
-    type_::Type,
-    variable::Variable,
-};
+use objects::{function::Function, type_::Type, variable::Variable};
 
 use crate::base;
 
@@ -21,16 +14,17 @@ use crate::base;
 /// SEE `parsing::token`
 pub trait Caller {
     fn when_assembly_code(&mut self) -> usize
-    where Self: base::Compiler
+    where
+        Self: base::Compiler,
     {
         // Assembly code is contained in only one token since this commit :
         // https://github.com/junon-corp/jup/commit/75c51f43e7a1bc5633b0e514cb733a4bb39c5a2b
-        let assembly_code: &Token 
-            = &self.data().current_parsed.clone()[self.data().i_current_token];
+        let assembly_code: &Token =
+            &self.data().current_parsed.clone()[self.data().i_current_token];
 
-        self.data().asm_formatter.add_instruction(
-            i!(Expression(assembly_code.to_string()))
-        );
+        self.data()
+            .asm_formatter
+            .add_instruction(i!(Expression(assembly_code.to_string())));
 
         return 1;
     }
@@ -39,15 +33,16 @@ pub trait Caller {
     /// Need the `line` and not "next_tokens" because it uses a token placed
     /// before the assign token  
     fn when_assign(&mut self) -> usize
-    where Self: base::Compiler
+    where
+        Self: base::Compiler,
     {
         // let mut reversed_line_iter = line.into_iter().rev();
-        
+
         // let value: String = match reversed_line_iter.next().unwrap() {
         //     Token::Other(value) => value,
         //     _ => panic!(), // never happens
         // };
-    
+
         // reversed_line_iter.next(); // Token::Assign
 
         // let to_assign = match reversed_line_iter.next().unwrap() {
@@ -63,23 +58,23 @@ pub trait Caller {
         // self.change_variable_value(&variable);
         return 0;
     }
-    
+
     fn when_function(&mut self) -> usize
-    where Self: base::Compiler 
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
         let id: String = next_tokens_iter.next().unwrap().to_string();
         to_skip += 1;
- 
+
         self.data().current_scope.push(id.to_string());
         let current_scope_copy = self.data().current_scope.clone();
-        
+
         if id == "main" {
             self.data().current_scope.reset();
             self.data().current_scope.push("main".to_string());
@@ -88,7 +83,7 @@ pub trait Caller {
         let function = Function::new(
             self.data().current_scope.to_string(),
             // TODO :
-            vec![], // params
+            vec![],        // params
             String::new(), // return type
         );
 
@@ -99,41 +94,39 @@ pub trait Caller {
     }
 
     fn when_return(&mut self) -> usize
-    where Self: base::Compiler
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
         // Only implemented with "ret <value>" and not for an expression or
         // multiple values
-        self.return_(
-            match next_tokens_iter.next().unwrap() {
-                // It could be a number, a `Other` does not mean that it's a 
-                // string object
-                Token::Other(return_value) => {
-                    to_skip += 1;
-                    return_value.to_string()
-                }
-                Token::NewLine => String::from("0"), // "null" value
-                _ => panic!()
+        self.return_(match next_tokens_iter.next().unwrap() {
+            // It could be a number, a `Other` does not mean that it's a
+            // string object
+            Token::Other(return_value) => {
+                to_skip += 1;
+                return_value.to_string()
             }
-        );
+            Token::NewLine => String::from("0"), // "null" value
+            _ => panic!(),
+        });
 
         self.data().current_scope.pop();
         to_skip
     }
 
-    fn when_static(&mut self) -> usize 
-    where Self: base::Compiler 
+    fn when_static(&mut self) -> usize
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
@@ -144,18 +137,18 @@ pub trait Caller {
             type_.unwrap(),
             current_value,
         );
-        
+
         self.add_static_variable(static_variable);
         to_skip
     }
 
-    fn when_variable(&mut self) -> usize 
-    where Self: base::Compiler 
+    fn when_variable(&mut self) -> usize
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
@@ -166,19 +159,19 @@ pub trait Caller {
             next_tokens_iter.next().unwrap().to_string(),
             type_.unwrap(),
             current_value,
-            self.data().i_variable_stack.clone()
+            self.data().i_variable_stack.clone(),
         );
         to_skip += 1;
         self.add_variable(variable);
-        
+
         to_skip
     }
 
-    fn retrieve_variable_info(&mut self, to_skip: &mut usize) -> (Option<Type>, String) 
-    where Self: base::Compiler
+    fn retrieve_variable_info(&mut self, to_skip: &mut usize) -> (Option<Type>, String)
+    where
+        Self: base::Compiler,
     {
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let next_tokens_iter = next_tokens.iter();
         // ---
 
@@ -192,18 +185,22 @@ pub trait Caller {
                     current_value = match token {
                         Token::Other(value_as_string) => value_as_string,
                         _ => panic!(), // never happens
-                    }.to_string();
+                    }
+                    .to_string();
                 }
                 Token::TypeDef => {
-                    type_ = Some(Type::from_string(match token {
-                        Token::Other(type_as_string) => type_as_string,
-                        _ => panic!(), // never happens
-                    }.to_string()));
+                    type_ = Some(Type::from_string(
+                        match token {
+                            Token::Other(type_as_string) => type_as_string,
+                            _ => panic!(), // never happens
+                        }
+                        .to_string(),
+                    ));
                 }
                 Token::None => {} // first token
-                Token::Other(_variable_id) => {} 
+                Token::Other(_variable_id) => {}
                 Token::NewLine => break,
-                _ => panic!() // never happens
+                _ => panic!(), // never happens
             }
             if previous_token != Token::None {
                 *to_skip += 1;
@@ -215,13 +212,13 @@ pub trait Caller {
         (type_, current_value)
     }
 
-    fn when_print(&mut self) -> usize 
-    where Self: base::Compiler
+    fn when_print(&mut self) -> usize
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
@@ -232,7 +229,7 @@ pub trait Caller {
         let mut to_print: Vec<String> = vec![];
         for token in next_tokens_iter.next() {
             match token {
-                // It could be a number, a `Other` does not mean that it's a 
+                // It could be a number, a `Other` does not mean that it's a
                 // string object
                 Token::Other(x) => to_print.push(x.to_string()),
                 _ => panic!(), // never happens
@@ -242,31 +239,29 @@ pub trait Caller {
         for x in to_print {
             self.print(x);
         }
-        
+
         to_skip
     }
 
     fn when_exit(&mut self) -> usize
-    where Self: base::Compiler
+    where
+        Self: base::Compiler,
     {
         let mut to_skip: usize = 0;
 
-        let next_tokens = &self.data().current_parsed.clone()[
-            self.data().i_current_token..];
+        let next_tokens = &self.data().current_parsed.clone()[self.data().i_current_token..];
         let mut next_tokens_iter = next_tokens.iter();
         // ---
 
         // Only implemented with "exit <value>" and not for an expression or
         // multiple values
-        self.exit(
-            match next_tokens_iter.next().unwrap() {
-                // It could be a number, a `Other` does not mean that it's a 
-                // string object
-                Token::Other(exit_value) => exit_value.to_string(),
-                Token::NewLine => String::from("0"), // "null" value
-                _ => panic!(),
-            }
-        );
+        self.exit(match next_tokens_iter.next().unwrap() {
+            // It could be a number, a `Other` does not mean that it's a
+            // string object
+            Token::Other(exit_value) => exit_value.to_string(),
+            Token::NewLine => String::from("0"), // "null" value
+            _ => panic!(),
+        });
 
         to_skip
     }

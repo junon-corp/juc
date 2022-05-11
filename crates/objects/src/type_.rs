@@ -9,8 +9,8 @@ use x64asm::operand::Operand;
 #[allow(unused)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
-    Byte, // 1 Byte 
-    Integer, // 4 Bytes like an `i32`
+    Byte,       // 1 Byte
+    Integer,    // 4 Bytes like an `i32`
     BigInteger, // 8 bytes like an `i64`
 
     Str, // len(str) * sizeof(Byte)
@@ -35,7 +35,7 @@ impl Type {
             Type::Integer => Dd,
             Type::BigInteger => Dq,
             Type::Str => Db,
-            Type::NotNative(ref _type_as_string)=> todo!(),
+            Type::NotNative(ref _type_as_string) => todo!(),
         })
     }
 
@@ -45,7 +45,7 @@ impl Type {
             Type::Integer => 4,
             Type::BigInteger => 8,
             Type::Str => 1,
-            Type::NotNative(ref _type_as_string) => todo!()
+            Type::NotNative(ref _type_as_string) => todo!(),
         }
     }
 }

@@ -6,7 +6,7 @@ use std::string::ToString;
 
 use crate::defaults;
 
-/// Simple structure to manage a scope, an indicator to where we are in the 
+/// Simple structure to manage a scope, an indicator to where we are in the
 /// junon program \
 /// Implements a `to_string()` function to create a string with all sub scopes
 /// separated by the defaults scope separator, that is why a simple Vec is not
@@ -25,21 +25,17 @@ impl ToString for Scope {
                 to_write += defaults::SCOPE_SEPARATOR
             }
         }
-        to_write 
+        to_write
     }
 }
 
 impl Scope {
     pub fn new() -> Self {
-        Self {
-            scope: vec![],
-        }
+        Self { scope: vec![] }
     }
 
     pub fn from(start: Vec<String>) -> Self {
-        Self {
-            scope: start,
-        }
+        Self { scope: start }
     }
 
     pub fn push(&mut self, sub_scope: String) {

@@ -5,11 +5,7 @@
 use std::collections::HashMap as Dict;
 use std::env;
 
-use rslog::{
-    level::LogLevel,
-    log::Log,
-    logger::Logger,
-};
+use rslog::{level::LogLevel, log::Log, logger::Logger};
 
 const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help page";
 

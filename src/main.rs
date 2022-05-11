@@ -12,11 +12,7 @@ use args::Args;
 
 use compilation::defaults;
 
-use rslog::{
-    level::LogLevel,
-    log::Log,
-    logger::Logger,
-};
+use rslog::{level::LogLevel, log::Log, logger::Logger};
 
 fn main() {
     let mut args = Args::new();
@@ -79,9 +75,9 @@ fn main() {
                         "The given source file '{}' should have an extension",
                         source
                     )
-                },
+                }
             };
-            
+
             logger.add_log(
                 Log::new(
                     LogLevel::Error,
@@ -89,9 +85,11 @@ fn main() {
                     error_message,
                 )
                 .add_hint(format!(
-                    "Rename '{}' by '{}.{}'", 
-                    source, source, defaults::EXTENSION
-                ))
+                    "Rename '{}' by '{}.{}'",
+                    source,
+                    source,
+                    defaults::EXTENSION
+                )),
             );
         }
     }

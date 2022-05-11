@@ -8,9 +8,7 @@ use jup::lang::tokens::Token;
 
 use x64asm::formatter::Formatter;
 
-use objects::{
-    variable::Variable,
-};
+use objects::variable::Variable;
 
 use crate::scope::Scope;
 
@@ -20,7 +18,7 @@ pub struct CompilerData {
 
     pub sources: Vec<String>,
     pub options: Dict<String, String>,
-    
+
     pub asm_formatter: Formatter,
 
     pub current_source: String,

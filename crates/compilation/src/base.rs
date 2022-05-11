@@ -4,23 +4,11 @@
 
 use std::path::Path;
 
-use jup::{
-    checking::syntax::SyntaxChecker,
-    parser::Parser, 
-    lang::tokens::Token,
-};
+use jup::{checking::syntax::SyntaxChecker, lang::tokens::Token, parser::Parser};
 
-use crate::{
-    caller::Caller,
-    data::CompilerData,
-    defaults,
-    scope::Scope,
-};
+use crate::{caller::Caller, data::CompilerData, defaults, scope::Scope};
 
-use objects::{
-    function::Function, 
-    variable::Variable
-};
+use objects::{function::Function, variable::Variable};
 
 /// Trait for a Compiler followed by all platform's compilers \
 /// Some functions are already defined because they are cross-platform \
@@ -34,11 +22,7 @@ pub trait Compiler: Caller {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        self.data().current_source = format!(
-            "{}/{}.asm", 
-            defaults::BUILD_FOLDER, 
-            source
-        );
+        self.data().current_source = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
 
         let mut parser = Parser::from_path(Path::new(source)).unwrap();
         parser.run();
@@ -46,10 +30,7 @@ pub trait Compiler: Caller {
         self.data().current_parsed = parser.parsed().clone();
 
         // Run syntax checker for the current source file
-        let mut checker = SyntaxChecker::new(
-            source, 
-            &self.data().current_parsed
-        );
+        let mut checker = SyntaxChecker::new(source, &self.data().current_parsed);
         checker.run();
     }
 
@@ -57,17 +38,15 @@ pub trait Compiler: Caller {
     fn run(&mut self) {
         self.init();
 
-        // NOTE : If any syntax problem is found during syntax checking, the 
-        // program will be terminated. They should be retrieved and printed 
+        // NOTE : If any syntax problem is found during syntax checking, the
+        // program will be terminated. They should be retrieved and printed
         // after all sources checks
         // TODO : Update "jup" according to the previous NOTE
         for source in self.data().sources.clone() {
             // Module name is the filename without the ".ju" extension
-            self.data().current_scope = Scope::from(vec![
-                format!("{}", source)
-                    .split(defaults::EXTENSION_COMPLETE)
-                    .collect::<String>()
-            ]);
+            self.data().current_scope = Scope::from(vec![format!("{}", source)
+                .split(defaults::EXTENSION_COMPLETE)
+                .collect::<String>()]);
 
             self.init_one(&source);
             self.call();
@@ -117,7 +96,7 @@ pub trait Compiler: Caller {
 
             Token::Print => self.when_print(),
             Token::Exit => self.when_exit(),
-            
+
             _ => return 0,
         }
     }
@@ -138,7 +117,7 @@ pub trait Compiler: Caller {
 
     // --- ASM code generators
 
-    /// Variable declaration, can 
+    /// Variable declaration, can
     fn add_variable(&mut self, variable: Variable);
     fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
