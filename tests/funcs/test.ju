@@ -1,28 +1,28 @@
-func a {
+fun a {
     ret
 }
 
-func b() {
+fun b() {
     ret
 }
 
-func c()
+fun c()
     ret
 
-func d(
+fun d(
     ret
 
-func e)
+fun e)
     ret
 
-func f( {
-    ret
-}
-
-func g) {
+fun f( {
     ret
 }
 
-func main {
+fun g) {
+    ret
+}
+
+fun main {
     ret
 }

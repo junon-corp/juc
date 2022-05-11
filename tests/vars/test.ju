@@ -2,7 +2,7 @@
 // All rights reserved
 // Copyright (c) Junon, Antonin Hérault
 
-func foo {
+fun foo {
     ret
 }
 
@@ -10,7 +10,7 @@ static a: str = 'hello world\n'
 static b: int 
 static c: str = 'wello world\n'
 
-func main {
+fun main {
     @ mov rax, 1
     @ mov rdi, 1
     @ mov rsi, a
@@ -27,7 +27,7 @@ func main {
     ret 5
 }
 
-func b {
+fun b {
     let e: int = 35
     ret
 }

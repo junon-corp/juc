@@ -1,4 +1,4 @@
-func main
+fun main
     print "hello world\n"
     exit "A"
     ret
