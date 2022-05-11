@@ -2,11 +2,10 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 
 use x64asm::{
+    formatter::Formatter,
     instruction::Instruction,
     instruction as i, label,
     mnemonic::Mnemonic::*, 
@@ -59,32 +58,24 @@ impl Compiler for LinuxCompiler {
             return;
         }
 
-        let path: String = format!("{}/{}", BUILD_FOLDER, START_FILE);
-        let path = Path::new(&path);
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let start_file_string = format!("{}/{}", BUILD_FOLDER, START_FILE);
+        let start_file = Path::new(&start_file_string);
+        std::fs::create_dir_all(start_file.parent().unwrap()).unwrap();
 
-        let mut file = File::create(path).unwrap();
-        
-        file.write_all(
-            format!("section .text\n\tglobal {}\n", START_FUNCTION).as_bytes()
-        ).unwrap();
+        let mut asm_start_file = Formatter::new(false);
 
-        file.write_all(format!("extern {}\n", ENTRY_POINT).as_bytes()).unwrap();
-        file.write_all(format!("{}:\n", START_FUNCTION).as_bytes()).unwrap();
-        
-        let to_write: Vec<String> = vec!(
-            format!("call {}", ENTRY_POINT),
-            "mov rdi, rax".to_string(), // return of ENTRY_POINT
-            "mov rax, 60".to_string(),
-            "syscall".to_string(),
-        );
-        
-        file.write_all(
-            to_write.iter()
-                .map(| x | format!("\t{}\n", x))
-                .collect::<String>()
-                .as_bytes()
-        ).unwrap();
+        asm_start_file.add_instructions(&mut vec![
+            i!(section!(Text)),
+            i!(Global, Op::Label("_start".to_string())),
+            i!(Extern, Op::Label(ENTRY_POINT.to_string())),
+            i!(label!(START_FUNCTION.to_string())),
+            i!(Call, Op::Label(ENTRY_POINT.to_string())),
+            i!(Mov, reg!(Rdi), reg!(Rax)), // return of ENTRY_POINT function
+            i!(Mov, reg!(Rax), Op::Literal(60)),
+            i!(Syscall)
+        ]);
+
+        asm_start_file.to_file(&start_file).unwrap();
 
         platform::exec(
             ASSEMBLER.to_string(),
