@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/junon-corp/jur/main/assets/logo_circle.png" align="right" width="20%" alt="Junon logo" />
+
 # juc
 Compiler for the Junon language. Multi-platform and modern design. Only available on Linux for the moment
 
