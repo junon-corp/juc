@@ -203,11 +203,20 @@ pub trait Caller {
 
         let id: String = next_tokens_iter.next().unwrap().to_string();
         next_tokens_iter.next(); // Token::TypeDef
-        let type_ = Type::from_string(next_tokens_iter.next().unwrap().to_string());
+
+        self.data().i_current_token += 2;
+        let type_ = self.retrieve_type(&mut to_skip);
+        self.data().i_current_token -= 2;
+
         let mut init_value = "0".to_string();
-        to_skip += 2;
 
         println!("'{}' : '{:?}'", id, type_);
+
+        for i in 0..to_skip+1 {
+            next_tokens_iter.next();
+        }
+
+        to_skip += 2;
 
         // Cloned because don't want to modify the iterator if it's a variable
         // without assigned value
@@ -338,5 +347,38 @@ pub trait Caller {
         }
 
         ret
+    }
+
+    fn retrieve_type(&mut self, to_skip: &mut usize) -> Type
+    where
+        Self: base::Compiler,
+    {
+        let next_tokens = &self.data()
+            .current_parsed
+            .clone()[self.data().i_current_token..];
+        let mut next_tokens_iter = next_tokens.iter();
+        // ---
+
+        let mut type_ = Type::from_string(
+            next_tokens_iter
+                .next()
+                .unwrap()
+                .to_string()
+        );
+        let mut next = next_tokens_iter.next().unwrap();
+        
+        if *next != Token::SquareBracketOpen {
+            return type_;
+        }
+
+        let len = next_tokens_iter.next()
+            .unwrap()
+            .to_string()
+            .parse::<usize>()
+            .unwrap();
+
+        *to_skip += 3;
+
+        Type::new_array(type_, len)
     }
 }

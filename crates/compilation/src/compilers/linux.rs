@@ -168,11 +168,11 @@ impl Compiler for LinuxCompiler {
         let mut init_value: String  = variable.current_value().to_string();
         let stack_pos: &usize       = variable.stack_pos();
         
-        // Auto terminate strings by NULL character
-        if *variable.type_() == Type::Str && init_value != "0".to_string() {
-            init_value = format!("`{}`", &init_value[1..init_value.len() - 1]);
-            init_value += ", 0";
-        }
+        // // Auto terminate strings by NULL character
+        // if *variable.type_() == Type::Str && init_value != "0".to_string() {
+        //     init_value = format!("`{}`", &init_value[1..init_value.len() - 1]);
+        //     init_value += ", 0";
+        // }
 
         self.section_data.push(i!(
             label!(id),
@@ -206,12 +206,10 @@ impl Compiler for LinuxCompiler {
         let current_value: &String  = variable.current_value();
         let stack_pos: &usize       = variable.stack_pos();
 
-        let i_variable_stack = self.data().i_variable_stack;
-
         self.data().asm_formatter.add_instruction(
             i!(
                 Mov,
-                Op::Expression(format!("[rbp-{}]", i_variable_stack)),
+                Op::Expression(format!("[rbp-{}]", stack_pos)),
                 {
                     if current_value.to_string() == defaults::RETURN_REGISTER.to_string() {
                         Op::Expression("".to_string())
@@ -245,7 +243,11 @@ impl Compiler for LinuxCompiler {
     fn print(&mut self, to_print: String) {
         let to_print_id = format!("_string_");
 
-        self.add_static_variable(Variable::static_(to_print_id.clone(), Type::Str, to_print));
+        self.add_static_variable(Variable::static_(
+            to_print_id.clone(), 
+            Type::StaticArray(Box::new(Type::Byte)), 
+            to_print)
+        );
 
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Mov, reg!(Rdi), Op::Label(to_print_id.clone())),
