@@ -81,8 +81,6 @@ pub trait Caller {
 
         expr_tokens = &expr_tokens[..i];
 
-        println!("{} | new expr -> {:?}", self.data().i_current_token, expr_tokens);
-
         self.call(&expr_tokens.to_vec());
 
         let mut return_value = Token::None;
@@ -94,7 +92,6 @@ pub trait Caller {
             }
         }
 
-        println!("\x1b[36m{:?}\x1b[0m", return_value);
         match return_value {
             Token::Other(x) => self.set_return_value(x),
             _ => {} // no return value given
@@ -210,8 +207,6 @@ pub trait Caller {
 
         let mut init_value = "0".to_string();
 
-        println!("'{}' : '{:?}'", id, type_);
-
         for i in 0..to_skip+1 {
             next_tokens_iter.next();
         }
@@ -232,8 +227,6 @@ pub trait Caller {
                 &mut to_skip
             );
         }
-
-        println!("init_value : {}", init_value);
 
         self.data().i_variable_stack += type_.to_usize();
 
