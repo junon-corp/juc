@@ -1,0 +1,17 @@
+fun main {
+    let f: int
+
+    let a: bigint = 5 
+    let b: int = { 2 }
+
+    let c: bigint = { 
+        let z: int = 3
+        4
+    }
+
+    let e: byte
+
+    ret 10
+}
+
+fun x ret
