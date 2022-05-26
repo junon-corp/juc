@@ -4,6 +4,13 @@ authors = ["Junon", "Antonin Hérault <antonherault@gmail.com>"]
 version = "0.1.1"
 edition = "2021"
 
+[workspace]
+members = [
+    "crates/args/",
+    "crates/compilation/",
+    "crates/objects/",
+]
+
 [dependencies]
 jup = { git = "https://github.com/junon-corp/jup" }
 rslog = { git = "https://github.com/antoninhrlt/rslog" }
