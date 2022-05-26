@@ -31,7 +31,7 @@ pub trait Compiler: Caller {
 
         // Run syntax checker for the current source file
         let mut checker = SyntaxChecker::new(source, &self.data().current_parsed);
-        checker.run();
+        // TODO : reactivate : checker.run();
     }
 
     /// Main function where each source file is transformed to an objet file
@@ -49,7 +49,8 @@ pub trait Compiler: Caller {
                 .collect::<String>()]);
 
             self.init_one(&source);
-            self.call();
+            let mut current_parsed = self.data().current_parsed.clone();
+            self.call(&current_parsed);
             self.finish_one(&source);
         }
 
@@ -58,11 +59,11 @@ pub trait Compiler: Caller {
     }
 
     /// Methods caller according to the current token
-    fn call(&mut self) {
+    fn call(&mut self, vec_tokens: &Vec<Token>) {
         // If tokens have to be skipped + how much to skip?
         let mut skip_mode: (bool, usize) = (false, 0);
 
-        for token in self.data().current_parsed.clone().iter() {
+        for token in vec_tokens.clone().iter() {
             self.data().i_current_token += 1;
 
             // Skip until all asked tokens for skipping while be skipped
@@ -89,8 +90,9 @@ pub trait Compiler: Caller {
         match self.data().current_token {
             Token::Assembly => self.when_assembly_code(),
             Token::Assign => self.when_assign(),
+            Token::BracketOpen => self.when_expression(),
             Token::Function => self.when_function(),
-            Token::Return => self.when_return(),
+            Token::Return => self.when_return_(),
             Token::Static => self.when_static(),
             Token::Variable => self.when_variable(),
 
@@ -117,13 +119,13 @@ pub trait Compiler: Caller {
 
     // --- ASM code generators
 
-    /// Variable declaration, can
     fn add_variable(&mut self, variable: Variable);
     fn add_static_variable(&mut self, variable: Variable);
     fn add_function(&mut self, function: Function);
 
-    fn change_variable_value(&mut self, variable: &Variable);
+    fn assign_variable(&mut self, variable: &Variable);
 
+    fn set_return_value(&mut self, value: String);
     fn return_(&mut self, value: String);
 
     fn print(&mut self, to_print: String);
