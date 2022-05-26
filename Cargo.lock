@@ -35,7 +35,7 @@ dependencies = [
 [[package]]
 name = "jup"
 version = "0.1.0"
-source = "git+https://github.com/junon-corp/jup#f3a77aec62064cb9eb8162c547dc3b30c6134a0d"
+source = "git+https://github.com/junon-corp/jup#fc4bf565e8064fd010acfbf75b17c076e2e0a7f1"
 dependencies = [
  "rslog",
 ]
