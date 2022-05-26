@@ -1,0 +1,7 @@
+fun main {
+    let a: int = 5
+    let b: int[2]
+    //let c: int[3] = [97, 98, 99]
+
+    ret
+}
