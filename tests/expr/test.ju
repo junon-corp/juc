@@ -9,6 +9,8 @@ fun main {
         { 4 }
     }
 
+    let d: byte = 1
+
     let e: byte
 
     ret 10

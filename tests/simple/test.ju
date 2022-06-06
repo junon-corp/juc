@@ -1,0 +1,12 @@
+fun main {
+    let e: int = { 1 + 2 }
+    let f: bigint = { 3 + 4 }
+
+    ret
+}
+
+fun foo: int {
+    ret 5
+}
+
+fun foo2 ret
