@@ -2,8 +2,6 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-pub mod base;
-pub mod caller;
 pub mod compilers;
 pub mod data;
 pub mod defaults;
@@ -21,7 +19,7 @@ use rslog::{level::LogLevel, log::Log, logger::Logger};
 
 use platform::Platform;
 
-use crate::base::Compiler;
+use crate::compilers::base::Compiler;
 use crate::compilers::linux::LinuxCompiler;
 use crate::data::CompilerData;
 use crate::scope::Scope;
@@ -81,11 +79,8 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         asm_formatter: Formatter::new(false),
 
         current_source: String::new(),
-        current_scope: Scope::new(),
-        current_token: Token::None,
         current_parsed: vec![],
-        i_current_token: 0,
-        i_current_expr: 0,
+        current_scope: Scope::new(),
 
         variable_stack: Dict::new(),
         i_variable_stack: 0,

@@ -10,6 +10,7 @@ pub const EXTENSION: &str = "ju";
 pub const EXTENSION_COMPLETE: &str = ".ju";
 pub const SCOPE_SEPARATOR: &str = ".";
 pub const RETURN_REGISTER: Register = Register::Rax;
+pub const EXPRESSION_RETURN_REGISTER: Register = Register::Rbx;
 
 pub mod linux_defaults {
     pub const ASSEMBLER: &str = "nasm";

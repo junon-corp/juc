@@ -9,5 +9,4 @@ jup = { git = "https://github.com/junon-corp/jup" }
 rslog = { git = "https://github.com/antoninhrlt/rslog" }
 x64asm = { git = "https://github.com/antoninhrlt/x64asm" }
 args = { path = "../args/" }
-objects = { path = "../objects/" }
 platform = { path = "../platform/" }

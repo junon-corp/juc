@@ -4,18 +4,33 @@
 
 use std::path::Path;
 
-use jup::{checking::syntax::SyntaxChecker, lang::tokens::Token, parser::Parser};
+use jup::{
+    checking::syntax::SyntaxChecker, 
+    lang::{
+        elements::{ 
+            Element, 
+            function::Function, 
+            type_::Type, 
+            variable::Variable
+        },
+        tokens::Token,
+    },
+    parser::Parser,
+    tokenizer::Tokenizer,
+};
 
-use crate::{caller::Caller, data::CompilerData, defaults, scope::Scope};
-
-use objects::{function::Function, variable::Variable};
+use crate::{
+    data::CompilerData, 
+    defaults, 
+    scope::Scope
+};
 
 /// Trait for a Compiler followed by all platform's compilers \
 /// Some functions are already defined because they are cross-platform \
 /// The general documentation is written here to avoid to write the same
 /// documentation to each platform's compilers. But a specific compiler can
 /// have its own documentation
-pub trait Compiler: Caller {
+pub trait Compiler {
     /// Starting point \
     /// Do some stuff useful
     fn init(&mut self);
@@ -24,14 +39,17 @@ pub trait Compiler: Caller {
     fn init_one(&mut self, source: &String) {
         self.data().current_source = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
 
-        let mut parser = Parser::from_path(Path::new(source)).unwrap();
+        let mut tokenizer = Tokenizer::from_path(Path::new(source)).unwrap();
+        tokenizer.run();
+
+        let mut parser = Parser::new(tokenizer.tokenized().clone());
         parser.run();
+
+        println!("{:#?}", parser.parsed());
 
         self.data().current_parsed = parser.parsed().clone();
 
-        // Run syntax checker for the current source file
-        let mut checker = SyntaxChecker::new(source, &self.data().current_parsed);
-        // TODO : reactivate : checker.run();
+        // TODO : Run the syntax checker here
     }
 
     /// Main function where each source file is transformed to an objet file
@@ -49,8 +67,11 @@ pub trait Compiler: Caller {
                 .collect::<String>()]);
 
             self.init_one(&source);
+            
             let mut current_parsed = self.data().current_parsed.clone();
+
             self.call(&current_parsed);
+
             self.finish_one(&source);
         }
 
@@ -59,47 +80,23 @@ pub trait Compiler: Caller {
     }
 
     /// Methods caller according to the current token
-    fn call(&mut self, vec_tokens: &Vec<Token>) {
-        // If tokens have to be skipped + how much to skip?
-        let mut skip_mode: (bool, usize) = (false, 0);
-
-        for token in vec_tokens.clone().iter() {
-            self.data().i_current_token += 1;
-
-            // Skip until all asked tokens for skipping while be skipped
-            if skip_mode.0 {
-                if skip_mode.1 == 0 {
-                    skip_mode.0 = false;
-                } else {
-                    skip_mode.1 -= 1;
-                    continue;
-                }
-            }
-
-            self.data().current_token = token.clone();
-
-            let to_skip: usize = self.check();
-            skip_mode = (if to_skip > 0 { true } else { false }, to_skip);
+    fn call(&mut self, elements: &Vec<Element>) {
+        for element in elements {
+            self.check(element);
         }
     }
 
-    /// Returns how much tokens should be skip (how much token was read because
-    /// of another but not checked by this function)
-    fn check(&mut self) -> usize {
-        // `when...` always return how much tokens they read to skip them
-        match self.data().current_token {
-            Token::Assembly => self.when_assembly_code(),
-            Token::Assign => self.when_assign(),
-            Token::BracketOpen => self.when_expression(),
-            Token::Function => self.when_function(),
-            Token::Return => self.when_return_(),
-            Token::Static => self.when_static(),
-            Token::Variable => self.when_variable(),
+    /// Returns how much elements should be skip
+    fn check(&mut self, element: &Element) {
+        println!("{:?}", element);
 
-            Token::Print => self.when_print(),
-            Token::Exit => self.when_exit(),
-
-            _ => return 0,
+        match element.clone() {
+            Element::Expression(elements) => self.call(&elements),
+            Element::Function(function) => self.add_function(function),
+            Element::Operation(operation) => {},
+            Element::Return(token) => self.return_(token),
+            Element::Variable(variable) => self.add_variable(variable),
+            Element::Other(token) => {}
         }
     }
 
@@ -125,9 +122,5 @@ pub trait Compiler: Caller {
 
     fn assign_variable(&mut self, variable: &Variable);
 
-    fn set_return_value(&mut self, value: String);
-    fn return_(&mut self, value: String);
-
-    fn print(&mut self, to_print: String);
-    fn exit(&mut self, value: String);
+    fn return_(&mut self, value: Token);
 }

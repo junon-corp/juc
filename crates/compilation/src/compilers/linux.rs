@@ -3,19 +3,19 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::path::Path;
-
 use x64asm::{
     formatter::Formatter, instruction as i, instruction::Instruction, label, mnemonic::Mnemonic::*,
     operand::Op, reg, register::Register::*, section, section::Section::*,
 };
+use jup::lang::{
+    elements::{ function::Function, type_::Type, variable::Variable},
+    tokens::Token,
+};
 use args::Args;
-use objects::{function::Function, type_::Type, variable::Variable};
-
 use platform;
 
 use crate::{
-    base::Compiler, 
-    caller::Caller, 
+    compilers::base::Compiler, 
     data::CompilerData, 
     defaults,
     defaults::{BUILD_FOLDER, ENTRY_POINT},
@@ -36,8 +36,6 @@ impl LinuxCompiler {
         }
     }
 }
-
-impl Caller for LinuxCompiler {}
 
 /// SEE Functions' documentation from `Compiler` because they are not
 /// written here a new time
@@ -146,47 +144,32 @@ impl Compiler for LinuxCompiler {
 
     /// Push a new variable and save its position in the variables' stack.
     /// Calls to `self.assign_variable()` 
-    fn add_variable(&mut self, variable: Variable) {
+    fn add_variable(&mut self, mut variable: Variable) {
         // See the `Variable` structure
-        let id: &String             = variable.id();
-        let type_: &Type            = variable.type_();
-        let current_value: &String  = variable.current_value();
-        let stack_pos: &usize       = variable.stack_pos();
+        let id: String          = variable.id();
+        let type_: Type         = variable.type_();
+        let value: String       = variable.value();
 
-        self.data()
-            .variable_stack
-            .insert(id.to_string(), variable.clone());
+        variable.set_stack_pos(self.data().i_variable_stack + type_.to_usize());
+        let stack_pos: usize    = variable.stack_pos();
+        self.data().i_variable_stack = stack_pos;
+
+        self.data().variable_stack.insert(id, variable.clone());
 
         self.assign_variable(&variable);
     }
 
     /// Define a new label into `.data` section with the value
     fn add_static_variable(&mut self, variable: Variable) {
-        // See the `Variable` structure
-        let id: &String             = variable.id();
-        let type_: &Type            = variable.type_();
-        let mut init_value: String  = variable.current_value().to_string();
-        let stack_pos: &usize       = variable.stack_pos();
-        
-        // // Auto terminate strings by NULL character
-        // if *variable.type_() == Type::Str && init_value != "0".to_string() {
-        //     init_value = format!("`{}`", &init_value[1..init_value.len() - 1]);
-        //     init_value += ", 0";
-        // }
 
-        self.section_data.push(i!(
-            label!(id),
-            type_.to_asm_operand(),
-            Op::Expression(init_value)
-        ))
     }
 
     /// Define a new function in ASM code and initialize the variables' stack
     fn add_function(&mut self, function: Function) {
         // See the `Function` structure
-        let id: &String = function.id();
-        // let params
-        // let return_type
+        let id: String = function.id();
+        // -- TODO --
+        // Parameters and return type 
 
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Global, Op::Label(id.to_string())),
@@ -201,79 +184,42 @@ impl Compiler for LinuxCompiler {
     /// Gets the variable's stack position and mov a new value at this index
     fn assign_variable(&mut self, variable: &Variable) {
         // See the `Variable` structure
-        let id: &String             = variable.id();
-        let type_: &Type            = variable.type_();
-        let current_value: &String  = variable.current_value();
-        let stack_pos: &usize       = variable.stack_pos();
+        let id: String             = variable.id();
+        let type_: Type            = variable.type_();
+        let value: String          = variable.value();
+        let stack_pos: usize       = variable.stack_pos();
 
         self.data().asm_formatter.add_instruction(
             i!(
                 Mov,
                 Op::Expression(format!("[rbp-{}]", stack_pos)),
                 {
-                    if current_value.to_string() == defaults::RETURN_REGISTER.to_string() {
+                    if value.to_string() == defaults::RETURN_REGISTER.to_string() {
                         Op::Expression("".to_string())
                     } else {
                         Op::Dword
                     }  
                 },
-                Op::Expression(current_value.to_string())
+                Op::Expression(value.to_string())
             )
             .with_comment(id.to_string())
             .clone()
         );
     }
 
-    fn set_return_value(&mut self, value: String) {
+    fn return_(&mut self, value: Token) {
         self.data().asm_formatter.add_instruction(
-            i!(Mov, reg!(defaults::RETURN_REGISTER), Op::Expression(value))
+            if value == Token::None {
+                i!(Expression("nop".to_string()))
+            } else {
+                i!(Mov, reg!(defaults::RETURN_REGISTER), Op::Expression(value.to_string()))
+            }
         );
-    }
 
-    fn return_(&mut self, value: String) {
-        self.set_return_value(value);
-        
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Mov, reg!(Rsp), reg!(Rbp)),
             i!(Pop, reg!(Rbp)),
             i!(Ret),
-        ]);
-    }
-
-    fn print(&mut self, to_print: String) {
-        let to_print_id = format!("_string_");
-
-        self.add_static_variable(Variable::static_(
-            to_print_id.clone(), 
-            Type::StaticArray(Box::new(Type::Byte)), 
-            to_print)
-        );
-
-        self.data().asm_formatter.add_instructions(&mut vec![
-            i!(Mov, reg!(Rdi), Op::Label(to_print_id.clone())),
-            i!(Xor, reg!(Rcx), reg!(Rcx)),
-            i!(Not, reg!(Rcx)),
-            i!(Xor, reg!(Al), reg!(Al)),
-            i!(Expression("cld".to_string())),
-            i!(
-                Expression("repnz".to_string()),
-                Op::Expression("scasb".to_string())
-            ),
-            i!(Not, reg!(Rcx)),
-            i!(Expression("dec".to_string()), reg!(Rcx)),
-            i!(Mov, reg!(Rdx), reg!(Rcx)),
-            i!(Mov, reg!(Rsi), Op::Label(to_print_id.clone())),
-            i!(Mov, reg!(Rax), Op::Literal(1)),
-            i!(Mov, reg!(Rdi), reg!(Rax)),
-            i!(Syscall),
-        ]);
-    }
-
-    fn exit(&mut self, value: String) {
-        self.data().asm_formatter.add_instructions(&mut vec![
-            i!(Mov, reg!(Rax), Op::Literal(60)),
-            i!(Mov, reg!(Rdi), Op::Expression(value)),
-            i!(Syscall),
         ]);
     }
 }

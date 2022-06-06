@@ -3,13 +3,11 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
-
-use jup::lang::tokens::Token;
-
+use jup::lang::{
+    elements::{ Element, variable::Variable },
+    tokens::Token,
+};
 use x64asm::formatter::Formatter;
-
-use objects::variable::Variable;
-
 use crate::scope::Scope;
 
 /// Important information given to the compiler
@@ -22,12 +20,8 @@ pub struct CompilerData {
     pub asm_formatter: Formatter,
 
     pub current_source: String,
+    pub current_parsed: Vec<Element>,
     pub current_scope: Scope,
-    pub current_token: Token,
-    /// Current source's content but parsed
-    pub current_parsed: Vec<Token>,
-    pub i_current_token: usize,
-    pub i_current_expr: usize,
 
     //                        id
     pub variable_stack: Dict<String, Variable>,
