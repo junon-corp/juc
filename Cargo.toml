@@ -8,7 +8,6 @@ edition = "2021"
 members = [
     "crates/args/",
     "crates/compilation/",
-    "crates/objects/",
 ]
 
 [dependencies]
@@ -16,4 +15,3 @@ jup = { git = "https://github.com/junon-corp/jup" }
 rslog = { git = "https://github.com/antoninhrlt/rslog" }
 args = { path = "crates/args/" }
 compilation = { path = "crates/compilation/" }
-objects = { path = "crates/objects/" }

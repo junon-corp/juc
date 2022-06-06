@@ -15,10 +15,9 @@ version = "0.1.0"
 dependencies = [
  "args",
  "jup",
- "objects",
  "platform",
  "rslog",
- "x64asm",
+ "x64asm 0.1.3 (git+https://github.com/antoninhrlt/x64asm)",
 ]
 
 [[package]]
@@ -28,23 +27,16 @@ dependencies = [
  "args",
  "compilation",
  "jup",
- "objects",
  "rslog",
 ]
 
 [[package]]
 name = "jup"
 version = "0.1.0"
-source = "git+https://github.com/junon-corp/jup#fc4bf565e8064fd010acfbf75b17c076e2e0a7f1"
+source = "git+https://github.com/junon-corp/jup#ba1d58b873831470f210ade1f737f085dcbe94a4"
 dependencies = [
  "rslog",
-]
-
-[[package]]
-name = "objects"
-version = "0.1.0"
-dependencies = [
- "x64asm",
+ "x64asm 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -58,6 +50,12 @@ dependencies = [
 name = "rslog"
 version = "0.1.0"
 source = "git+https://github.com/antoninhrlt/rslog#905b6304c0673ac2230294f5aa7e5ed7ea27bdc1"
+
+[[package]]
+name = "x64asm"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9d7c3112c8797f00a2629338669e0191d8ed58461942a88f2d3849bdf551a0c"
 
 [[package]]
 name = "x64asm"
