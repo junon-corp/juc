@@ -212,15 +212,19 @@ impl Compiler for LinuxCompiler {
     }
 
     fn at_return(&mut self, value: Token) {
-        self.data().asm_formatter.add_instruction(
-            if value == Token::None {
-                i!(Expression("nop".to_string()))
+        let instruction = if value == Token::None {
+            i!(Expression("nop".to_string()))
+        } else {
+            if value == Token::BracketOpen {
+                self.execute_next_expression();
+                i!(Mov, reg!(defaults::RETURN_REGISTER), reg!(defaults::EXPRESSION_RETURN_REGISTER))
             } else {
                 i!(Mov, reg!(defaults::RETURN_REGISTER), Op::Expression(value.to_string()))
             }
-        );
+        };
 
         self.data().asm_formatter.add_instructions(&mut vec![
+            instruction,
             i!(Mov, reg!(Rsp), reg!(Rbp)),
             i!(Pop, reg!(Rbp)),
             i!(Ret),
@@ -239,7 +243,7 @@ impl Compiler for LinuxCompiler {
             Mov,
             Op::Expression(format!("[rbp-{}]", stack_pos)),
             {
-                if value.to_string() == defaults::EXPRESSION_RETURN_REGISTER.to_string() {
+                if value == defaults::EXPRESSION_RETURN_REGISTER.to_string() {
                     self.execute_next_expression();
                     Op::Expression("".to_string())
                 } else {
