@@ -9,7 +9,8 @@ use jup::{
     lang::{
         elements::{ 
             Element, 
-            function::Function, 
+            function::Function,
+            operation::Operation,
             type_::Type, 
             variable::Variable
         },
@@ -79,48 +80,78 @@ pub trait Compiler {
         self.finish();
     }
 
-    /// Methods caller according to the current token
+    /// Walks through the given elements, calling `check` for each element
+    ///
+    /// Can skip an element if `is_skip_next` is true
     fn call(&mut self, elements: &Vec<Element>) {
+        let mut i = 0;
+
         for element in elements {
+            if self.data().is_skip_next {
+                self.data().is_skip_next = false;
+                i += 1;
+                continue;
+            }
+
+            if i != elements.len() -1 {
+                self.data().next_element = elements[i + 1].clone();
+            }
             self.check(element);
+            i += 1;
         }
     }
 
-    /// Returns how much elements should be skip
+    /// Call to the right function according to the given element
+    ///
+    /// Note : It's not a logic or syntax checker, it only checks the element to
+    /// call the right function
     fn check(&mut self, element: &Element) {
-        println!("{:?}", element);
-
         match element.clone() {
             Element::Expression(elements) => self.call(&elements),
-            Element::Function(function) => self.add_function(function),
-            Element::Operation(operation) => {},
-            Element::Return(token) => self.return_(token),
-            Element::Variable(variable) => self.add_variable(variable),
+            Element::Function(function) => self.at_function(function),
+            Element::Operation(operation) => match operation.operator() {
+                Token::Assign => self.at_assign(&operation),
+                Token::Plus => self.at_plus(&operation),
+                _ => {}
+            },
+            Element::Return(token) => self.at_return(token),
+            Element::Variable(variable) => self.at_variable(variable),
             Element::Other(token) => {}
         }
+    }
+
+    /// Executes the next expression before the one who call this function
+    ///
+    /// Note : It does not check if it's an expression or not, it take the
+    /// next token in consideration as an expression
+    fn execute_next_expression(&mut self) {
+        let expression = self.data().next_element.clone();
+        self.check(&expression);
+        self.data().is_skip_next = true;
     }
 
     /// Link all generated files to one output file (library or binary according
     /// to the selected one)
     fn link(&mut self);
 
-    /// Exit point \
+    /// Exit point
+    ///
     /// Delete all temporary files and do linking
     fn finish(&mut self) {}
 
     /// Exit point for each source file
     fn finish_one(&mut self, source: &String);
 
-    /// Data getter
     fn data(&mut self) -> &mut CompilerData;
 
-    // --- ASM code generators
+    fn at_function(&mut self, function: Function);
+    fn at_static(&mut self, variable: Variable);
+    fn at_variable(&mut self, variable: Variable);
 
-    fn add_variable(&mut self, variable: Variable);
-    fn add_static_variable(&mut self, variable: Variable);
-    fn add_function(&mut self, function: Function);
+    fn at_assign(&mut self, operation: &Operation);
+    fn at_plus(&mut self, operation: &Operation);
+
+    fn at_return(&mut self, value: Token);
 
     fn assign_variable(&mut self, variable: &Variable);
-
-    fn return_(&mut self, value: Token);
 }

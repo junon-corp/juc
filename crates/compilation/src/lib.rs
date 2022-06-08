@@ -9,14 +9,14 @@ pub mod scope;
 
 use std::collections::HashMap as Dict;
 
-use jup::lang::tokens::Token;
+use jup::lang::{
+    tokens::Token,
+    elements::Element,
+};
 
 use x64asm::formatter::Formatter;
-
 use args::Args;
-
 use rslog::{level::LogLevel, log::Log, logger::Logger};
-
 use platform::Platform;
 
 use crate::compilers::base::Compiler;
@@ -81,6 +81,9 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         current_source: String::new(),
         current_parsed: vec![],
         current_scope: Scope::new(),
+
+        next_element: Element::Other(Token::None),
+        is_skip_next: false,
 
         variable_stack: Dict::new(),
         i_variable_stack: 0,

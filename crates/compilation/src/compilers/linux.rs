@@ -8,7 +8,12 @@ use x64asm::{
     operand::Op, reg, register::Register::*, section, section::Section::*,
 };
 use jup::lang::{
-    elements::{ function::Function, type_::Type, variable::Variable},
+    elements::{
+        function::Function, 
+        operation::Operation, 
+        type_::Type, 
+        variable::Variable
+    },
     tokens::Token,
 };
 use args::Args;
@@ -142,30 +147,8 @@ impl Compiler for LinuxCompiler {
 
     // --- ASM code generators
 
-    /// Push a new variable and save its position in the variables' stack.
-    /// Calls to `self.assign_variable()` 
-    fn add_variable(&mut self, mut variable: Variable) {
-        // See the `Variable` structure
-        let id: String          = variable.id();
-        let type_: Type         = variable.type_();
-        let value: String       = variable.value();
-
-        variable.set_stack_pos(self.data().i_variable_stack + type_.to_usize());
-        let stack_pos: usize    = variable.stack_pos();
-        self.data().i_variable_stack = stack_pos;
-
-        self.data().variable_stack.insert(id, variable.clone());
-
-        self.assign_variable(&variable);
-    }
-
-    /// Define a new label into `.data` section with the value
-    fn add_static_variable(&mut self, variable: Variable) {
-
-    }
-
     /// Define a new function in ASM code and initialize the variables' stack
-    fn add_function(&mut self, function: Function) {
+    fn at_function(&mut self, function: Function) {
         // See the `Function` structure
         let id: String = function.id();
         // -- TODO --
@@ -181,33 +164,54 @@ impl Compiler for LinuxCompiler {
         self.data().i_variable_stack = 0;
     }
 
-    /// Gets the variable's stack position and mov a new value at this index
-    fn assign_variable(&mut self, variable: &Variable) {
-        // See the `Variable` structure
-        let id: String             = variable.id();
-        let type_: Type            = variable.type_();
-        let value: String          = variable.value();
-        let stack_pos: usize       = variable.stack_pos();
+    /// Define a new label into `.data` section with the value
+    fn at_static(&mut self, variable: Variable) {
 
-        self.data().asm_formatter.add_instruction(
-            i!(
-                Mov,
-                Op::Expression(format!("[rbp-{}]", stack_pos)),
-                {
-                    if value.to_string() == defaults::RETURN_REGISTER.to_string() {
-                        Op::Expression("".to_string())
-                    } else {
-                        Op::Dword
-                    }  
-                },
-                Op::Expression(value.to_string())
-            )
-            .with_comment(id.to_string())
-            .clone()
-        );
     }
 
-    fn return_(&mut self, value: Token) {
+    /// Push a new variable and save its position in the variables' stack.
+    /// Calls to `self.assign_variable()` 
+    fn at_variable(&mut self, mut variable: Variable) {
+        // See the `Variable` structure
+        let id: String          = variable.id();
+        let type_: Type         = variable.type_();
+        let value: String       = variable.value();
+
+        variable.set_stack_pos(self.data().i_variable_stack + type_.to_usize());
+        let stack_pos: usize    = variable.stack_pos();
+        self.data().i_variable_stack = stack_pos;
+
+        self.data().variable_stack.insert(id, variable.clone());
+
+        self.assign_variable(&variable);
+    }
+
+    /// When `operation.operator` is `Token::Assign`
+    fn at_assign(&mut self, operation: &Operation) {
+        let mut variable_to_assign = self.data().variable_stack
+            .get_mut(&operation.arg1().to_string())
+            .unwrap()
+            .clone();
+            
+        let arg2 = operation.arg2();
+        variable_to_assign.set_value(arg2.to_string());
+
+        if arg2 == &Token::BracketOpen {
+            self.execute_next_expression();
+        }
+
+        self.assign_variable(&variable_to_assign);
+    }
+
+    /// When `operation.operator` is `Token::Plus`
+    fn at_plus(&mut self, operation: &Operation) {
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
+            i!(Add, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg2().to_string())),
+        ]);
+    }
+
+    fn at_return(&mut self, value: Token) {
         self.data().asm_formatter.add_instruction(
             if value == Token::None {
                 i!(Expression("nop".to_string()))
@@ -221,5 +225,32 @@ impl Compiler for LinuxCompiler {
             i!(Pop, reg!(Rbp)),
             i!(Ret),
         ]);
+    }
+
+    /// Gets the variable's stack position and mov a new value at this index
+    fn assign_variable(&mut self, variable: &Variable) {
+        // See the `Variable` structure
+        let id: String             = variable.id();
+        let type_: Type            = variable.type_();
+        let value: String          = variable.value();
+        let stack_pos: usize       = variable.stack_pos();
+
+        let instruction = i!(
+            Mov,
+            Op::Expression(format!("[rbp-{}]", stack_pos)),
+            {
+                if value.to_string() == defaults::EXPRESSION_RETURN_REGISTER.to_string() {
+                    self.execute_next_expression();
+                    Op::Expression("".to_string())
+                } else {
+                    Op::Dword // TODO : match with variable's type
+                }  
+            },
+            Op::Expression(value.to_string())
+        )
+        .with_comment(id.to_string())
+        .clone();
+
+        self.data().asm_formatter.add_instruction(instruction);
     }
 }

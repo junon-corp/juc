@@ -23,6 +23,9 @@ pub struct CompilerData {
     pub current_parsed: Vec<Element>,
     pub current_scope: Scope,
 
+    pub next_element: Element,
+    pub is_skip_next: bool,
+
     //                        id
     pub variable_stack: Dict<String, Variable>,
     pub i_variable_stack: usize,
