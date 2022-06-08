@@ -1,5 +1,7 @@
 fun main {
-    let e: int = { 1 + 2 }
+    let e: int = 2
+    e = 1
+    e = { 1 + 2 }
     let f: bigint = { 3 + 4 }
 
     ret
