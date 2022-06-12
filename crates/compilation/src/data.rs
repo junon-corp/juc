@@ -3,9 +3,9 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
-use jup::lang::{
-    elements::{ Element, variable::Variable },
-    tokens::Token,
+use jup::lang::elements::{ 
+    Element, 
+    variable::Variable 
 };
 use x64asm::formatter::Formatter;
 use crate::scope::Scope;

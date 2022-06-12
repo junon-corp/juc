@@ -5,7 +5,11 @@
 use std::collections::HashMap as Dict;
 use std::env;
 
-use rslog::{level::LogLevel, log::Log, logger::Logger};
+use rslog::{
+    level::LogLevel, 
+    log::Log, 
+    logger::Logger
+};
 
 const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help page";
 
@@ -24,8 +28,10 @@ pub struct Args {
     sources: Vec<String>,
     options: Dict<String, String>,
 
-    previous_is_option: bool, // it's an argument starting by '-'
-    check_step_1: bool,       // if the check1 is passed
+    /// Note : It's an argument starting by '-'
+    previous_is_option: bool,
+    /// "If the check1 is passed" 
+    check_step_1: bool, 
 }
 
 impl Args {
@@ -47,13 +53,13 @@ impl Args {
         self.parse();
     }
 
-    /// Check if the passed arguments in the command line arguments are all
-    /// valid: so if each option have a value, if the strings are composed
+    /// Checks if the passed arguments in the command line arguments are all
+    /// valid : so if each option has a value, if the strings are composed
     /// by normal characters only, ...
     fn check(&mut self) {
         let mut logger = Logger::new();
 
-        // When the first check is not passed, do it and return to permit to
+        // When the first check is not passed, does it and returns to permit to
         // call `self.parse()`
         if !self.check_step_1 {
             if self.sys_args.len() == 1 {
@@ -75,9 +81,9 @@ impl Args {
 
         // Here, the first check is passed and `self.parse()` was called
 
-        // Check for the options
+        // Checks for the options
         for (option_flag, _option_value) in &self.options {
-            // Check if the option flag is contained into `OPTIONS` too
+            // Checks if the option flag is contained into `OPTIONS` too
             let mut is_valid = false;
             for flag in OPTION_FLAGS {
                 // Index 1 is the letter
@@ -108,12 +114,14 @@ impl Args {
         logger.interpret()
     }
 
-    /// Initialize `self.options` with all options in the command line
-    /// arguments as a `Dict` \
+    /// Initializes `self.options` with all options in the command line
+    /// arguments as a `Dict`
+    ///
     /// Example: `[{"-o": "bin/prog"}, {"-l": "my_lib.so"}]`
     ///
-    /// And initialize `self.sources` with all arguments which are not
-    /// an option (flag or value) \
+    /// Initializes `self.sources` with all arguments which are not
+    /// an option (flag or value)
+    ///
     /// Example: `["src/main.ju", "foo.ju"]`
     fn parse(&mut self) {
         let mut key = String::new(); // option flag
@@ -128,7 +136,7 @@ impl Args {
 
             // The option has a value
             if self.is_option(&arg) {
-                // SEE `self.is_option()`
+                // See : `self.is_option()`
                 key = arg;
                 continue;
             }
@@ -145,15 +153,16 @@ impl Args {
             self.sources.push(arg.clone());
         }
 
-        // Remove the first argument of `sources` because it's the binary path
+        // Removes the first argument of `sources` because it's the binary path
         self.sources = self.sources[1..].to_vec();
         self.check(); // do the second check
     }
 
-    /// Easy way to know if an argument is an option flag \
-    /// Update the value of `self.previous_is_option`
+    /// Easy way to know if an argument is an option flag 
     ///
-    /// NOTE an argument starting by the '-' character is an option flag
+    /// Updates the value of `self.previous_is_option`
+    ///
+    /// Note : An argument starting by the '-' character is an option flag
     /// and the next argument is an option value.
     fn is_option(&mut self, arg: &String) -> bool {
         // an argument cannot be null, that why `unwrap()` is called
@@ -173,7 +182,7 @@ impl Args {
         &self.options
     }
 
-    /// Associated function
+    /// Associated function to call to manage a flag when exists
     pub fn when_flag<F: FnMut(String)>(flag: char, options: &Dict<String, String>, mut do_what: F) {
         match options.get(format!("-{}", flag).as_str()) {
             Some(value) => do_what(value.to_string()),

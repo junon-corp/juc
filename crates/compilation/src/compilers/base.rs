@@ -5,13 +5,11 @@
 use std::path::Path;
 
 use jup::{
-    checking::syntax::SyntaxChecker, 
     lang::{
         elements::{ 
             Element, 
             function::Function,
             operation::Operation,
-            type_::Type, 
             variable::Variable
         },
         tokens::Token,
@@ -26,14 +24,14 @@ use crate::{
     scope::Scope
 };
 
-/// Trait for a Compiler followed by all platform's compilers \
-/// Some functions are already defined because they are cross-platform \
+/// Trait for a Compiler that will be followed by all platform's compilers.
+///
+/// Some functions are already defined because they are cross-platform.
+///
 /// The general documentation is written here to avoid to write the same
-/// documentation to each platform's compilers. But a specific compiler can
+/// documentation to each platform's compiler. But a specific compiler can
 /// have its own documentation
 pub trait Compiler {
-    /// Starting point \
-    /// Do some stuff useful
     fn init(&mut self);
 
     /// Starting point for each source file
@@ -50,17 +48,18 @@ pub trait Compiler {
 
         self.data().current_parsed = parser.parsed().clone();
 
-        // TODO : Run the syntax checker here
+        // todo!() : Run,ing the syntax checker here
     }
 
     /// Main function where each source file is transformed to an objet file
     fn run(&mut self) {
         self.init();
 
-        // NOTE : If any syntax problem is found during syntax checking, the
+        // Note : If any syntax problem is found during syntax checking, the
         // program will be terminated. They should be retrieved and printed
         // after all sources checks
-        // TODO : Update "jup" according to the previous NOTE
+        //
+        // todo!() : Updating "jup" according to the previous NOTE
         for source in self.data().sources.clone() {
             // Module name is the filename without the ".ju" extension
             self.data().current_scope = Scope::from(vec![format!("{}", source)
@@ -69,7 +68,7 @@ pub trait Compiler {
 
             self.init_one(&source);
             
-            let mut current_parsed = self.data().current_parsed.clone();
+            let current_parsed = self.data().current_parsed.clone();
 
             self.call(&current_parsed);
 
@@ -101,7 +100,7 @@ pub trait Compiler {
         }
     }
 
-    /// Call to the right function according to the given element
+    /// Calls to the right function according to the given element
     ///
     /// Note : It's not a logic or syntax checker, it only checks the element to
     /// call the right function
@@ -133,12 +132,10 @@ pub trait Compiler {
         self.data().is_skip_next = true;
     }
 
-    /// Link all generated files to one output file (library or binary according
+    /// Links all generated files to one output file (library or binary according
     /// to the selected one)
     fn link(&mut self);
-
-    /// Exit point
-    ///
+    
     /// Delete all temporary files and do linking
     fn finish(&mut self) {}
 

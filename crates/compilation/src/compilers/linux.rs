@@ -42,8 +42,8 @@ impl LinuxCompiler {
     }
 }
 
-/// SEE Functions' documentation from `Compiler` because they are not
-/// written here a new time
+/// See some Functions' documentations at `Compiler` page because they are not
+/// written here again
 impl Compiler for LinuxCompiler {
     fn init(&mut self) {
         if self.data().is_library {
@@ -104,7 +104,7 @@ impl Compiler for LinuxCompiler {
     }
 
     fn finish_one(&mut self, source: &String) {
-        // Write all static data
+        // Writes all static data
         self.data()
             .asm_formatter
             .add_instruction(i!(section!(Data)));
@@ -117,7 +117,7 @@ impl Compiler for LinuxCompiler {
         // Reset for the next file
         self.section_data = vec![];
 
-        // Write assembly
+        // Writes assembly
         {
             let current_source = self.data().current_source.clone();
             let path = Path::new(&current_source);
@@ -147,11 +147,10 @@ impl Compiler for LinuxCompiler {
 
     // --- ASM code generators
 
-    /// Define a new function in ASM code and initialize the variables' stack
+    /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
-        // See the `Function` structure
         let id: String = function.id();
-        // -- TODO --
+        // todo!();
         // Parameters and return type 
 
         self.data().asm_formatter.add_instructions(&mut vec![
@@ -164,12 +163,13 @@ impl Compiler for LinuxCompiler {
         self.data().i_variable_stack = 0;
     }
 
-    /// Define a new label into `.data` section with the value
+    /// Defines a new label into `.data` section with the value
     fn at_static(&mut self, variable: Variable) {
 
     }
 
-    /// Push a new variable and save its position in the variables' stack.
+    /// Push a new variable and save its position into the variables' stack.
+    ///
     /// Calls to `self.assign_variable()` 
     fn at_variable(&mut self, mut variable: Variable) {
         // See the `Variable` structure
@@ -186,7 +186,6 @@ impl Compiler for LinuxCompiler {
         self.assign_variable(&variable);
     }
 
-    /// When `operation.operator` is `Token::Assign`
     fn at_assign(&mut self, operation: &Operation) {
         let mut variable_to_assign = self.data().variable_stack
             .get_mut(&operation.arg1().to_string())
@@ -203,7 +202,6 @@ impl Compiler for LinuxCompiler {
         self.assign_variable(&variable_to_assign);
     }
 
-    /// When `operation.operator` is `Token::Plus`
     fn at_plus(&mut self, operation: &Operation) {
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
@@ -227,7 +225,7 @@ impl Compiler for LinuxCompiler {
     }
 
     fn at_divide(&mut self, operation: &Operation) {
-        // TODO
+        // todo!();
     }
 
     fn at_return(&mut self, value: Token) {
@@ -252,7 +250,6 @@ impl Compiler for LinuxCompiler {
 
     /// Gets the variable's stack position and mov a new value at this index
     fn assign_variable(&mut self, variable: &Variable) {
-        // See the `Variable` structure
         let id: String             = variable.id();
         let type_: Type            = variable.type_();
         let value: String          = variable.value();
@@ -266,7 +263,7 @@ impl Compiler for LinuxCompiler {
                     self.execute_next_expression();
                     Op::Expression("".to_string())
                 } else {
-                    Op::Dword // TODO : match with variable's type
+                    Op::Dword // todo!() : Matching with variable's type
                 }  
             },
             Op::Expression(value.to_string())

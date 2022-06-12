@@ -2,18 +2,28 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use std::collections::HashMap as Dict;
-use std::env;
-use std::ffi::OsStr;
-use std::path::Path;
-use std::process;
+use std::{
+    collections::HashMap as Dict,
+    env,
+    ffi::OsStr,
+    path::Path,
+    process,
+};
 
 use args::Args;
-
 use compilation::defaults;
+use rslog::{
+    level::LogLevel, 
+    log::Log, 
+    logger::Logger
+};
 
-use rslog::{level::LogLevel, log::Log, logger::Logger};
-
+/// Retrieves all useful stuffs for the compiler, can set some things from the
+/// retrieved options before calling the compiler.
+///
+/// Checks the given source files for their existence and right file's extension 
+///
+/// Then, it gives the control to compilation's crate
 fn main() {
     let mut args = Args::new();
     args.run();
@@ -96,6 +106,8 @@ fn main() {
 
     logger.interpret();
 
+    // Run the right compiler with retrieved options for each source file
+    // All source files will be linked together to one library or binary file
     compilation::run_compiler(sources, options);
 
     let mut logger = Logger::new();
@@ -103,6 +115,9 @@ fn main() {
     logger.interpret();
 }
 
+/// Program documentation and usage specifications
+///
+/// Called when "-h" was found in options
 fn help() {
     let to_write = "Junon help page (command line)\n".to_string()
         + "\n"

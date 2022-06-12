@@ -16,34 +16,40 @@ use jup::lang::{
 
 use x64asm::formatter::Formatter;
 use args::Args;
-use rslog::{level::LogLevel, log::Log, logger::Logger};
+use rslog::{
+    level::LogLevel, 
+    log::Log, 
+    logger::Logger
+};
 use platform::Platform;
 
-use crate::compilers::base::Compiler;
-use crate::compilers::linux::LinuxCompiler;
-use crate::data::CompilerData;
-use crate::scope::Scope;
+use crate::{
+    compilers::base::Compiler,
+    compilers::linux::LinuxCompiler,
+    data::CompilerData,
+    scope::Scope,
+};
 
-/// Run the right compiler according to the platform and set some important
+/// Runs the right compiler according to the platform and set some important
 /// parameters as a `CompilerData` object sent to the platform's compiler
 pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     let mut logger = Logger::new();
 
-    // Retrieve the output mode from `Args`
+    // Retrieves the output mode from `Args`
     let mut is_library: bool = false;
     Args::when_flag('l', options, |_| {
         is_library = true;
         logger.add_log(Log::info("Library building".to_string()));
     });
 
-    // Retrieve the platform from `Args`
+    // Retrieves the platform from `Args`
     let mut platform: Platform = platform::get_current();
     Args::when_flag('p', options, |mut platform_id: String| {
         platform_id = platform_id.to_lowercase();
         platform = platform::get_from_id(platform_id)
     });
 
-    // Tell the current platform. It can be wrong (checked above)
+    // Tells the current platform. It can be wrong (checked above)
     logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
 
     // Platform checking for wrong not compatible platforms
@@ -69,7 +75,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
     }
     logger.interpret();
 
-    // Set important information for the compiler
+    // Sets important information for the compiler
     let data = CompilerData {
         is_library,
 
@@ -89,7 +95,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
         i_variable_stack: 0,
     };
 
-    // Run the right compiler according to the platform
+    // Runs the right compiler according to the platform
     match platform {
         Platform::Android => todo!(),
         Platform::IOS => todo!(),
