@@ -210,6 +210,25 @@ impl Compiler for LinuxCompiler {
             i!(Add, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg2().to_string())),
         ]);
     }
+    
+    fn at_minus(&mut self, operation: &Operation) {
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
+            i!(Sub, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg2().to_string())),
+        ]);
+    }
+
+    fn at_multiply(&mut self, operation: &Operation) {
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
+            i!(Mov, reg!(Rdx), Op::Expression(operation.arg2().to_string())),
+            i!(Mul, reg!(Rdx)),
+        ]);
+    }
+
+    fn at_divide(&mut self, operation: &Operation) {
+        // TODO
+    }
 
     fn at_return(&mut self, value: Token) {
         let instruction = if value == Token::None {

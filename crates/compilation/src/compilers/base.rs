@@ -112,7 +112,10 @@ pub trait Compiler {
             Element::Operation(operation) => match operation.operator() {
                 Token::Assign => self.at_assign(&operation),
                 Token::Plus => self.at_plus(&operation),
-                _ => {}
+                Token::Minus => self.at_minus(&operation),
+                Token::Multiply => self.at_multiply(&operation),
+                Token::Divide => self.at_divide(&operation),
+                _ => panic!(),
             },
             Element::Return(token) => self.at_return(token),
             Element::Variable(variable) => self.at_variable(variable),
@@ -150,6 +153,9 @@ pub trait Compiler {
 
     fn at_assign(&mut self, operation: &Operation);
     fn at_plus(&mut self, operation: &Operation);
+    fn at_minus(&mut self, operation: &Operation);
+    fn at_multiply(&mut self, operation: &Operation);
+    fn at_divide(&mut self, operation: &Operation);
 
     fn at_return(&mut self, value: Token);
 
