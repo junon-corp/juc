@@ -32,5 +32,7 @@ The [juc](https://github.com/junon-corp/juc) code comments for documentation cou
 Before each stable version, the documentation will be checked again to avoid these kind of problems.
 
 ## Run tests
-All tests are located in the "tests/" folder. \
-To run one of them : `./tests/<test_name>/test.sh`, when you know *test_name*
+All tests source code are located in the "tests/" folder. \
+Run a test with its name : `tests/test.sh <test name>`. You can also put "asm" at end of the command to show the generated assembly output.
+
+Note some tests are old and could stop working with the current juc version.
