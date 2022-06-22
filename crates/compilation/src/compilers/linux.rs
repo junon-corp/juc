@@ -174,7 +174,7 @@ impl Compiler for LinuxCompiler {
     fn at_variable(&mut self, mut variable: Variable) {
         // See the `Variable` structure
         let id: String          = variable.id();
-        let type_: Type         = variable.type_();
+        let type_: &Type         = variable.type_();
         let value: String       = variable.value();
 
         variable.set_stack_pos(self.data().i_variable_stack + type_.to_usize());
@@ -251,7 +251,7 @@ impl Compiler for LinuxCompiler {
     /// Gets the variable's stack position and mov a new value at this index
     fn assign_variable(&mut self, variable: &Variable) {
         let id: String             = variable.id();
-        let type_: Type            = variable.type_();
+        let type_: &Type            = variable.type_();
         let value: String          = variable.value();
         let stack_pos: usize       = variable.stack_pos();
 
