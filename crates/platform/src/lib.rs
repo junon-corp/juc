@@ -60,12 +60,21 @@ pub fn get_from_id(platform_id: String) -> Platform {
 pub fn exec(program_id: String, arguments: &[String]) {
     let output = Command::new(program_id.clone())
         .args(arguments)
-        .output()
-        .unwrap();
+        .output();
 
-    let program_result: String = output.stderr.into_iter().map(|x| x as char).collect();
+    let program_result: String = match output {
+        Ok(output) => {
+            output.stderr
+                .into_iter()
+                .map(|x| x as char)
+                .collect::<String>()
+        }
+        Err(error) => {
+            error.to_string()
+        }
+    };
 
-    if program_result != String::new() {
+    if !program_result.is_empty() {
         let mut logger = Logger::new();
         logger.add_log(
             Log::new(
