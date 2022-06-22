@@ -33,6 +33,6 @@ Before each stable version, the documentation will be checked again to avoid the
 
 ## Run tests
 All tests source code are located in the "tests/" folder. \
-Run a test with its name : `tests/test.sh <test name>`. You can also put "asm" at end of the command to show the generated assembly output.
+Run a test with its name : `tests/run.sh <test name>`. The **test name** could be a folder containing Junon files or a Junon file ("my_test.ju" or "my_test/*.ju")
 
-Note some tests are old and could stop working with the current juc version.
+Note some tests are old and may stop working with the current juc version.
