@@ -1,10 +1,11 @@
 <img src="https://raw.githubusercontent.com/junon-corp/jur/main/assets/logo_circle.png" align="right" width="20%" alt="Junon logo" />
 
 # juc
-Compiler for the Junon language. Multi-platform and modern design. Only available on Linux for the moment
+Compiler for the Junon language. Multi-platform and modern design. Currently only available for Linux
 
 ## Note
-The compiler is still under development, and the main branch is not always stable. \
+The compiler is still under development, and the main branch is not always stable.
+
 About the Rust code, it's often reviewed to optimize some parts and to better follow the Rust's guidelines. You can contribute on that checking by making a pull request with your changes.
 
 ## Simple example
@@ -36,3 +37,11 @@ All tests source code are located in the "tests/" folder. \
 Run a test with its name : `tests/run.sh <test name>`. The **test name** could be a folder containing Junon files or a Junon file ("my_test.ju" or "my_test/*.ju")
 
 Note some tests are old and may stop working with the current juc version.
+
+## Requirements
+All dependencies for compilation are specified in the "Cargo.toml" file and are built while compilation.
+
+But some other programs are required by the compiler at runtime, following the platform :
+- ### Linux
+  - [nasm](https://www.nasm.us/)
+  - ld
