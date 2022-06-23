@@ -1,7 +1,14 @@
 fun main {
     let a: int = 5
+    
     let b: int[2]
-    //let c: int[3] = [97, 98, 99]
+    b = [88, 89]
+
+    let c: int[3] = [97, 98, 99]
+    c = [67, 68, 69]
+
+    let d: int
+    d = 2
 
     ret
 }
