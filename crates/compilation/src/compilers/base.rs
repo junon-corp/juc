@@ -119,7 +119,7 @@ pub trait Compiler {
             },
             Element::Return(token) => self.at_return(token),
             Element::Variable(variable) => self.at_variable(variable),
-            Element::Other(token) => {}
+            Element::Other(token) => self.at_other(token),
         }
     }
 
@@ -159,4 +159,6 @@ pub trait Compiler {
 
     fn assign_variable(&mut self, variable: &Variable);
     fn assign_array_variable(&mut self, variable: &Variable);
+
+    fn at_other(&mut self, other: Token);
 }
