@@ -279,7 +279,13 @@ impl Compiler for LinuxCompiler {
                     Op::Dword // todo!() : Matching with variable's type  
                 }
             },
-            Op::Expression(value.to_string())
+            Op::Expression({
+                if value == &Token::BracketOpen {
+                    defaults::EXPRESSION_RETURN_REGISTER.to_string()
+                } else {
+                    value.to_string()
+                }
+            })
         )
         .with_comment(id.to_string())
         .clone();
@@ -316,5 +322,15 @@ impl Compiler for LinuxCompiler {
             
             self.assign_variable(&value_as_variable);
         }
+    }
+
+    fn at_other(&mut self, other: Token) {
+        if other == Token::NewLine {
+            return;
+        }
+
+        self.data().asm_formatter.add_instruction(
+            i!(Mov, reg!(Rbx), Op::Expression(other.to_string()))
+        );
     }
 }
