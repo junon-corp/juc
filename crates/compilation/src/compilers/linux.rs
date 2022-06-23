@@ -180,6 +180,27 @@ impl Compiler for LinuxCompiler {
         }
     }
 
+    /// Move the value to the expression return register, and assign the 
+    /// expression default register to retrieve the value of the variable
+    fn before_assignment_of_value_is_id(&mut self, value: &Token) {
+        let instruction = i!(
+            Mov,
+            reg!(defaults::EXPRESSION_RETURN_REGISTER),
+            {
+                let value_as_variable = self.data().variable_stack
+                    .get(&value.to_string())
+                    .unwrap()
+                    .clone();
+                
+                Op::Expression(self.give_value_of_variable(
+                    &value_as_variable
+                ))
+            }
+        );
+
+        self.data().asm_formatter.add_instruction(instruction);
+    }
+
     /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
         let id: String = function.id();
@@ -297,24 +318,7 @@ impl Compiler for LinuxCompiler {
         let id: String          = variable.id();
 
         match Self::what_kind_of_value(value) {
-            "id" => {
-                let instruction = i!(
-                    Mov,
-                    reg!(defaults::EXPRESSION_RETURN_REGISTER),
-                    {
-                        let value_as_variable = self.data().variable_stack
-                            .get(&value.to_string())
-                            .unwrap()
-                            .clone();
-                        
-                        Op::Expression(self.give_value_of_variable(
-                            &value_as_variable
-                        ))
-                    }
-                );
-
-                self.data().asm_formatter.add_instruction(instruction);
-            }
+            "id" => self.before_assignment_of_value_is_id(value),
             &_ => {},
         }
 
