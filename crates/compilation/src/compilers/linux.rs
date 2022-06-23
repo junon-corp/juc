@@ -9,6 +9,7 @@ use x64asm::{
 };
 use jup::lang::{
     elements::{
+        Element,
         function::Function, 
         operation::Operation, 
         type_::Type, 
@@ -174,8 +175,8 @@ impl Compiler for LinuxCompiler {
     fn at_variable(&mut self, mut variable: Variable) {
         // See the `Variable` structure
         let id: String          = variable.id();
-        let type_: &Type         = variable.type_();
-        let value: String       = variable.value();
+        let type_: &Type        = variable.type_();
+        let value: &Token       = variable.value();
 
         variable.set_stack_pos(self.data().i_variable_stack + type_.to_usize());
         let stack_pos: usize    = variable.stack_pos();
@@ -249,22 +250,34 @@ impl Compiler for LinuxCompiler {
     }
 
     /// Gets the variable's stack position and mov a new value at this index
+    ///
+    /// Calls to `assign_array_variable` when the value is an array
     fn assign_variable(&mut self, variable: &Variable) {
-        let id: String             = variable.id();
-        let type_: &Type            = variable.type_();
-        let value: String          = variable.value();
-        let stack_pos: usize       = variable.stack_pos();
+        let value: &Token       = variable.value();
+
+        match value {
+            Token::SquareBracketOpen => {
+                self.assign_array_variable(variable);
+                return;
+            }
+            Token::None => return,
+            _ => {}
+        }
+
+        let id: String          = variable.id();
+        let type_: &Type        = variable.type_();
+        let stack_pos: usize    = variable.stack_pos();
 
         let instruction = i!(
             Mov,
             Op::Expression(format!("[rbp-{}]", stack_pos)),
             {
-                if value == defaults::EXPRESSION_RETURN_REGISTER.to_string() {
+                if value == &Token::BracketOpen {
                     self.execute_next_expression();
                     Op::Expression("".to_string())
-                } else {
-                    Op::Dword // todo!() : Matching with variable's type
-                }  
+                } else { 
+                    Op::Dword // todo!() : Matching with variable's type  
+                }
             },
             Op::Expression(value.to_string())
         )
@@ -272,5 +285,36 @@ impl Compiler for LinuxCompiler {
         .clone();
 
         self.data().asm_formatter.add_instruction(instruction);
+    }
+
+    fn assign_array_variable(&mut self, array: &Variable) {
+        let array_values: Vec<Token> = match self.data().next_element.clone() {
+            Element::Array(values) => values,
+            _ => panic!() // never happens
+        };
+        
+        // Array's type is the type for each value
+        let id: String              = array.id();
+        let stack_pos: usize    = array.stack_pos();
+        
+        let (element_type, length) = match array.type_() {
+            Type::Array(type_, length) => (*type_.clone(), length),
+            Type::StaticArray(type_) => (*type_.clone(), &0),
+            _ => panic!() // never happens
+        };   
+
+        for (i, value) in array_values.iter().enumerate() {
+            let mut value_as_variable = Variable::new(
+                Token::Other(format!("{}[{}]", id, i)),
+                element_type.clone(),
+                value.clone()
+            );
+
+            value_as_variable.set_stack_pos(
+                stack_pos - element_type.to_usize() * i
+            );
+            
+            self.assign_variable(&value_as_variable);
+        }
     }
 }

@@ -106,6 +106,7 @@ pub trait Compiler {
     /// call the right function
     fn check(&mut self, element: &Element) {
         match element.clone() {
+            Element::Array(values) => {},
             Element::Expression(elements) => self.call(&elements),
             Element::Function(function) => self.at_function(function),
             Element::Operation(operation) => match operation.operator() {
@@ -157,4 +158,5 @@ pub trait Compiler {
     fn at_return(&mut self, value: Token);
 
     fn assign_variable(&mut self, variable: &Variable);
+    fn assign_array_variable(&mut self, variable: &Variable);
 }
