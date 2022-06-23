@@ -296,6 +296,28 @@ impl Compiler for LinuxCompiler {
 
         let id: String          = variable.id();
 
+        match Self::what_kind_of_value(value) {
+            "id" => {
+                let instruction = i!(
+                    Mov,
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER),
+                    {
+                        let value_as_variable = self.data().variable_stack
+                            .get(&value.to_string())
+                            .unwrap()
+                            .clone();
+                        
+                        Op::Expression(self.give_value_of_variable(
+                            &value_as_variable
+                        ))
+                    }
+                );
+
+                self.data().asm_formatter.add_instruction(instruction);
+            }
+            &_ => {},
+        }
+
         let instruction = i!(
             Mov,
             Op::Expression(self.give_value_of_variable(variable)),
