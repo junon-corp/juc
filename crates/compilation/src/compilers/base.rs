@@ -160,11 +160,10 @@ pub trait Compiler {
 
     /// Function to call before giving the "value" variable
     ///
-    /// When it's the value is a variable identifier, it returns the variable's 
-    /// stack position to be retrieved in Assembly code.
+    /// When it's the value is a variable identifier or an expression, it 
+    /// returns the register for expression returns.
     ///
-    /// When it's an expression, it executes the expression and returns the 
-    /// register for expression returns
+    /// When it's an expression, it also executes it.
     ///
     /// Else, it simply returns the value as String
     fn give_value(&mut self, value: &Token) -> String {
@@ -173,12 +172,10 @@ pub trait Compiler {
                 self.execute_next_expression();
                 defaults::EXPRESSION_RETURN_REGISTER.to_string()
             },
-            "direct" => value.to_string(),
             "id" => {
-                let variable = self.data().variable_stack.get(&value.to_string()).unwrap();
-                let variable = variable.clone();
-                self.give_value_of_variable(&variable)
+                defaults::EXPRESSION_RETURN_REGISTER.to_string()
             }
+            "direct" => value.to_string(),
             &_ => panic!(),
         }
     }
@@ -197,6 +194,14 @@ pub trait Compiler {
     fn give_operand_before_value(&mut self, value: &Token) -> Operand { 
         todo!()
     }
+
+    /// Instruction done before an assignment with a value that it's a variable 
+    /// id
+    ///
+    /// For Assembly outputs, it probably needs to move the value to the 
+    /// expression return register. This function could be useless for some 
+    /// other platforms
+    fn before_assignment_of_value_is_id(&mut self, value: &Token);
 
     /// Links all generated files to one output file (library or binary according
     /// to the selected one)
