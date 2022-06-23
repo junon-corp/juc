@@ -11,10 +11,12 @@ About the Rust code, it's often reviewed to optimize some parts and to better fo
 ## Simple example
 ```junon
 fun main {
-    let a: int = 3
-    a = 5
+    let a: int = 1
+    a = 2
 
-    let b: int = { 4 + 5 }
+    let b: int = { 3 + 4 }
+    let c: int[5] = [1, 2, 3, 4, 5]
+
     ret
 }
 
