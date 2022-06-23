@@ -4,6 +4,8 @@
 
 use std::path::Path;
 
+use x64asm::operand::Operand;
+
 use jup::{
     lang::{
         elements::{ 
@@ -131,6 +133,69 @@ pub trait Compiler {
         let expression = self.data().next_element.clone();
         self.check(&expression);
         self.data().is_skip_next = true;
+    }
+
+    /// Returns the name of the value's kind
+    ///
+    /// Possible returns :
+    /// - "expression" : When it's the token for expression begin
+    /// - "direct" : When it's a string or a digit
+    /// - "id" : When it's a variable id
+    ///
+    /// Note : It's probably not the best way to implements that, returning a 
+    /// string is stupider than returning an enum object (example: KindOfValue).
+    /// Todo : See "Note" before. Using an enumeration 
+    fn what_kind_of_value(value: &Token) -> &str {
+        if value == &Token::BracketOpen {
+            return "expression";
+        } 
+
+        let value = value.to_string(); // Todo : For strings
+        if value.parse::<f64>().is_ok() {
+            return "direct";
+        }
+
+        "id"
+    }
+
+    /// Function to call before giving the "value" variable
+    ///
+    /// When it's the value is a variable identifier, it returns the variable's 
+    /// stack position to be retrieved in Assembly code.
+    ///
+    /// When it's an expression, it executes the expression and returns the 
+    /// register for expression returns
+    ///
+    /// Else, it simply returns the value as String
+    fn give_value(&mut self, value: &Token) -> String {
+        match Self::what_kind_of_value(value) {
+            "expression" => {
+                self.execute_next_expression();
+                defaults::EXPRESSION_RETURN_REGISTER.to_string()
+            },
+            "direct" => value.to_string(),
+            "id" => {
+                let variable = self.data().variable_stack.get(&value.to_string()).unwrap();
+                let variable = variable.clone();
+                self.give_value_of_variable(&variable)
+            }
+            &_ => panic!(),
+        }
+    }
+
+    /// This function is used by `give_value()` and has to be implemented for
+    /// each platform because it determines the way of giving a variable from
+    /// its position in the stack
+    fn give_value_of_variable(&mut self, variable: &Variable) -> String;
+
+    /// Gives the operand to place before the value according to which type of
+    /// value it's.
+    ///
+    /// Only useful for Assembly outputs, then it's defined with only a 
+    /// `todo!()` inside the function for function that do not need it, it 
+    /// should not be called if it's useless for the platform.
+    fn give_operand_before_value(&mut self, value: &Token) -> Operand { 
+        todo!()
     }
 
     /// Links all generated files to one output file (library or binary according

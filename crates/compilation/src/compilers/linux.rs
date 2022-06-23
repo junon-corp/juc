@@ -3,10 +3,20 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::path::Path;
+
 use x64asm::{
-    formatter::Formatter, instruction as i, instruction::Instruction, label, mnemonic::Mnemonic::*,
-    operand::Op, reg, register::Register::*, section, section::Section::*,
+    formatter::Formatter, 
+    instruction as i, 
+    instruction::Instruction, 
+    label, 
+    mnemonic::Mnemonic::*,
+    operand::{Op, Operand},
+    reg, 
+    register::Register::*, 
+    section, 
+    section::Section::*,
 };
+
 use jup::lang::{
     elements::{
         Element,
@@ -17,6 +27,7 @@ use jup::lang::{
     },
     tokens::Token,
 };
+
 use args::Args;
 use platform;
 
@@ -146,7 +157,28 @@ impl Compiler for LinuxCompiler {
         &mut self.data
     }
 
-    // --- ASM code generators
+    /// Returns the expression for retrieving a value in the stack at the 
+    /// variable's position
+    fn give_value_of_variable(&mut self, variable: &Variable) -> String {
+        format!(
+            "[{}-{}]", 
+            defaults::EXPRESSION_RETURN_REGISTER.to_string(),
+            variable.stack_pos()
+        )
+    }
+
+    fn give_operand_before_value(&mut self, value: &Token) -> Operand {
+        match Self::what_kind_of_value(value) {
+            "expression" | "id" => {
+                Op::Expression("".to_string())
+            }
+            "direct" => {
+                // Todo : Match the value to select the right operand : (q|d|)word
+                Op::Dword
+            }
+            &_ => panic!(),
+        }
+    }
 
     /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
@@ -233,17 +265,15 @@ impl Compiler for LinuxCompiler {
         let instruction = if value == Token::None {
             i!(Expression("nop".to_string()))
         } else {
-            if value == Token::BracketOpen {
-                self.execute_next_expression();
-                i!(Mov, reg!(defaults::RETURN_REGISTER), reg!(defaults::EXPRESSION_RETURN_REGISTER))
-            } else {
-                i!(Mov, reg!(defaults::RETURN_REGISTER), Op::Expression(value.to_string()))
-            }
+            i!(
+                Mov, 
+                reg!(defaults::RETURN_REGISTER), 
+                Op::Expression(self.give_value(&value))
+            )
         };
 
         self.data().asm_formatter.add_instructions(&mut vec![
             instruction,
-            i!(Mov, reg!(Rsp), reg!(Rbp)),
             i!(Pop, reg!(Rbp)),
             i!(Ret),
         ]);
@@ -265,25 +295,19 @@ impl Compiler for LinuxCompiler {
         }
 
         let id: String          = variable.id();
-        let type_: &Type        = variable.type_();
-        let stack_pos: usize    = variable.stack_pos();
 
         let instruction = i!(
             Mov,
-            Op::Expression(format!("[rbp-{}]", stack_pos)),
-            {
-                if value == &Token::BracketOpen {
-                    self.execute_next_expression();
-                    Op::Expression("".to_string())
-                } else { 
-                    Op::Dword // todo!() : Matching with variable's type  
-                }
-            },
+            Op::Expression(self.give_value_of_variable(variable)),
+            self.give_operand_before_value(value),
             Op::Expression({
+                // Here, we don't use completely `give_value()` because it also
+                // executes the expression and it's not needed. 
                 if value == &Token::BracketOpen {
                     defaults::EXPRESSION_RETURN_REGISTER.to_string()
                 } else {
-                    value.to_string()
+                    // `value` cannot be `Token::BracketOpen`
+                    self.give_value(value)
                 }
             })
         )
