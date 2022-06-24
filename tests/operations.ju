@@ -1,4 +1,4 @@
-fun main {
+fun foo {
     let a: int = { 1 + 2 }
     a = { 3 - 4 }
     a = { 5 * 6 }
@@ -7,11 +7,12 @@ fun main {
     ret
 }
 
-fun foo: int {
+fun main: int {
     let a: int = { 5 + 6 }
     let b: int = a
-
-    let c: int = { b + 2 }
+    let c: int = { a + 5 }
+    let d: int = { a + b }
+    let e: int = { 5 - a }
 
     ret c
 }
