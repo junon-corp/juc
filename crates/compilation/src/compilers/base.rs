@@ -124,6 +124,7 @@ pub trait Compiler {
     fn check(&mut self, element: &Element) {
         match element.clone() {
             Element::Array(values) => {},
+            Element::Assembly(code) => self.at_assembly(code),
             Element::Expression(elements) => self.call(&elements),
             Element::Function(function) => self.at_function(function),
             Element::Operation(operation) => match operation.operator() {
@@ -231,6 +232,8 @@ pub trait Compiler {
     fn finish_one(&mut self, source: &String);
 
     fn data(&mut self) -> &mut CompilerData;
+
+    fn at_assembly(&mut self, code: Token);
 
     fn at_function(&mut self, function: Function);
     fn at_static(&mut self, variable: Variable);

@@ -233,6 +233,12 @@ impl Compiler for LinuxCompiler {
         self.data().asm_formatter.add_instruction(instruction);
     }
 
+    fn at_assembly(&mut self, code: Token) {
+        self.data().asm_formatter.add_instruction(i!(
+            Expression(code.to_string())
+        ));
+    }
+
     /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
         let id: String = function.id();
