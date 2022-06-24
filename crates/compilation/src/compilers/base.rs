@@ -201,7 +201,7 @@ pub trait Compiler {
     /// For Assembly outputs, it probably needs to move the value to the 
     /// expression return register. This function could be useless for some 
     /// other platforms
-    fn before_assignment_of_value_is_id(&mut self, value: &Token);
+    fn before_getting_value_when_id(&mut self, value: &Token);
 
     /// Links all generated files to one output file (library or binary according
     /// to the selected one)

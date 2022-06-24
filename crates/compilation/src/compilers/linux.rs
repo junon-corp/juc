@@ -182,7 +182,7 @@ impl Compiler for LinuxCompiler {
 
     /// Move the value to the expression return register, and assign the 
     /// expression default register to retrieve the value of the variable
-    fn before_assignment_of_value_is_id(&mut self, value: &Token) {
+    fn before_getting_value_when_id(&mut self, value: &Token) {
         let instruction = i!(
             Mov,
             reg!(defaults::EXPRESSION_RETURN_REGISTER),
