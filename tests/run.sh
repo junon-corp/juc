@@ -30,9 +30,9 @@ else
 fi
 
 # Build
-echo -e "$0 : cargo run -- $SRC -o bin/test_$1"
+echo -e "$0 : cargo run -- $SRC -o bin/test_$@"
 export RUST_BACKTRACE=1
-cargo run -- $SRC -o bin/test_$1
+cargo run -- $SRC -o bin/test_$@
 
 # Run
 ./bin/test_$1
