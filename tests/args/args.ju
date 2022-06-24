@@ -1,2 +1,4 @@
-fun main
-    ret ok
+fun main {
+    @ call a
+    ret
+}
