@@ -14,12 +14,13 @@ use rslog::{
 const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help page";
 
 /// List of the possible options
-const OPTION_FLAGS: [char; 5] = [
+const OPTION_FLAGS: [char; 6] = [
     'h', // help
     'l', // library
     'p', // platform
     'o', // output
     'd', // directory
+    'a', // add
 ];
 
 pub struct Args {
@@ -95,6 +96,7 @@ impl Args {
                     break; // yes it is, I stop the check
                 }
             }
+
             // The flag was not found in `OPTIONS`
             if !is_valid {
                 logger.add_log(
