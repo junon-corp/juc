@@ -4,7 +4,11 @@
 
 use std::path::Path;
 
-use x64asm::operand::Operand;
+use x64asm::{
+    operand::Operand,
+    mnemonic::Mnemonic,
+    register::Register,
+};
 
 use jup::{
     lang::{
@@ -195,14 +199,16 @@ pub trait Compiler {
         todo!()
     }
 
+    fn give_operand_for_value(&mut self, value: &Token) -> (Operand, bool);
+
     /// Instruction done before an assignment with a value that it's a variable 
     /// id
     ///
     /// For Assembly outputs, it probably needs to move the value to the 
     /// expression return register. This function could be useless for some 
     /// other platforms
-    fn before_getting_value_when_id(&mut self, value: &Token);
-
+    fn before_getting_value_when_id(&mut self, value: &Token, to_register: Register);
+    
     /// Links all generated files to one output file (library or binary according
     /// to the selected one)
     fn link(&mut self);
@@ -218,6 +224,8 @@ pub trait Compiler {
     fn at_function(&mut self, function: Function);
     fn at_static(&mut self, variable: Variable);
     fn at_variable(&mut self, variable: Variable);
+
+    fn arithmetic_operation(&mut self, operation: &Operation, operation_mnemonic: Mnemonic);
 
     fn at_assign(&mut self, operation: &Operation);
     fn at_plus(&mut self, operation: &Operation);

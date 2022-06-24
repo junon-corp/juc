@@ -9,10 +9,12 @@ use x64asm::{
     instruction as i, 
     instruction::Instruction, 
     label, 
+    mnemonic::Mnemonic,
     mnemonic::Mnemonic::*,
     operand::{Op, Operand},
     reg, 
-    register::Register::*, 
+    register::Register,
+    register::Register::*,
     section, 
     section::Section::*,
 };
@@ -180,12 +182,32 @@ impl Compiler for LinuxCompiler {
         }
     }
 
-    /// Move the value to the expression return register, and assign the 
-    /// expression default register to retrieve the value of the variable
-    fn before_getting_value_when_id(&mut self, value: &Token) {
+    fn give_operand_for_value(&mut self, value: &Token) -> (Operand, bool) {
+        if Self::what_kind_of_value(value) == "id" {
+            let value_as_variable = self.data().variable_stack
+                .get(&value.to_string())
+                .unwrap()
+                .clone();
+            (
+                Op::Expression(self.give_value_of_variable(&value_as_variable)), 
+                true
+            )
+        } else {
+            (Op::Expression(self.give_value(value)), false)
+        }
+    }
+
+    /// When the value is in fact a variable's id, moves the value to the 
+    /// expression return register, and assign the expression default register 
+    /// to retrieve the value of the variable
+    fn before_getting_value_when_id(&mut self, value: &Token, to_register: Register) {
+        if Self::what_kind_of_value(value) != "id" {
+            return;
+        }
+
         let instruction = i!(
             Mov,
-            reg!(defaults::EXPRESSION_RETURN_REGISTER),
+            reg!(to_register),
             {
                 let value_as_variable = self.data().variable_stack
                     .get(&value.to_string())
@@ -256,26 +278,59 @@ impl Compiler for LinuxCompiler {
         self.assign_variable(&variable_to_assign);
     }
 
+    fn arithmetic_operation(&mut self, operation: &Operation, operation_mnemonic: Mnemonic) {
+        let (arg1_value, arg1_is_id) 
+            = self.give_operand_for_value(operation.arg1());
+        
+        let (arg2_value, arg2_is_id) 
+            = self.give_operand_for_value(operation.arg2());
+
+        let mut instructions = if arg1_is_id && arg2_is_id {
+            vec![
+                i!(
+                    Mov, 
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER_2), 
+                    arg1_value
+                ),
+                i!(
+                    Mov, 
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER), 
+                    arg2_value
+                ),
+                i!(
+                    operation_mnemonic,
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER), 
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER_2)
+                )
+            ]
+        } else {
+            vec![
+                i!(
+                    Mov, 
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER), 
+                    arg1_value
+                ),
+                i!(
+                    operation_mnemonic, 
+                    reg!(defaults::EXPRESSION_RETURN_REGISTER), 
+                    arg2_value
+                ),
+            ]
+        };
+
+        self.data().asm_formatter.add_instructions(&mut instructions);
+    }
+
     fn at_plus(&mut self, operation: &Operation) {
-        self.data().asm_formatter.add_instructions(&mut vec![
-            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
-            i!(Add, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg2().to_string())),
-        ]);
+        self.arithmetic_operation(operation, Mnemonic::Add);
     }
     
     fn at_minus(&mut self, operation: &Operation) {
-        self.data().asm_formatter.add_instructions(&mut vec![
-            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
-            i!(Sub, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg2().to_string())),
-        ]);
+        self.arithmetic_operation(operation, Mnemonic::Sub);
     }
 
     fn at_multiply(&mut self, operation: &Operation) {
-        self.data().asm_formatter.add_instructions(&mut vec![
-            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), Op::Expression(operation.arg1().to_string())),
-            i!(Mov, reg!(Rdx), Op::Expression(operation.arg2().to_string())),
-            i!(Mul, reg!(Rdx)),
-        ]);
+        // todo!();
     }
 
     fn at_divide(&mut self, operation: &Operation) {
@@ -286,6 +341,11 @@ impl Compiler for LinuxCompiler {
         let instruction = if value == Token::None {
             i!(Expression("nop".to_string()))
         } else {
+            self.before_getting_value_when_id(
+                &value, 
+                defaults::EXPRESSION_RETURN_REGISTER
+            );
+            
             i!(
                 Mov, 
                 reg!(defaults::RETURN_REGISTER), 
@@ -317,10 +377,10 @@ impl Compiler for LinuxCompiler {
 
         let id: String          = variable.id();
 
-        match Self::what_kind_of_value(value) {
-            "id" => self.before_assignment_of_value_is_id(value),
-            &_ => {},
-        }
+        self.before_getting_value_when_id(
+            value, 
+            defaults::EXPRESSION_RETURN_REGISTER
+        );
 
         let instruction = i!(
             Mov,
@@ -330,6 +390,7 @@ impl Compiler for LinuxCompiler {
                 // Here, we don't use completely `give_value()` because it also
                 // executes the expression and it's not needed. 
                 if value == &Token::BracketOpen {
+                    self.execute_next_expression();
                     defaults::EXPRESSION_RETURN_REGISTER.to_string()
                 } else {
                     // `value` cannot be `Token::BracketOpen`
