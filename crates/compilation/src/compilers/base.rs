@@ -42,7 +42,18 @@ pub trait Compiler {
 
     /// Starting point for each source file
     fn init_one(&mut self, source: &String) {
-        self.data().current_source = format!("{}/{}.asm", defaults::BUILD_FOLDER, source);
+        let asm_file_path = format!(
+            "{}/{}.asm", 
+            defaults::BUILD_FOLDER, 
+            source
+        );
+
+        self.data().current_source = asm_file_path.clone();
+        let asm_file_path = Path::new(&asm_file_path);
+
+        std::fs::create_dir_all(asm_file_path.parent().unwrap()).unwrap();
+
+        println!("{:?}", asm_file_path);
 
         let mut tokenizer = Tokenizer::from_path(Path::new(source)).unwrap();
         tokenizer.run();

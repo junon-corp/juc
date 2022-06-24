@@ -102,7 +102,16 @@ impl Compiler for LinuxCompiler {
             bin_filename = bin_filename_;
         });
 
+        let mut to_add = String::new();
+        Args::when_flag('a', &self.data().options, |to_add_: String| {
+            to_add = to_add_;
+        });
+
         let mut args = vec!["-o".to_string(), bin_filename.to_string()];
+        if !to_add.is_empty() {
+            args.push(to_add);
+        }
+
         if self.data().is_library {
             args.push("-shared".to_string());
         } else {
@@ -135,6 +144,7 @@ impl Compiler for LinuxCompiler {
         {
             let current_source = self.data().current_source.clone();
             let path = Path::new(&current_source);
+            println!("{:?}", path);
             self.data().asm_formatter.to_file(&path).unwrap();
         }
         self.data().asm_formatter.reset();
