@@ -164,7 +164,7 @@ impl Compiler for LinuxCompiler {
     fn give_value_of_variable(&mut self, variable: &Variable) -> String {
         format!(
             "[{}-{}]", 
-            defaults::EXPRESSION_RETURN_REGISTER.to_string(),
+            Register::Rbp.to_string(),
             variable.stack_pos()
         )
     }
