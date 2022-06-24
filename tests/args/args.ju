@@ -1,3 +1,5 @@
+@ extern a
+
 fun main {
     @ call a
     ret
