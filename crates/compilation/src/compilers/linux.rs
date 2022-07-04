@@ -144,7 +144,6 @@ impl Compiler for LinuxCompiler {
         {
             let current_source = self.data().current_source.clone();
             let path = Path::new(&current_source);
-            println!("{:?}", path);
             self.data().asm_formatter.to_file(&path).unwrap();
         }
         self.data().asm_formatter.reset();

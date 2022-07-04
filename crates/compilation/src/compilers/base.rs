@@ -53,15 +53,11 @@ pub trait Compiler {
 
         std::fs::create_dir_all(asm_file_path.parent().unwrap()).unwrap();
 
-        println!("{:?}", asm_file_path);
-
         let mut tokenizer = Tokenizer::from_path(Path::new(source)).unwrap();
         tokenizer.run();
 
         let mut parser = Parser::new(tokenizer.tokenized().clone());
         parser.run();
-
-        println!("{:#?}", parser.parsed());
 
         self.data().current_parsed = parser.parsed().clone();
 
