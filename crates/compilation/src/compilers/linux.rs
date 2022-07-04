@@ -345,7 +345,7 @@ impl Compiler for LinuxCompiler {
                                 let instruction = i!(
                                     Mov,
                                     Op::Expression(self.give_value_of_variable(&current_param)),
-                                    self.give_register_for_param(element, param_i)
+                                    self.give_register_for_param(element, param_i - 1)
                                 );
                                 self.data().asm_formatter.add_instruction(instruction);
 
