@@ -1,4 +1,8 @@
-fun main
-    print "hello world\n"
-    exit "A"
+fun main {
+    foo(5; 'a')
     ret
+}
+
+fun foo(a: int, b: byte) {
+    ret
+}
