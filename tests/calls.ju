@@ -1,9 +1,9 @@
 fun main {
-    let b: byte = 2
-    foo(5, b, 8987215534)
+    let b: int = 2
+    foo(1, b, 3, 4)
     ret
 }
 
-fun foo(a: int, b: byte, c: bigint) {
+fun foo(a: int, b: int, c: int, d: int) {
     ret
 }
