@@ -224,6 +224,8 @@ pub trait Compiler {
 
     fn give_operand_for_value(&mut self, value: &Token) -> (Operand, bool);
 
+    fn give_register_for_param(&mut self, param: Element, param_i: usize) -> Operand;
+
     /// Instruction done before an assignment with a value that it's a variable 
     /// id
     ///

@@ -93,6 +93,8 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>) {
 
         variable_stack: Dict::new(),
         i_variable_stack: 0,
+
+        i_parameter_stack: 0,
     };
 
     // Runs the right compiler according to the platform

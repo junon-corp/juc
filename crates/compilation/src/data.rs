@@ -29,4 +29,6 @@ pub struct CompilerData {
     //                        id
     pub variable_stack: Dict<String, Variable>,
     pub i_variable_stack: usize,
+
+    pub i_parameter_stack: usize,
 }

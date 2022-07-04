@@ -207,6 +207,20 @@ impl Compiler for LinuxCompiler {
         }
     }
 
+    /// According to https://docs.microsoft.com/en-us/cpp/build/x64-calling-convention?view=msvc-170
+    fn give_register_for_param(&mut self, _param: Element, param_i: usize) -> Operand {
+        match param_i {
+            0 => reg!(Rcx),
+            1 => reg!(Rdx),
+            2 => reg!(R8),
+            3 => reg!(R9),
+            _ => {
+                self.data().i_parameter_stack += 4; // TODO : decltype
+                Op::Expression(format!("[rsp-{}]", self.data().i_parameter_stack))
+            }
+        }
+    }
+
     /// When the value is in fact a variable's id, moves the value to the 
     /// expression return register, and assign the expression default register 
     /// to retrieve the value of the variable
@@ -240,20 +254,51 @@ impl Compiler for LinuxCompiler {
     }
 
     fn at_call(&mut self, fun_to_call: &String) {
-        if self.data().next_element.clone() != None {
-            self.when_parameters();
+        // Pass parameters when required
+        match self.data().next_element.clone() {
+            Element::Parameters(params) => {
+                let mut stack_parameters_counter: usize = 0;
+                let mut param_i: usize = 0;
+
+                for element in params {
+                    // Todo : #[derive(PartialEq, Eq)] in jup
+                    //
+                    // if element == Element::Other(Token::Comma) {
+                    //     continue;
+                    // }
+                    match element {
+                        Element::Other(Token::Comma) => continue,
+                        _ => {}
+                    }
+
+                    let instruction = i!(
+                        Mov,
+                        self.give_register_for_param(element.clone(), param_i),
+                        match element {
+                            Element::Expression(_) => reg!(defaults::EXPRESSION_RETURN_REGISTER),
+                            Element::Other(value) => {
+                                self.give_operand_for_value(&value).0
+                            }
+                            _ => panic!()
+                        }
+                    );
+
+                    self.data().asm_formatter.add_instruction(instruction);
+                    param_i += 1;
+                }
+            }
+            _ => {}
         }
         
-        self.data().asm_formatter.add_instruction(i!(
-            Call, Op::Label(fun_to_call.to_string())
-        ));
+        self.data().asm_formatter.add_instructions(&mut vec![
+            i!(Call, Op::Label(fun_to_call.to_string())),
+            i!(Mov, reg!(defaults::EXPRESSION_RETURN_REGISTER), reg!(defaults::RETURN_REGISTER))
+        ]);
     }
 
     /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
         let id: String = function.id();
-        // todo!();
-        // Parameters and return type 
 
         self.data().asm_formatter.add_instructions(&mut vec![
             i!(Global, Op::Label(id.to_string())),
@@ -261,6 +306,63 @@ impl Compiler for LinuxCompiler {
             i!(Push, reg!(Rbp)),
             i!(Mov, reg!(Rbp), reg!(Rsp)),
         ]);
+
+        let params = match function.params() {
+            Element::Parameters(elements) => elements,
+            _ => panic!()
+        };
+
+        // Retrieves given parameters when needed
+        if !params.is_empty() {
+            let mut current_param = Variable::new(
+                Token::Other("".to_string()),
+                Type::None, 
+                Token::None
+            );
+
+            let mut stack_parameters_counter: usize = 0;
+            let mut param_i: usize = 0;
+
+            for element in params {                
+                match element {
+                    Element::Other(ref token) => match token.clone() {
+                        Token::TypeDef | Token::Comma => continue,
+                        Token::Other(ref value) => {
+                            if current_param.id().is_empty() {
+                                current_param.set_id(token.clone());
+                                param_i += 1;
+                            } else {
+                                current_param.set_type(Type::from_string(value.clone()));
+                                
+                                self.data().variable_stack.insert(
+                                    current_param.id(), 
+                                    current_param.clone()
+                                );
+
+                                current_param.set_stack_pos(self.data().i_variable_stack + current_param.type_().to_usize());
+                                let stack_pos: usize = current_param.stack_pos();
+                                self.data().i_variable_stack = stack_pos;
+
+                                let instruction = i!(
+                                    Mov,
+                                    Op::Expression(self.give_value_of_variable(&current_param)),
+                                    self.give_register_for_param(element, param_i)
+                                );
+                                self.data().asm_formatter.add_instruction(instruction);
+
+                                current_param = Variable::new(
+                                    Token::Other("".to_string()),
+                                    Type::None, 
+                                    Token::None
+                                );
+                            }
+                        },
+                        _ => panic!()
+                    }
+                    _ => panic!()
+                }
+            }
+        }
 
         self.data().i_variable_stack = 0;
     }
@@ -384,6 +486,9 @@ impl Compiler for LinuxCompiler {
             i!(Pop, reg!(Rbp)),
             i!(Ret),
         ]);
+
+        self.data().i_variable_stack = 0;
+        self.data().i_parameter_stack = 0;
     }
 
     /// Gets the variable's stack position and mov a new value at this index
