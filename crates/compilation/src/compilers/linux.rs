@@ -239,6 +239,16 @@ impl Compiler for LinuxCompiler {
         ));
     }
 
+    fn at_call(&mut self, fun_to_call: &String) {
+        if self.data().next_element.clone() != None {
+            self.when_parameters();
+        }
+        
+        self.data().asm_formatter.add_instruction(i!(
+            Call, Op::Label(fun_to_call.to_string())
+        ));
+    }
+
     /// Defines a new function in ASM code and initialize the variables' stack
     fn at_function(&mut self, function: Function) {
         let id: String = function.id();
@@ -452,10 +462,6 @@ impl Compiler for LinuxCompiler {
     }
 
     fn at_other(&mut self, other: Token) {
-        if other == Token::NewLine {
-            return;
-        }
-
         self.data().asm_formatter.add_instruction(
             i!(Mov, reg!(Rbx), Op::Expression(other.to_string()))
         );

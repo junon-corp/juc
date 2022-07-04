@@ -136,8 +136,19 @@ pub trait Compiler {
                 _ => panic!(),
             },
             Element::Return(token) => self.at_return(token),
+            Element::Parameters(tokens) => {},
             Element::Variable(variable) => self.at_variable(variable),
-            Element::Other(token) => self.at_other(token),
+            Element::Other(token) => match token {
+                Token::NewLine => {},
+                Token::Other(ref value) => {
+                    if self.data().variable_stack.get(value).is_none() {
+                        self.at_call(&value)
+                    } else {
+                        self.at_other(token)
+                    }
+                }
+                _ => panic!() // never happens
+            },
         }
     }
 
@@ -234,6 +245,7 @@ pub trait Compiler {
     fn data(&mut self) -> &mut CompilerData;
 
     fn at_assembly(&mut self, code: Token);
+    fn at_call(&mut self, fun_to_call: &String);
 
     fn at_function(&mut self, function: Function);
     fn at_static(&mut self, variable: Variable);
