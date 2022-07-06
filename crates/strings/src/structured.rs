@@ -7,35 +7,35 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct MultiString {
     en: String,
-    fr: String,
-    // probably other languages later
+    fr: Option<String>,
+    de: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Log {
-    title: MultiString,
-    message: MultiString,
-    hint: MultiString,
+    title: Option<MultiString>,
+    message: Option<MultiString>,
+    hint: Option<MultiString>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Errors {
-    no_given_arguments: MultiString,
-    invalid_path_or_not_a_directory: MultiString,
-    source_file_does_not_exist: MultiString,
-    invalid_file_extension: MultiString,
-    wrong_file_extension: MultiString,
-    no_file_extension: MultiString,
-    execution_failed: MultiString,
-    platform: MultiString
+    no_given_arguments: Log,
+    invalid_path_or_not_a_directory: Log,
+    source_file_does_not_exist: Log,
+    invalid_file_extension: Log,
+    wrong_file_extension: Log,
+    no_file_extension: Log,
+    execution_failed: Log,
+    platform: Log
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Infos {
-    library_building: MultiString,
-    working_directory: MultiString,
-    ignored_option_flag: MultiString,
-    finished: MultiString,
+    library_building: Log,
+    working_directory: Log,
+    ignored_option_flag: Log,
+    finished: Log,
 }    
 
 #[derive(Debug, Deserialize)]
