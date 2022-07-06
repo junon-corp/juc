@@ -8,6 +8,8 @@ edition = "2021"
 members = [
     "crates/args/",
     "crates/compilation/",
+    "crates/platform/",
+    "crates/strings/",
 ]
 
 [dependencies]
