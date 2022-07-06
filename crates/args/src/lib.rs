@@ -14,13 +14,14 @@ use rslog::{
 const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help page";
 
 /// List of the possible options
-const OPTION_FLAGS: [char; 6] = [
+const OPTION_FLAGS: [char; 7] = [
     'h', // help
     'l', // library
     'p', // platform
     'o', // output
     'd', // directory
     'a', // add
+    's', // speak language
 ];
 
 pub struct Args {

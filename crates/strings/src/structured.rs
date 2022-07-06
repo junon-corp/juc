@@ -53,6 +53,7 @@ pub struct HelpAvailableFlags {
     pub o: MultiString,
     pub d: MultiString,
     pub a: MultiString,
+    pub s: MultiString,
 }
 
 #[derive(Debug, Deserialize)]

@@ -11,12 +11,14 @@ use crate::structured::*;
 
 pub struct StringsManager {
     deserialized: Strings,
+    speak_lang: String,
 }
 
 impl StringsManager {
     pub fn new(deserialized: Strings) -> Self {
         Self {
-            deserialized
+            deserialized,
+            speak_lang: "en".to_string(),
         }
     }
 
@@ -29,9 +31,38 @@ impl StringsManager {
         Self::new(serde_json::from_str(string).unwrap())
     }
 
+    pub fn set_speak_language(&mut self, speak_lang: String) {
+        self.speak_lang = speak_lang;
+    }
+
     pub fn get(&self) -> &Strings {
         &self.deserialized
     }
+
+    pub fn speak_lang(&self) -> &String {
+        &self.speak_lang
+    }
+}
+
+/// Gets string in the current language
+#[macro_export]
+macro_rules! get_string {
+    ($strings_manager:expr, $object:expr) => {
+        {
+            let string_current = match $strings_manager.speak_lang().as_str() {
+                "en" => Some($object.en.clone()),
+                "fr" => $object.fr.clone(),
+                "de" => $object.de.clone(),
+                _ => panic!(),
+            };
+    
+            if string_current == None {
+                $object.en.clone()
+            } else {
+                string_current.unwrap()
+            }  
+        }
+    };
 }
 
 #[test]
