@@ -1,0 +1,158 @@
+{
+    "help": {
+        "title": {
+            "en": "Junon help page (command line)\n",
+            "fr": "Page d'aide de Junon (ligne de commande)\n\n"
+        },
+        "arguments": {
+            "sources": {
+                "en": "- ?sources : paths of the Junon source code files wanted for compilation\n",
+                "fr": "- ?sources : chemins des fichier sources Junon voulu à la compilation\n"
+            },
+            "options": {
+                "en": "- ?options : an option should look like that : -<option flag> <option id>\n",
+                "fr": "- ?options : une option devrait ressembler à ça : -<flag d'option> <id option>\n"
+            }
+        },
+        "available_flags": {
+            "title": {
+                "en": "Available option flags:\n",
+                "fr": "Flags d'option disponibles:\n"
+            },
+            "h": {
+                "en": "\t-h Get this help page\n",
+                "fr": "\t-h Obtenir cette page d'aide\n"
+            },
+            "l": {
+                "en": "\t-l Make a library instead of a binary\n",
+                "fr": "\t-l Créer une bibliothèque au lieu d'un binaire\n"
+            },
+            "p": {
+                "en": "\t-p <platform name> : Compile for this platform\n",
+                "fr": "\t-p <nom plateforme> : Compile pour cette platforme\n"
+            },
+            "o": {
+                "en": "\t-o <path> : Path for the output file\n",
+                "fr": "\t-o <chemin> : Chemin pour le fichier de sortie\n"
+            },
+            "d": {
+                "en": "\t-d <path> : Replace the current directory context location\n",
+                "fr": "\t-d <chemin> : Remplace le contexte d'emplacement à la place du répétoire courant\n"
+            },
+            "a": {
+                "en": "\t-a <path> : Add by linking, an object/library file to the output file\n",
+                "fr": "\t-a <chemin> : Ajoute par linkage, un fichier d'objet/bibliothèque au fichier de sortie\n"
+            }
+        }
+    },
+    "logs": {
+        "infos": {
+            "library_building": {
+                "title": {
+                    "en": "Library building",
+                    "fr": "Construction de la bibliothèque"
+                }
+            },
+            "working_directory": {
+                "title": {
+                    "en": "Working directory : '{}'",
+                    "fr": "Répéretoire de travail : '{}'"
+                }
+            },
+            "ignored_option_flag": {
+                "title": {
+                    "en": "Ignored option flag",
+                    "fr": "Flag d'option ignoré"
+                },
+                "hint": {
+                    "en": "Run again, with the option flag '-h' to get the help page",
+                    "fr": "Relancer avec le flag d'option '-h' pour obtenir la page d'help"
+                }
+            },
+            "finished": {
+                "title": {
+                    "en": "Finished",
+                    "fr": "Terminé"
+                }
+            }
+        },
+        "errors": {
+            "no_given_arguments" : {
+                "title": {
+                    "en": "No given arguments",
+                    "fr": "Aucun arguments donné"
+                },
+                "hint": {
+                    "en": "Run again, with the option flag '-h' to get the help page",
+                    "fr": "Relancer avec le flag d'option '-h' pour obtenir la page d'help"
+                }
+            },
+            "invalid_path_or_not_a_directory": {
+                "title": {
+                    "en": "Invalid path or not a directory",
+                    "fr": "Chemin invalide ou n'est pas un répértoire"
+                },
+                "message": {
+                    "en": "The given directory '{}' does not exist or it's not a directory",
+                    "fr": "The le dossier donné '{}' n'existe pas ou n'est pas un répértoire"
+                }
+            },
+            "source_file_does_not_exist": {
+                "title": {
+                    "en": "Source file does not exist",
+                    "fr": "The le fichier source n'existe pas"
+                },
+                "message": {
+                    "en": "The given source file '{}' cannot be found in the current directory",
+                    "fr": "Le fichier source donné '{}' ne peut pas être trouvé dans le répértoire courant"
+                }
+            },
+            "invalid_file_extension": {
+                "title": {
+                    "en": "Invalid file extension",
+                    "fr": "Extension de fichier invalide"
+                },
+                "hint": {
+                    "en": "Rename '{}' par '{}.{}'",
+                    "fr": "Renommer '{}' par '{}.{}'"
+                }
+            },
+            "wrong_file_extension": {
+                "message": {
+                    "en": "The given source file '{}' does not have right extension, it should be '{}' not {:?}",
+                    "fr": "Le fichier source donné '{}' n'a pas la bonne extension, elle devrait être '{}' et non pas {:?}"
+                }
+            },
+            "no_file_extension": {
+                "message": {
+                    "en": "The given source file '{}' should have an extension",
+                    "fr": "Le fichier source donné '{}' devrait avoir une extension"
+                }
+            },
+            "execution_failed": {
+                "title": {
+                    "en": "Execution of '{}' failed",
+                    "fr": "L'execution de '{}' a echoué"
+                },
+                "hint": {
+                    "en": "The called program may be not installed. It could be a bug from the called program",
+                    "fr": "Le programme appellé n'est peut-être pas installé. Ca peut être un bug du programme appellé"
+                }
+            },
+            "platform": {
+                "title": {
+                    "en": "Platform : '{:?}'",
+                    "fr": "Platforme : '{:?}'"
+                },
+                "message": {
+                    "en": "Platform '{}' is not compatible with the current version of the compiler",
+                    "fr": "La plateforme '{}' n'est pas compatible avec la version actuelle du compilateur"
+                },
+                "hint": {
+                    "en": "Available platforms : {}",
+                    "fr": "Plateformes disponibles : {}"
+                }
+            }
+        }
+    }
+}
