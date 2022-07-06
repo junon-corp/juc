@@ -2,8 +2,8 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-mod manager;
-mod structured;
+pub mod manager;
+pub mod structured;
 
 use manager::StringsManager;
 

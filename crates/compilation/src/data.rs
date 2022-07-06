@@ -3,11 +3,15 @@
 // Copyright (c) Junon, Antonin Hérault
 
 use std::collections::HashMap as Dict;
+
 use jup::lang::elements::{ 
     Element, 
     variable::Variable 
 };
 use x64asm::formatter::Formatter;
+
+use strings::manager::StringsManager;
+
 use crate::scope::Scope;
 
 /// Important information given to the compiler
@@ -16,6 +20,8 @@ pub struct CompilerData {
 
     pub sources: Vec<String>,
     pub options: Dict<String, String>,
+
+    pub strings_manager: StringsManager,
 
     pub asm_formatter: Formatter,
 

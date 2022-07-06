@@ -10,13 +10,15 @@ use std::{
     process,
 };
 
-use args::Args;
-use compilation::defaults;
 use rslog::{
     level::LogLevel, 
     log::Log, 
     logger::Logger
 };
+
+use args::Args;
+use compilation::defaults;
+use strings;
 
 /// Retrieves all useful stuffs for the compiler, can set some things from the
 /// retrieved options before calling the compiler.
@@ -108,7 +110,7 @@ fn main() {
 
     // Run the right compiler with retrieved options for each source file
     // All source files will be linked together to one library or binary file
-    compilation::run_compiler(sources, options);
+    compilation::run_compiler(sources, options, strings::init_strings());
 
     let mut logger = Logger::new();
     logger.add_log(Log::info("Finished".to_string()));
