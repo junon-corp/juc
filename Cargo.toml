@@ -17,3 +17,4 @@ jup = { git = "https://github.com/junon-corp/jup" }
 rslog = { git = "https://github.com/antoninhrlt/rslog" }
 args = { path = "crates/args/" }
 compilation = { path = "crates/compilation/" }
+strings = { path = "crates/strings" }
