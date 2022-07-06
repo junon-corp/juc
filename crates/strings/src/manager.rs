@@ -7,7 +7,7 @@ use std::{
     path::Path,
 };
 
-use crate::structured::Strings;
+use crate::structured::*;
 
 pub struct StringsManager {
     deserialized: Strings,
@@ -28,8 +28,47 @@ impl StringsManager {
         }
     }
 
-    pub fn strings(&self) -> &Strings {
-        &self.deserialized
+    pub fn get<T>(&self, element: &str) -> &T {
+        let splitted: Vec<&str> = element.split(".").collect();
+        
+        let r: StringsObject = match splitted[0] {
+            "help" => {
+                StringsObject::Help(&self.deserialized.help)
+            },
+            "logs" => {
+                StringsObject::Logs(&self.deserialized.logs)
+            }
+            _ => panic!()
+        };
+
+        r.retrieve_object::<T>()
+    }
+}
+
+/// A variant type to retrieve an object from module `structured`
+enum StringsObject<'a> {
+    Help(&'a Help),
+    HelpArguments(&'a HelpArguments),
+    HelpAvailableFlags(&'a HelpAvailableFlags),
+    Logs(&'a Logs),
+    Infos(&'a Infos),
+    Errors(&'a Errors),
+    Log(&'a Log),
+    MultiString(&'a MultiString),
+}
+
+impl<'a> StringsObject<'a> {
+    fn retrieve_object<T>(&self) -> &T {
+        match *self {
+            StringsObject::Help(object) => object,
+            StringsObject::HelpArguments(object) => object,
+            StringsObject::HelpAvailableFlags(object) => object,
+            StringsObject::Logs(object) => object,
+            StringsObject::Infos(object) => object,
+            StringsObject::Errors(object) => object,
+            StringsObject::Log(object) => object,
+            StringsObject::MultiString(object) => object,
+        }
     }
 }
 
@@ -37,5 +76,5 @@ impl StringsManager {
 fn strings_manager() {
     let path = Path::new("../../src/strings.json");
     let strings = StringsManager::from_path(&path);
-    println!("{:#?}", strings.strings());
+    println!("{:#?}", strings.get::<Logs>("logs"));
 }
