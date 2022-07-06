@@ -4,21 +4,21 @@
 
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct MultiString {
     en: String,
     fr: String,
     // probably other languages later
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Log {
     title: MultiString,
     message: MultiString,
     hint: MultiString,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Errors {
     no_given_arguments: MultiString,
     invalid_path_or_not_a_directory: MultiString,
@@ -30,7 +30,7 @@ pub struct Errors {
     platform: MultiString
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Infos {
     library_building: MultiString,
     working_directory: MultiString,
@@ -38,13 +38,13 @@ pub struct Infos {
     finished: MultiString,
 }    
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Logs {
     infos: Infos,
     errors: Errors,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct HelpAvailableFlags {
     title: MultiString,
     h: MultiString,
@@ -55,20 +55,20 @@ pub struct HelpAvailableFlags {
     a: MultiString,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct HelpArguments {
     sources: MultiString,
     options: MultiString,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Help {
     title: MultiString,
     arguments: HelpArguments,
     available_flags: HelpAvailableFlags
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Strings {
     help: Help,
     logs: Logs,
