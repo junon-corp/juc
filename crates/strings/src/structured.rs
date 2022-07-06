@@ -40,7 +40,7 @@ pub struct Infos {
 
 #[derive(Deserialize)]
 pub struct Logs {
-    infos: Infos
+    infos: Infos,
     errors: Errors,
 }
 
@@ -70,6 +70,6 @@ pub struct Help {
 
 #[derive(Deserialize)]
 pub struct Strings {
-    help: Help
-    logs: Logs
+    help: Help,
+    logs: Logs,
 }
