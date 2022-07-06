@@ -1,0 +1,9 @@
+[package]
+name = "strings"
+authors = ["Junon", "Antonin Hérault <antonherault@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.138", features = ["derive"] }
+serde_json = "1.0.82"
