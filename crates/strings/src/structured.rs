@@ -4,21 +4,21 @@
 
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MultiString {
     pub en: String,
     pub fr: Option<String>,
     pub de: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Log {
     pub title: Option<MultiString>,
     pub message: Option<MultiString>,
     pub hint: Option<MultiString>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Errors {
     pub no_given_arguments: Log,
     pub invalid_path_or_not_a_directory: Log,
@@ -30,7 +30,7 @@ pub struct Errors {
     pub platform: Log
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Infos {
     pub library_building: Log,
     pub working_directory: Log,
@@ -38,13 +38,13 @@ pub struct Infos {
     pub finished: Log,
 }    
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Logs {
     pub infos: Infos,
     pub errors: Errors,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct HelpAvailableFlags {
     pub title: MultiString,
     pub h: MultiString,
@@ -56,20 +56,20 @@ pub struct HelpAvailableFlags {
     pub s: MultiString,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct HelpArguments {
     pub sources: MultiString,
     pub options: MultiString,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Help {
     pub title: MultiString,
     pub arguments: HelpArguments,
     pub available_flags: HelpAvailableFlags
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Strings {
     pub help: Help,
     pub logs: Logs,

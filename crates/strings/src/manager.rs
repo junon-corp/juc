@@ -9,6 +9,7 @@ use std::{
 
 use crate::structured::*;
 
+#[derive(Clone)]
 pub struct StringsManager {
     deserialized: Strings,
     speak_lang: String,

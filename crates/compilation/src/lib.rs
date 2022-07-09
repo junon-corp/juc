@@ -33,7 +33,7 @@ use crate::{
 
 /// Runs the right compiler according to the platform and set some important
 /// parameters as a `CompilerData` object sent to the platform's compiler
-pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strings_manager: StringsManager) {
+pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strings_manager: &StringsManager) {
     let mut logger = Logger::new();
 
     // Retrieves the output mode from `Args`
@@ -83,7 +83,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strin
         sources: sources.clone(),
         options: options.clone(),
         
-        strings_manager: strings_manager,
+        strings_manager: strings_manager.clone(),
 
         asm_formatter: Formatter::new(false),
 
