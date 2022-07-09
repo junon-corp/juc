@@ -60,7 +60,7 @@
             "working_directory": {
                 "title": {
                     "en": "Working directory : '{}'",
-                    "fr": "Répéretoire de travail : '{}'"
+                    "fr": "Répértoire de travail : '{}'"
                 }
             },
             "ignored_option_flag": {
