@@ -32,6 +32,7 @@ pub struct Errors {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Infos {
+    pub platform: Log,
     pub library_building: Log,
     pub working_directory: Log,
     pub ignored_option_flag: Log,

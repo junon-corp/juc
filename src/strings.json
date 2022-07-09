@@ -51,6 +51,12 @@
     },
     "logs": {
         "infos": {
+            "platform": {
+                "title": {
+                    "en": "Platform : '{}'",
+                    "fr": "Platforme : '{}'"
+                }
+            },
             "library_building": {
                 "title": {
                     "en": "Library building",
@@ -145,8 +151,8 @@
             },
             "platform": {
                 "title": {
-                    "en": "Platform : '{:?}'",
-                    "fr": "Platforme : '{:?}'"
+                    "en": "Invalid platform",
+                    "fr": "Plateforme invalide"
                 },
                 "message": {
                     "en": "Platform '{}' is not compatible with the current version of the compiler",
