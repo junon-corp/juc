@@ -49,7 +49,7 @@ fn main() {
                 LogLevel::Error,
                 sm.get().logs.errors.invalid_path_or_not_a_directory.title.as_ref().unwrap().get(&sm),
                 sm.get().logs.errors.invalid_path_or_not_a_directory.message.as_ref().unwrap().get(&sm)
-                    .replace("{}", &path)
+                    .replacen("{}", &path, 1)
             ));
         }
         logger.interpret();
@@ -66,47 +66,40 @@ fn main() {
     // Check after current directory set
     for source in sources {
         let path = Path::new(source);
+
         if !path.exists() {
             logger.add_log(Log::new(
                 LogLevel::Error,
-                "Source file does not exist".to_string(),
-                format!(
-                    "The given source file '{}' cannot be found in the current directory",
-                    source
-                ),
+                sm.get().logs.errors.source_file_does_not_exist.title.as_ref().unwrap().get(&sm),
+                sm.get().logs.errors.source_file_does_not_exist.message.as_ref().unwrap().get(&sm)
+                    .replacen("{}", &path.to_str().unwrap(), 1)
             ));
         }
-        if path.extension() != Some(OsStr::new("ju")) {
+        if path.extension() != Some(OsStr::new(defaults::EXTENSION)) {
             let error_message = match path.extension() {
                 Some(extension) => {
-                    format!(
-                        "The given source file '{}' does not have right \
-                        extension, it should be '{}' not {:?}",
-                        source,
-                        defaults::EXTENSION,
-                        extension
-                    )
+                    sm.get().logs.errors.wrong_file_extension.title.as_ref().unwrap().get(&sm)
+                        .replacen("{}", source, 1)
+                        .replacen("{}", defaults::EXTENSION, 1)
+                        .replacen("{:?}", &extension.to_os_string().into_string().unwrap(), 1)
                 }
                 None => {
-                    format!(
-                        "The given source file '{}' should have an extension",
-                        source
-                    )
+                    sm.get().logs.errors.no_file_extension.title.as_ref().unwrap().get(&sm)
+                        .replacen("{}", source, 1)
                 }
             };
 
             logger.add_log(
                 Log::new(
                     LogLevel::Error,
-                    "Invalid extension file".to_string(),
+                    sm.get().logs.errors.invalid_file_extension.title.as_ref().unwrap().get(&sm),
                     error_message,
                 )
-                .add_hint(format!(
-                    "Rename '{}' by '{}.{}'",
-                    source,
-                    source,
-                    defaults::EXTENSION
-                )),
+                .add_hint(
+                    sm.get().logs.errors.invalid_file_extension.title.as_ref().unwrap().get(&sm)
+                        .replacen("{}", source, 2)
+                        .replacen("{}", defaults::EXTENSION, 1)
+                ),
             );
         }
     }
@@ -115,10 +108,10 @@ fn main() {
 
     // Run the right compiler with retrieved options for each source file
     // All source files will be linked together to one library or binary file
-    compilation::run_compiler(sources, options, sm);
+    compilation::run_compiler(sources, options, &sm);
 
     let mut logger = Logger::new();
-    logger.add_log(Log::info("Finished".to_string()));
+    logger.add_log(Log::info(sm.get().logs.infos.finished.title.as_ref().unwrap().get(&sm)));
     logger.interpret();
 }
 
