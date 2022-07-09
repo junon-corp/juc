@@ -44,25 +44,20 @@ impl StringsManager {
     }
 }
 
-/// Gets string in the current language
-#[macro_export]
-macro_rules! get_string {
-    ($strings_manager:expr, $object:expr) => {
-        {
-            let string_current = match $strings_manager.speak_lang().as_str() {
-                "en" => Some($object.en.clone()),
-                "fr" => $object.fr.clone(),
-                "de" => $object.de.clone(),
-                _ => panic!(),
-            };
-    
-            if string_current == None {
-                $object.en.clone()
-            } else {
-                string_current.unwrap()
-            }  
+impl MultiString {
+    pub fn get(&self, sm: &StringsManager) -> String {
+        let r = match sm.speak_lang().as_str() {
+            "en" => Some(self.en.clone()),
+            "fr" => self.fr.clone(),
+            "de" => self.de.clone(),
+            _ => panic!(),
+        };
+
+        match r {
+            None => self.en.clone(),
+            _ => r.unwrap(),
         }
-    };
+    } 
 }
 
 #[test]
