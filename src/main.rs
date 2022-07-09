@@ -47,8 +47,8 @@ fn main() {
         if !current_dir.is_dir() || !current_dir.exists() {
             logger.add_log(Log::new(
                 LogLevel::Error,
-                sm.get().logs.errors.invalid_path_or_not_a_directory.title.get(sm),
-                sm.get().logs.errors.invalid_path_or_not_a_directory.message.get(sm)
+                sm.get().logs.errors.invalid_path_or_not_a_directory.title.as_ref().unwrap().get(&sm),
+                sm.get().logs.errors.invalid_path_or_not_a_directory.message.as_ref().unwrap().get(&sm)
                     .replace("{}", &path)
             ));
         }
@@ -59,7 +59,7 @@ fn main() {
 
     logger.add_log(Log::info(format!(
         "{}{}",
-        sm.get().logs.infos.working_directory.title.get(sm),
+        sm.get().logs.infos.working_directory.title.as_ref().unwrap().get(&sm),
         env::current_dir().unwrap().display()
     )));
 
