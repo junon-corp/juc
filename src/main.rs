@@ -128,18 +128,18 @@ fn main() {
 fn help(sm: &StringsManager) {
     let to_write = [
         sm.get().help.title.get(sm),
-        &"juc <?sources> <?options...>\n".to_string(),
-       sm.get().help.arguments.sources.get(sm),
-       sm.get().help.arguments.options.get(sm),
-       sm.get().help.available_flags.title.get(sm),
-       sm.get().help.available_flags.h.get(sm),
-       sm.get().help.available_flags.l.get(sm),
-       sm.get().help.available_flags.p.get(sm),
-        &"\t\t(Android, IOS, Linux, MacOS, Windows)\n".to_string(),
-       sm.get().help.available_flags.o.get(sm),
-       sm.get().help.available_flags.d.get(sm),
-       sm.get().help.available_flags.a.get(sm),
-       sm.get().help.available_flags.s.get(sm),
+        "juc <?sources> <?options...>\n".to_string(),
+        sm.get().help.arguments.sources.get(sm),
+        sm.get().help.arguments.options.get(sm),
+        sm.get().help.available_flags.title.get(sm),
+        sm.get().help.available_flags.h.get(sm),
+        sm.get().help.available_flags.l.get(sm),
+        sm.get().help.available_flags.p.get(sm),
+        "\t\t(Android, IOS, Linux, MacOS, Windows)\n".to_string(),
+        sm.get().help.available_flags.o.get(sm),
+        sm.get().help.available_flags.d.get(sm),
+        sm.get().help.available_flags.a.get(sm),
+        sm.get().help.available_flags.s.get(sm),
     ].join("\n");
 
     print!("\x1b[1m{}\x1b[0m", to_write);
