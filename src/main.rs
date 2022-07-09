@@ -19,6 +19,7 @@ use rslog::{
 use args::Args;
 use compilation::defaults;
 use strings;
+use strings::manager::StringsManager;
 
 /// Retrieves all useful stuffs for the compiler, can set some things from the
 /// retrieved options before calling the compiler.
@@ -35,17 +36,20 @@ fn main() {
 
     let mut logger = Logger::new();
 
-    Args::when_flag('h', options, |_| help());
+    let mut sm = strings::init_strings();
+    Args::when_flag('s', options, | speak_lang | {
+        sm.set_speak_language(speak_lang);
+    });
+    
+    Args::when_flag('h', options, |_| help(&sm));
     Args::when_flag('d', options, |path: String| {
         let current_dir = Path::new(&path);
         if !current_dir.is_dir() || !current_dir.exists() {
             logger.add_log(Log::new(
                 LogLevel::Error,
-                "Invalid path OR Not a directory".to_string(),
-                format!(
-                    "The given directory '{}' does not exist or it's not a directory",
-                    path
-                ),
+                sm.get().logs.errors.invalid_path_or_not_a_directory.title.get(sm),
+                sm.get().logs.errors.invalid_path_or_not_a_directory.message.get(sm)
+                    .replace("{}", &path)
             ));
         }
         logger.interpret();
@@ -54,7 +58,8 @@ fn main() {
     });
 
     logger.add_log(Log::info(format!(
-        "Working directory : '{}'",
+        "{}{}",
+        sm.get().logs.infos.working_directory.title.get(sm),
         env::current_dir().unwrap().display()
     )));
 
@@ -110,7 +115,7 @@ fn main() {
 
     // Run the right compiler with retrieved options for each source file
     // All source files will be linked together to one library or binary file
-    compilation::run_compiler(sources, options, strings::init_strings());
+    compilation::run_compiler(sources, options, sm);
 
     let mut logger = Logger::new();
     logger.add_log(Log::info("Finished".to_string()));
@@ -120,21 +125,22 @@ fn main() {
 /// Program documentation and usage specifications
 ///
 /// Called when "-h" was found in options
-fn help() {
-    let to_write = "Junon help page (command line)\n".to_string()
-        + "\n"
-        + "juc <?sources> <?options...>\n"
-        + "- ?sources : paths of the Junon source code files that you want to compile\n"
-        + "- ?options : an option should look like that: -<option flag> <option value>\n"
-        + "\n"
-        + "Available option flags:\n"
-        + "\t-h : Get this help page\n"
-        + "\t-l : Make a library instead of a binary\n"
-        + "\n"
-        + "\t-p <platform name> : Compile for this platform\n"
-        + "\t\t(Android, IOS, Linux, MacOS, Windows)\n"
-        + "\t-o <path> : Path for the output file\n"
-        + "\t-d <path> : Replace the current directory context location\n";
+fn help(sm: &StringsManager) {
+    let to_write = [
+        sm.get().help.title.get(sm),
+        &"juc <?sources> <?options...>\n".to_string(),
+       sm.get().help.arguments.sources.get(sm),
+       sm.get().help.arguments.options.get(sm),
+       sm.get().help.available_flags.title.get(sm),
+       sm.get().help.available_flags.h.get(sm),
+       sm.get().help.available_flags.l.get(sm),
+       sm.get().help.available_flags.p.get(sm),
+        &"\t\t(Android, IOS, Linux, MacOS, Windows)\n".to_string(),
+       sm.get().help.available_flags.o.get(sm),
+       sm.get().help.available_flags.d.get(sm),
+       sm.get().help.available_flags.a.get(sm),
+       sm.get().help.available_flags.s.get(sm),
+    ].join("\n");
 
     print!("\x1b[1m{}\x1b[0m", to_write);
     process::exit(0);

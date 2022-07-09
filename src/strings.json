@@ -2,46 +2,50 @@
     "help": {
         "title": {
             "en": "Junon help page (command line)\n",
-            "fr": "Page d'aide de Junon (ligne de commande)\n\n"
+            "fr": "Page d'aide de Junon (ligne de commande)\n"
         },
         "arguments": {
             "sources": {
-                "en": "- ?sources : paths of the Junon source code files wanted for compilation\n",
-                "fr": "- ?sources : chemins des fichier sources Junon voulu à la compilation\n"
+                "en": "- ?sources : paths of the Junon source code files wanted for compilation",
+                "fr": "- ?sources : chemins des fichier sources Junon voulu à la compilation"
             },
             "options": {
-                "en": "- ?options : an option should look like that : -<option flag> <option id>\n",
-                "fr": "- ?options : une option devrait ressembler à ça : -<flag d'option> <id option>\n"
+                "en": "- ?options : an option should look like that : -<option flag> <option id>",
+                "fr": "- ?options : une option devrait ressembler à ça : -<flag d'option> <id option>"
             }
         },
         "available_flags": {
             "title": {
-                "en": "Available option flags:\n",
-                "fr": "Flags d'option disponibles:\n"
+                "en": "Available option flags:",
+                "fr": "Flags d'option disponibles:"
             },
             "h": {
-                "en": "\t-h Get this help page\n",
-                "fr": "\t-h Obtenir cette page d'aide\n"
+                "en": "\t-h Get this help page",
+                "fr": "\t-h Obtenir cette page d'aide"
             },
             "l": {
-                "en": "\t-l Make a library instead of a binary\n",
-                "fr": "\t-l Créer une bibliothèque au lieu d'un binaire\n"
+                "en": "\t-l Make a library instead of a binary",
+                "fr": "\t-l Créer une bibliothèque au lieu d'un binaire"
             },
             "p": {
-                "en": "\t-p <platform name> : Compile for this platform\n",
-                "fr": "\t-p <nom plateforme> : Compile pour cette platforme\n"
+                "en": "\t-p <platform name> : Compile for this platform",
+                "fr": "\t-p <nom plateforme> : Compile pour cette platforme"
             },
             "o": {
-                "en": "\t-o <path> : Path for the output file\n",
-                "fr": "\t-o <chemin> : Chemin pour le fichier de sortie\n"
+                "en": "\t-o <path> : Path for the output file",
+                "fr": "\t-o <chemin> : Chemin pour le fichier de sortie"
             },
             "d": {
-                "en": "\t-d <path> : Replace the current directory context location\n",
-                "fr": "\t-d <chemin> : Remplace le contexte d'emplacement à la place du répétoire courant\n"
+                "en": "\t-d <path> : Replace the current directory context location",
+                "fr": "\t-d <chemin> : Remplace le contexte d'emplacement à la place du répétoire courant"
             },
             "a": {
-                "en": "\t-a <path> : Add by linking, an object/library file to the output file\n",
-                "fr": "\t-a <chemin> : Ajoute par linkage, un fichier d'objet/bibliothèque au fichier de sortie\n"
+                "en": "\t-a <path> : Add by linking, an object/library file to the output file",
+                "fr": "\t-a <chemin> : Ajoute par linkage, un fichier d'objet/bibliothèque au fichier de sortie"
+            },
+            "s": {
+                "en": "\t-s <language> : Replace the speak language for logs",
+                "fr": "\t-s <langue> : Remplace la langue pour les les logs"
             }
         }
     },
