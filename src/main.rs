@@ -28,16 +28,16 @@ use strings::manager::StringsManager;
 ///
 /// Then, it gives the control to compilation's crate
 fn main() {
-    let mut args = Args::new();
+    let mut args = Args::new(strings::init_strings());
     args.run();
 
     let sources: &Vec<String> = args.get_sources();
     let options: &Dict<String, String> = args.get_options();
 
     let mut logger = Logger::new();
-
     let mut sm = strings::init_strings();
-    Args::when_flag('s', options, | speak_lang | {
+
+    Args::when_flag('s', options, | speak_lang: String | {
         sm.set_speak_language(speak_lang);
     });
     
@@ -57,11 +57,10 @@ fn main() {
         env::set_current_dir(&current_dir).unwrap();
     });
 
-    logger.add_log(Log::info(format!(
-        "{}{}",
-        sm.get().logs.infos.working_directory.title.as_ref().unwrap().get(&sm),
-        env::current_dir().unwrap().display()
-    )));
+    logger.add_log(Log::info(
+        sm.get().logs.infos.working_directory.title.as_ref().unwrap().get(&sm)
+            .replacen("{}", &env::current_dir().unwrap().display().to_string(), 1)
+    ));
 
     // Check after current directory set
     for source in sources {
@@ -78,13 +77,13 @@ fn main() {
         if path.extension() != Some(OsStr::new(defaults::EXTENSION)) {
             let error_message = match path.extension() {
                 Some(extension) => {
-                    sm.get().logs.errors.wrong_file_extension.title.as_ref().unwrap().get(&sm)
+                    sm.get().logs.errors.wrong_file_extension.message.as_ref().unwrap().get(&sm)
                         .replacen("{}", source, 1)
                         .replacen("{}", defaults::EXTENSION, 1)
                         .replacen("{:?}", &extension.to_os_string().into_string().unwrap(), 1)
                 }
                 None => {
-                    sm.get().logs.errors.no_file_extension.title.as_ref().unwrap().get(&sm)
+                    sm.get().logs.errors.no_file_extension.message.as_ref().unwrap().get(&sm)
                         .replacen("{}", source, 1)
                 }
             };
@@ -96,7 +95,7 @@ fn main() {
                     error_message,
                 )
                 .add_hint(
-                    sm.get().logs.errors.invalid_file_extension.title.as_ref().unwrap().get(&sm)
+                    sm.get().logs.errors.invalid_file_extension.hint.as_ref().unwrap().get(&sm)
                         .replacen("{}", source, 2)
                         .replacen("{}", defaults::EXTENSION, 1)
                 ),
