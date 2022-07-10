@@ -33,14 +33,14 @@ use crate::{
 
 /// Runs the right compiler according to the platform and set some important
 /// parameters as a `CompilerData` object sent to the platform's compiler
-pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strings_manager: &StringsManager) {
+pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, sm: &StringsManager) {
     let mut logger = Logger::new();
 
     // Retrieves the output mode from `Args`
     let mut is_library: bool = false;
     Args::when_flag('l', options, |_| {
         is_library = true;
-        logger.add_log(Log::info("Library building".to_string()));
+        logger.add_log(Log::info(sm.get().logs.infos.library_building.title.as_ref().unwrap().get(sm)));
     });
 
     // Retrieves the platform from `Args`
@@ -51,7 +51,10 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strin
     });
 
     // Tells the current platform. It can be wrong (checked above)
-    logger.add_log(Log::info(format!("Platform : '{:?}'", platform)));
+    logger.add_log(Log::info(
+        sm.get().logs.infos.platform.title.as_ref().unwrap().get(sm)
+            .replacen("{}", format!("{:?}", platform).as_str(), 1)
+    ));
 
     // Platform checking for wrong not compatible platforms
     match platform.clone() {
@@ -59,17 +62,13 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strin
             logger.add_log(
                 Log::new(
                     LogLevel::Error,
-                    "Invalid platform".to_string(),
-                    format!(
-                        "Platform '{}' is not compatible with the current \
-                    version of 'juc'",
-                        invalid_platform_id
-                    ),
+                    sm.get().logs.errors.platform.title.as_ref().unwrap().get(sm),
+                    sm.get().logs.errors.platform.message.as_ref().unwrap().get(sm)
+                        .replacen("{}", &invalid_platform_id, 1)
                 )
-                .add_hint(format!(
-                    "Available platforms : {}",
-                    platform::AVAILABLE_PLATFORMS
-                )),
+                .add_hint(sm.get().logs.errors.platform.hint.as_ref().unwrap().get(sm)
+                    .replacen("{}", platform::AVAILABLE_PLATFORMS, 1)
+                ),
             );
         }
         _ => {} // valid platform
@@ -83,7 +82,7 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, strin
         sources: sources.clone(),
         options: options.clone(),
         
-        strings_manager: strings_manager.clone(),
+        strings_manager: sm.clone(),
 
         asm_formatter: Formatter::new(false),
 

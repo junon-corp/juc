@@ -5,4 +5,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+strings = { path = "../strings/" }
 rslog = { git = "https://github.com/antoninhrlt/rslog" }

@@ -67,7 +67,7 @@ pub struct HelpArguments {
 pub struct Help {
     pub title: MultiString,
     pub arguments: HelpArguments,
-    pub available_flags: HelpAvailableFlags
+    pub available_flags: HelpAvailableFlags,
 }
 
 #[derive(Clone, Debug, Deserialize)]

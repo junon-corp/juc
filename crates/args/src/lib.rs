@@ -11,7 +11,7 @@ use rslog::{
     logger::Logger
 };
 
-const HELP_HINT: &str = "Run again, with the option flag '-h' to get the help page";
+use strings::manager::StringsManager;
 
 /// List of the possible options
 const OPTION_FLAGS: [char; 7] = [
@@ -30,6 +30,8 @@ pub struct Args {
     sources: Vec<String>,
     options: Dict<String, String>,
 
+    sm: StringsManager,
+
     /// Note : It's an argument starting by '-'
     previous_is_option: bool,
     /// "If the check1 is passed" 
@@ -37,12 +39,14 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn new() -> Self {
+    pub fn new(sm: StringsManager) -> Self {
         Args {
             sys_args: env::args().collect(),
 
             sources: vec![],
             options: Dict::new(),
+
+            sm,
 
             previous_is_option: false,
             check_step_1: false,
@@ -68,10 +72,12 @@ impl Args {
                 logger.add_log(
                     Log::new(
                         LogLevel::Error,
-                        "No given arguments".to_string(),
-                        String::new(),
+                        self.sm.get().logs.errors.no_given_arguments.title.as_ref().unwrap().get(&self.sm),
+                        String::new()
                     )
-                    .add_hint(HELP_HINT.to_string()),
+                    .add_hint(
+                        self.sm.get().logs.errors.no_given_arguments.hint.as_ref().unwrap().get(&self.sm)
+                    )
                 );
             }
 
@@ -103,13 +109,12 @@ impl Args {
                 logger.add_log(
                     Log::new(
                         LogLevel::Warning,
-                        "Ignored option flag".to_string(),
-                        format!(
-                            "The given option flag '{}' does not match with any valid flag",
-                            option_flag
-                        ),
+                        self.sm.get().logs.infos.ignored_option_flag.title.as_ref().unwrap().get(&self.sm),
+                        String::new()
                     )
-                    .add_hint(HELP_HINT.to_string()),
+                    .add_hint(
+                        self.sm.get().logs.infos.ignored_option_flag.hint.as_ref().unwrap().get(&self.sm),
+                    )
                 );
             }
         }

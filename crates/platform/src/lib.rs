@@ -74,6 +74,8 @@ pub fn exec(program_id: String, arguments: &[String]) {
         }
     };
 
+    // todo!() : Adapt to the current speak language
+
     if !program_result.is_empty() {
         let mut logger = Logger::new();
         logger.add_log(
