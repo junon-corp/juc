@@ -110,7 +110,7 @@
             "source_file_does_not_exist": {
                 "title": {
                     "en": "Source file does not exist",
-                    "fr": "The le fichier source n'existe pas"
+                    "fr": "Le fichier source n'existe pas"
                 },
                 "message": {
                     "en": "The given source file '{}' cannot be found in the current directory",
