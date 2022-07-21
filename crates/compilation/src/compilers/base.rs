@@ -2,32 +2,21 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
-use std::path::Path;
-
-use x64asm::{
-    operand::Operand,
-    mnemonic::Mnemonic,
-    register::Register,
-};
-
-use jup::{
-    lang::{
-        elements::{ 
-            Element, 
-            function::Function,
-            operation::Operation,
-            variable::Variable
-        },
-        tokens::Token,
+use jup::lang::{
+    elements::{
+        function::Function,
+        operation::Operation,
+        variable::Variable,
+        Element,
     },
-    parser::Parser,
-    tokenizer::Tokenizer,
+    tokens::Token,
 };
 
-use crate::{
-    data::CompilerData, 
-    defaults, 
-    scope::Scope
+use crate::data::{
+    CompilerData,
+    CompilerTools,
+    CompilerCodeData,
+    CompilerStacksData,
 };
 
 /// Trait for a Compiler that will be followed by all platform's compilers.
@@ -36,220 +25,117 @@ use crate::{
 ///
 /// The general documentation is written here to avoid to write the same
 /// documentation to each platform's compiler. But a specific compiler can
-/// have its own documentation
+/// have its own documentation.
 pub trait Compiler {
+    /// Global initialization.
     fn init(&mut self);
+    /// Global termination.
+    fn terminate(&mut self);
 
-    /// Starting point for each source file
-    fn init_one(&mut self, source: &String) {
-        let asm_file_path = format!(
-            "{}/{}.asm", 
-            defaults::BUILD_FOLDER, 
-            source
-        );
+    /// Initialization for each source file.
+    ///
+    /// Has to run the tokenizer and parser to set `self.data().current_parsed`. 
+    fn init_file(&mut self, source_path: &String);
+    /// Termination for each source file.
+    fn terminate_file(&mut self, source_path: &String);
 
-        self.data().current_source = asm_file_path.clone();
-        let asm_file_path = Path::new(&asm_file_path);
-
-        std::fs::create_dir_all(asm_file_path.parent().unwrap()).unwrap();
-
-        let mut tokenizer = Tokenizer::from_path(Path::new(source)).unwrap();
-        tokenizer.run();
-
-        let mut parser = Parser::new(tokenizer.tokenized().clone());
-        parser.run();
-
-        self.data().current_parsed = parser.parsed().clone();
-
-        // todo!() : Run,ing the syntax checker here
-    }
-
-    /// Main function where each source file is transformed to an objet file
+    /// Runs the compiler by calling the initialization and termination 
+    /// functions, then compile each source file before doing linkage.
     fn run(&mut self) {
         self.init();
 
-        // Note : If any syntax problem is found during syntax checking, the
-        // program will be terminated. They should be retrieved and printed
-        // after all sources checks
-        //
-        // todo!() : Updating "jup" according to the previous NOTE
-        for source in self.data().sources.clone() {
-            // Module name is the filename without the ".ju" extension
-            self.data().current_scope = Scope::from(vec![format!("{}", source)
-                .split(defaults::EXTENSION_COMPLETE)
-                .collect::<String>()]);
+        for source_path in self.data().sources.clone() {
+            // todo!() : Setting the current scope as the source path 
+            // (considering its folder and filename).
 
-            self.init_one(&source);
+            self.init_file(&source_path);
             
-            let current_parsed = self.data().current_parsed.clone();
+            // Executes calls for the parsed elements from the source file after
+            // having parsed it in `init_file()`.
+            let source_elements = self.code_data().current_parsed.clone();
+            self.call_for_elements(&source_elements);
 
-            self.call(&current_parsed);
-
-            self.finish_one(&source);
+            self.terminate_file(&source_path);
         }
 
-        self.link();
-        self.finish();
+        self.terminate();
     }
 
-    /// Walks through the given elements, calling `check` for each element
+    /// Walks through the given elements, calling `check` for each element.
     ///
-    /// Can skip an element if `is_skip_next` is true
-    fn call(&mut self, elements: &Vec<Element>) {
+    /// Skips an element when `is_skip_next` is true.
+    fn call_for_elements(&mut self, elements: &Vec<Element>) {
         let mut i = 0;
 
         for element in elements {
-            if self.data().is_skip_next {
-                self.data().is_skip_next = false;
+            if self.code_data().is_skip_next {
+                self.code_data().is_skip_next = false;
                 i += 1;
                 continue;
             }
 
             if i != elements.len() -1 {
-                self.data().next_element = elements[i + 1].clone();
+                self.code_data().next_element = elements[i + 1].clone();
             }
-            self.check(element);
+            self.check_element(element);
             i += 1;
         }
     }
 
-    /// Calls to the right function according to the given element
+    /// Calls to the right function according to the given element.
     ///
     /// Note : It's not a logic or syntax checker, it only checks the element to
-    /// call the right function
-    fn check(&mut self, element: &Element) {
-        match element.clone() {
-            Element::Array(values) => {},
+    /// call the right function.
+    fn check_element(&mut self, element: &Element) {
+        // All cases where the element raises no call is because we don't care 
+        // about it because we will care it in another function called 
+        // because of another element.
+
+        match element {
+            Element::Array(_values) => {},
             Element::Assembly(code) => self.at_assembly(code),
-            Element::Expression(elements) => self.call(&elements),
+            // Redo a call loop for the elements in the expression found
+            Element::Expression(elements) => self.call_for_elements(elements),
             Element::Function(function) => self.at_function(function),
-            Element::Operation(operation) => match operation.operator() {
-                Token::Assign => self.at_assign(&operation),
-                Token::Plus => self.at_plus(&operation),
-                Token::Minus => self.at_minus(&operation),
-                Token::Multiply => self.at_multiply(&operation),
-                Token::Divide => self.at_divide(&operation),
-                _ => panic!(),
-            },
-            Element::Return(token) => self.at_return(token),
-            Element::Parameters(tokens) => {},
+            Element::Operation(operation) => self.at_operation(operation),
+            Element::Return(value) => self.at_return(value),
+            Element::Parameters(_tokens) => {}
             Element::Variable(variable) => self.at_variable(variable),
-            Element::Other(token) => match token {
-                Token::NewLine => {},
-                Token::Other(ref value) => {
-                    if self.data().variable_stack.get(value).is_none() {
-                        self.at_call(&value)
-                    } else {
-                        self.at_other(token)
-                    }
-                }
-                _ => panic!() // never happens
-            },
+            Element::Other(token) => self.at_other(token),
         }
     }
 
-    /// Executes the next expression before the one who call this function
-    ///
-    /// Note : It does not check if it's an expression or not, it take the
-    /// next token in consideration as an expression
-    fn execute_next_expression(&mut self) {
-        let expression = self.data().next_element.clone();
-        self.check(&expression);
-        self.data().is_skip_next = true;
-    }
-
-    /// Returns the name of the value's kind
-    ///
-    /// Possible returns :
-    /// - "expression" : When it's the token for expression begin
-    /// - "direct" : When it's a string or a digit
-    /// - "id" : When it's a variable id
-    ///
-    /// Note : It's probably not the best way to implements that, returning a 
-    /// string is stupider than returning an enum object (example: KindOfValue).
-    /// Todo : See "Note" before. Using an enumeration 
-    fn what_kind_of_value(value: &Token) -> &str {
-        if value == &Token::BracketOpen {
-            return "expression";
-        } 
-
-        let value = value.to_string(); // Todo : For strings
-        if value.parse::<f64>().is_ok() {
-            return "direct";
-        }
-
-        "id"
-    }
-
-    /// Function to call before giving the "value" variable
-    ///
-    /// When it's the value is a variable identifier or an expression, it 
-    /// returns the register for expression returns.
-    ///
-    /// When it's an expression, it also executes it.
-    ///
-    /// Else, it simply returns the value as String
-    fn give_value(&mut self, value: &Token) -> String {
-        match Self::what_kind_of_value(value) {
-            "expression" => {
-                self.execute_next_expression();
-                defaults::EXPRESSION_RETURN_REGISTER.to_string()
-            },
-            "id" => {
-                defaults::EXPRESSION_RETURN_REGISTER.to_string()
-            }
-            "direct" => value.to_string(),
-            &_ => panic!(),
-        }
-    }
-
-    /// This function is used by `give_value()` and has to be implemented for
-    /// each platform because it determines the way of giving a variable from
-    /// its position in the stack
-    fn give_value_of_variable(&mut self, variable: &Variable) -> String;
-
-    /// Gives the operand to place before the value according to which type of
-    /// value it's.
-    ///
-    /// Only useful for Assembly outputs, then it's defined with only a 
-    /// `todo!()` inside the function for function that do not need it, it 
-    /// should not be called if it's useless for the platform.
-    fn give_operand_before_value(&mut self, value: &Token) -> Operand { 
-        todo!()
-    }
-
-    fn give_operand_for_value(&mut self, value: &Token) -> (Operand, bool);
-
-    fn give_register_for_param(&mut self, param: Element, param_i: usize) -> Operand;
-
-    /// Instruction done before an assignment with a value that it's a variable 
-    /// id
-    ///
-    /// For Assembly outputs, it probably needs to move the value to the 
-    /// expression return register. This function could be useless for some 
-    /// other platforms
-    fn before_getting_value_when_id(&mut self, value: &Token, to_register: Register);
-    
-    /// Links all generated files to one output file (library or binary according
-    /// to the selected one)
-    fn link(&mut self);
-    
-    /// Delete all temporary files and do linking
-    fn finish(&mut self) {}
-
-    /// Exit point for each source file
-    fn finish_one(&mut self, source: &String);
+    // Data getters as it's required -------------------------------------------
+    //
+    // If the getters are not implemented here it's because they cannot, a 
+    // trait does not embed values within it.
 
     fn data(&mut self) -> &mut CompilerData;
+    fn tools(&mut self) -> &mut CompilerTools;
+    fn code_data(&mut self) -> &mut CompilerCodeData;
+    fn stacks_data(&mut self) -> &mut CompilerStacksData;
 
-    fn at_assembly(&mut self, code: Token);
-    fn at_call(&mut self, fun_to_call: &String);
+    // Functions for the elements ----------------------------------------------
 
-    fn at_function(&mut self, function: Function);
-    fn at_static(&mut self, variable: Variable);
-    fn at_variable(&mut self, variable: Variable);
+    /// Writes the Assembly code contained into the `code` token in the output
+    /// file.
+    fn at_assembly(&mut self, code: &Token); 
 
-    fn arithmetic_operation(&mut self, operation: &Operation, operation_mnemonic: Mnemonic);
+    /// Adds a function based on the given object
+    fn at_function(&mut self, function: &Function);
+
+    // Checks the right kind of operation to call the right operation
+    // function
+    fn at_operation(&mut self, operation: &Operation) {
+        match operation.operator() {
+            Token::Assign => self.at_assign(&operation),
+            Token::Plus => self.at_plus(&operation),
+            Token::Minus => self.at_minus(&operation),
+            Token::Multiply => self.at_multiply(&operation),
+            Token::Divide => self.at_divide(&operation),
+            _ => panic!("invalid operation for operation : {:?}", operation),
+        }
+    }
 
     fn at_assign(&mut self, operation: &Operation);
     fn at_plus(&mut self, operation: &Operation);
@@ -257,10 +143,28 @@ pub trait Compiler {
     fn at_multiply(&mut self, operation: &Operation);
     fn at_divide(&mut self, operation: &Operation);
 
-    fn at_return(&mut self, value: Token);
+    fn at_return(&mut self, value: &Token);
 
-    fn assign_variable(&mut self, variable: &Variable);
-    fn assign_array_variable(&mut self, variable: &Variable);
+    fn at_variable(&mut self, variable: &Variable);
 
-    fn at_other(&mut self, other: Token);
+    fn at_other(&mut self, other: &Token) {
+        match other {
+            Token::NewLine => {},
+            Token::Other(id_or_value) => {
+                if self.stacks_data().variable_stack.get(id_or_value).is_none() {
+                    // No variable for this identifier was found, so we call
+                    // its associated function
+                    self.call_function(id_or_value);
+                } else {
+                    self.update_expression_return_register(other);
+                }
+            }
+            _ => panic!("unknown token : {:?}", other),
+        }
+    }
+
+    // Other functions for Assembly code ---------------------------------------
+
+    fn call_function(&mut self, id: &String);
+    fn update_expression_return_register(&mut self, value: &Token);
 }
