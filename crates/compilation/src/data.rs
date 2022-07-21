@@ -2,6 +2,15 @@
 // Under the MIT License
 // Copyright (c) Junon, Antonin Hérault
 
+//! All these structures will be used for the compilers
+//! These functions should be implemented :
+//! ```
+//! fn data(&mut self) -> &mut CompilerData;
+//! fn tools(&mut self) -> &mut CompilerTools;
+//! fn code_data(&mut self) -> &mut CompilerCodeData;
+//! fn stacks_data(&mut self) -> &mut CompilerStacksData;
+//! ```
+
 use std::collections::HashMap as Dict;
 
 use jup::lang::elements::{ 
@@ -12,15 +21,6 @@ use x64asm::formatter::Formatter;
 use strings::manager::StringsManager;
 
 use crate::scope::Scope;
-
-//! All these structures will be used for the compilers
-//! These functions should be implemented :
-//! ```
-//! fn data(&mut self) -> &mut CompilerData;
-//! fn tools(&mut self) -> &mut CompilerTools;
-//! fn code_data(&mut self) -> &mut CompilerCodeData;
-//! fn stacks_data(&mut self) -> &mut CompilerStacksData;
-//! ```
 
 /// Some useful variables for the compiler
 pub struct CompilerData {
