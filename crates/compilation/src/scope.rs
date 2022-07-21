@@ -6,8 +6,7 @@ use std::string::ToString;
 
 use crate::defaults;
 
-/// Simple structure to manage a scope, an indicator to where we are in the
-/// junon program
+/// Simply manages a scope, an indication to know where we are in the program
 ///
 /// Implements a `to_string()` function to create a string with all sub scopes
 /// separated by the defaults scope separator, that is why a simple `Vec` is not
