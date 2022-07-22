@@ -4,21 +4,17 @@
 
 use x64asm::register::Register;
 
-pub const BUILD_FOLDER: &str = ".junon";
 pub const ENTRY_POINT: &str = "main";
 pub const EXTENSION: &str = "ju";
 pub const EXTENSION_COMPLETE: &str = ".ju";
 pub const SCOPE_SEPARATOR: &str = ".";
-pub const RETURN_REGISTER: Register = Register::Rax;
-pub const EXPRESSION_RETURN_REGISTER: Register = Register::Rbx;
-pub const EXPRESSION_RETURN_REGISTER_2: Register = Register::Rdx;
+pub const FUN_RETURN_REGISTER: Register = Register::Rax;
+pub const RETURN_REGISTER: Register = Register::Rbx;
 
 pub mod linux_defaults {
     pub const ASSEMBLER: &str = "nasm";
     pub const LINKER: &str = "ld";
 
     pub const OUTPUT_FILE: &str = "junon.out";
-
-    pub const START_FILE: &str = "startju.asm";
     pub const START_FUNCTION: &str = "_start";
 }
