@@ -7,12 +7,12 @@ fun main {
     d = 3
     d = { 2 + 4 }
 
-    foo(20)
+    foo(20, 30, 'z')
 
     ret
 }
 
-fun foo(a: int): int {
+fun foo(a: int, b: int, c: byte): int {
     ret a
 }
 
