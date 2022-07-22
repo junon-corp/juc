@@ -133,8 +133,8 @@ pub trait Compiler {
     fn at_operation(&mut self, operation: &Operation) {
         match operation.operator() {
             Token::Assign => self.at_assign(&operation),
-            Token::Plus => self.at_plus(&operation),
-            Token::Minus => self.at_minus(&operation),
+            Token::Plus => self.at_addition(&operation),
+            Token::Minus => self.at_subtraction(&operation),
             Token::Multiply => self.at_multiply(&operation),
             Token::Divide => self.at_divide(&operation),
             _ => panic!("invalid operation for operation : {:?}", operation),
@@ -142,8 +142,8 @@ pub trait Compiler {
     }
 
     fn at_assign(&mut self, operation: &Operation);
-    fn at_plus(&mut self, operation: &Operation);
-    fn at_minus(&mut self, operation: &Operation);
+    fn at_addition(&mut self, operation: &Operation);
+    fn at_subtraction(&mut self, operation: &Operation);
     fn at_multiply(&mut self, operation: &Operation);
     fn at_divide(&mut self, operation: &Operation);
 

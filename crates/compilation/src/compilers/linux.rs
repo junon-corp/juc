@@ -25,11 +25,16 @@ use x64asm::{
     instruction as i, 
     instruction::Instruction, 
     label, 
-    mnemonic::Mnemonic::*,
+    mnemonic::{
+        Mnemonic,
+        Mnemonic::*,
+    },
     operand::{Op, Operand},
     reg, 
-    register::Register,
-    register::Register::*,
+    register::{
+        Register,
+        Register::*,
+    },
     section, 
     section::Section::*,
 };
@@ -152,6 +157,49 @@ impl LinuxCompiler {
         );
 
         self.tools().asm_formatter.add_instruction(instruction);
+    }
+
+    fn do_arithmetic_operation(&mut self, operation: &Operation, operation_mnemonic: Mnemonic) {
+        let arg1_value = self.give_value(operation.arg1());
+        let arg2_value = self.give_value(operation.arg2());
+
+        let is_arg1_identifier = KindToken::from_token(operation.arg1()) == KindToken::Identifier;
+        let is_arg2_identifier = KindToken::from_token(operation.arg2()) == KindToken::Identifier;
+
+        let mut instructions = if is_arg1_identifier && is_arg2_identifier {
+            vec![
+                i!(
+                    Mov, 
+                    reg!(defaults::RETURN_REGISTER_2), 
+                    arg1_value
+                ),
+                i!(
+                    Mov, 
+                    reg!(defaults::RETURN_REGISTER), 
+                    arg2_value
+                ),
+                i!(
+                    operation_mnemonic,
+                    reg!(defaults::RETURN_REGISTER), 
+                    reg!(defaults::RETURN_REGISTER_2)
+                )
+            ]
+        } else {
+            vec![
+                i!(
+                    Mov, 
+                    reg!(defaults::RETURN_REGISTER), 
+                    arg1_value
+                ),
+                i!(
+                    operation_mnemonic, 
+                    reg!(defaults::RETURN_REGISTER), 
+                    arg2_value
+                ),
+            ]
+        };
+
+        self.tools().asm_formatter.add_instructions(&mut instructions);
     }
 }
 
@@ -408,20 +456,20 @@ impl Compiler for LinuxCompiler {
         self.assign_variable(&variable_to_assign);
     }
 
-    fn at_plus(&mut self, operation: &Operation) {
-
+    fn at_addition(&mut self, operation: &Operation) {
+        self.do_arithmetic_operation(operation, Mnemonic::Add);
     }
     
-    fn at_minus(&mut self, operation: &Operation) {
-
+    fn at_subtraction(&mut self, operation: &Operation) {
+        self.do_arithmetic_operation(operation, Mnemonic::Sub);
     }
     
     fn at_multiply(&mut self, operation: &Operation) {
-    
+        todo!("multiplications are not available");
     }
     
     fn at_divide(&mut self, operation: &Operation) {
-
+        todo!("divisions are not available");
     }
 
     /// Moves the value to return into the default function return register
