@@ -77,6 +77,26 @@ impl LinuxCompiler {
             output_dir: String::new()
         }
     }
+
+    /// Gives the expression for variable in stack to gets its value
+    pub fn give_expression_for_variable(&mut self, variable: &Variable) -> Operand {
+        Op::Expression(format!(
+            "[{}-{}]", 
+            Register::Rbp.to_string(), 
+            variable.stack_pos()
+        ))
+    }
+
+    /// Gives the right register for the current parameter from its index
+    pub fn give_register_for_parameter(&mut self, i_parameter: usize) -> Operand {
+        match i_parameter {
+            0 => reg!(Rcx),
+            1 => reg!(Rdx),
+            2 => reg!(R8),
+            3 => reg!(R9),
+            _ => todo!("only 4 arguments can be given"),
+        }
+    }
 }
 
 
@@ -99,6 +119,8 @@ impl Compiler for LinuxCompiler {
         });
 
         self.output_dir = output_dir;
+    
+        self.tools().asm_formatter.add_instruction(i!(section!(Text)));
     }
 
     fn terminate(&mut self) {}
@@ -222,7 +244,91 @@ impl Compiler for LinuxCompiler {
     }
 
     fn at_function(&mut self, function: &Function) {
+        if function.id().to_string() == defaults::ENTRY_POINT.to_string() {
+            self.create_start_function();
+        }
+        
+        // Creates a label for the function.
+        //
+        // Initializes the stacks.
+        self.tools().asm_formatter.add_instructions(&mut vec![
+            i!(Global, Op::Label(function.id().to_string())),
+            i!(label!(function.id())),
+            i!(Push, reg!(Rbp)),
+            i!(Mov, reg!(Rbp), reg!(Rsp)),
+        ]); 
 
+        // Retrieves the function's parameters because it's an `Element`.
+        // 
+        // The panic! will never happen.
+        let parameters = match function.params() {
+            Element::Parameters(elements) => elements,
+            _ => panic!("parameters are not parameters element"),
+        };
+
+        // Prepares the variable stack iterator for the function 
+        self.stacks_data().i_variable_stack = 0;
+        
+        // There is no parameters to retrieve, returns
+        if parameters.is_empty() {
+            return;
+        }
+
+        // Retrieves passed parameters to variables
+        let mut n_parameter_stack: usize = 0; // counter for parameter stack
+        let mut i_parameter: usize = 0;
+
+        for element in parameters {
+            // Creates an empty variable that will be filled step by step in the
+            // code below
+            let mut current_parameter = Variable::new(Token::None, Type::None, Token::None);
+
+            let token = match element {
+                Element::Other(token) => token,
+                _ => panic!("passed parameter is not valid : {:?}", element)
+            };
+
+            let id_or_type = match token {
+                Token::TypeDef | Token::Comma => continue,
+                Token::Other(ref id_or_type) => id_or_type,
+                _ => panic!("invalid token found in parameter list : {:?}", token)
+            };
+
+            // Sets parameter's id
+            if current_parameter.id() == Token::None.to_string() {
+                current_parameter.set_id(token.clone());
+                i_parameter += 1;
+                continue;
+            }
+
+            current_parameter.set_type(Type::from_string(id_or_type.clone()));
+            
+            // Inserts the finished variable into the stack
+            // The value is set as `Token::None` because it will be changed in
+            // Assembly code, not here
+            self.stacks_data().variable_stack.insert(
+                current_parameter.id(),
+                current_parameter.clone()
+            );
+
+            current_parameter.set_stack_pos(
+                self.stacks_data().i_variable_stack + 
+                    current_parameter.type_().to_usize()
+            );
+
+            let stack_position: usize = current_parameter.stack_pos();
+            self.stacks_data().i_variable_stack = stack_position;
+
+            // Creates the variable associated to the parameter, in Assembly 
+            // with the passed value
+            let instruction = i!(
+                Mov,
+                self.give_expression_for_variable(&current_parameter),
+                self.give_register_for_parameter(i_parameter - 1)
+            );
+
+            self.tools().asm_formatter.add_instruction(instruction);
+        }
     }
 
     fn at_assign(&mut self, operation: &Operation) {
@@ -254,6 +360,17 @@ impl Compiler for LinuxCompiler {
     }
 
     // Other functions for Assembly code ---------------------------------------
+
+    fn create_start_function(&mut self) {
+        self.tools().asm_formatter.add_instructions(&mut vec![
+            i!(Global, Op::Label("_start".to_string())),
+            i!(label!("_start".to_string())),
+            i!(Call, Op::Label(defaults::ENTRY_POINT.to_string())),
+            i!(Mov, reg!(Rdi), reg!(defaults::FUN_RETURN_REGISTER)),
+            i!(Mov, reg!(Rax), Op::Literal(60)),
+            i!(Syscall),
+        ]);
+    }
 
     fn call_function(&mut self, id: &String) {
         // todo!() : Pass parameters when required.
