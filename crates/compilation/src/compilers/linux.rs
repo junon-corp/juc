@@ -22,11 +22,9 @@ use jup::{
     tokenizer::Tokenizer,
 };
 use x64asm::{
-    formatter::Formatter, 
     instruction as i, 
     instruction::Instruction, 
     label, 
-    mnemonic::Mnemonic,
     mnemonic::Mnemonic::*,
     operand::{Op, Operand},
     reg, 
@@ -119,6 +117,19 @@ impl LinuxCompiler {
             2 => reg!(R8),
             3 => reg!(R9),
             _ => todo!("only 4 arguments can be given"),
+        }
+    }
+
+    pub fn give_type_operand_before_value(&mut self, id_or_value_or_expression: &Token) -> Operand {
+        match self.give_kind_of_token(id_or_value_or_expression) {
+            KindToken::Expression | KindToken::Identifier => {
+                // Nothing because we move a register 
+                Op::None
+            },
+            KindToken::Value => {
+                // todo!() : Match the value to select the right operand : (q|d|)word
+                Op::Dword
+            }
         }
     }
 
@@ -328,7 +339,6 @@ impl Compiler for LinuxCompiler {
         }
 
         // Retrieves passed parameters to variables
-        let mut n_parameter_stack: usize = 0; // counter for parameter stack
         let mut i_parameter: usize = 0;
 
         for element in parameters {
@@ -384,8 +394,26 @@ impl Compiler for LinuxCompiler {
         }
     }
 
+    /// Retrieves the variable to assign and calls `self.assign_variable()` with
+    /// the value next to the operator
+    /// ```
+    /// <arg1> <operator> <arg2>
+    /// variable_to_assign = value
+    /// ```
     fn at_assign(&mut self, operation: &Operation) {
+        let mut variable_to_assign = self.stacks_data().variable_stack
+            .get_mut(&operation.arg1().to_string())
+            .unwrap()
+            .clone();
+        
+        let arg2 = operation.arg2();
+        variable_to_assign.set_value(arg2.to_string());
 
+        if arg2 == &Token::BracketOpen {
+            self.execute_next_expression();
+        }
+    
+        self.assign_variable(&variable_to_assign);
     }
 
     fn at_plus(&mut self, operation: &Operation) {
@@ -434,8 +462,20 @@ impl Compiler for LinuxCompiler {
         self.stacks_data().i_parameter_stack = 0;
     }
 
+    /// Sets the stack position for the variable and assign it with the value.
+    ///
+    /// Pushes the variable object into the variable stack for the compiler
     fn at_variable(&mut self, variable: &Variable) {
+        let mut variable = variable.clone();
 
+        variable.set_stack_pos(
+            self.stacks_data().i_variable_stack + variable.type_().to_usize()
+        );
+
+        self.stacks_data().i_variable_stack = variable.stack_pos();
+        self.stacks_data().variable_stack.insert(variable.id(), variable.clone());
+
+        self.assign_variable(&variable);
     }
 
     // Other functions for Assembly code ---------------------------------------
@@ -472,6 +512,75 @@ impl Compiler for LinuxCompiler {
                 Op::Expression(value.to_string())
             )
         ]);
+    }
+
+    /// The value to assign is the value stored in the variable object.
+    ///
+    /// Detects when the value to assign is an array and calls 
+    /// `self.assign_array_variable()` instead.
+    ///
+    /// When nothing to assign, just ignore.
+    fn assign_variable(&mut self, variable: &Variable) {
+        // Detection for arrays and no value
+        match variable.value() {
+            Token::SquareBracketOpen => {
+                self.assign_array_variable(variable);
+                return;
+            },
+            Token::None => return,
+            _ => {}
+        }
+
+        self.before_getting_value_when_id(variable.value(), defaults::RETURN_REGISTER);
+
+        let mut instruction = i!(
+            Mov,
+            self.give_expression_for_variable(variable),
+            self.give_type_operand_before_value(variable.value()),
+            {
+                // Here, we don't use `give_value()` because it also executes 
+                // the expression and it's not required.
+                if variable.value() == &Token::BracketOpen {
+                    self.execute_next_expression();
+                    Op::Expression(defaults::RETURN_REGISTER.to_string())
+                } else {
+                    // `value` cannot be `Token::BracketOpen` so it's not an 
+                    // expression
+                    self.give_value(variable.value())
+                }
+            }
+        );
+
+        self.tools().asm_formatter.add_instruction(
+            instruction.with_comment(variable.id().to_string()).clone()
+        );
+    }
+
+    fn assign_array_variable(&mut self, array_variable: &Variable) {
+        let values: Vec<Token> = match self.code_data().next_element.clone() {
+            Element::Array(values) => values,
+            _ => panic!("try to assign a non-array element to an array variable"),
+        };
+
+        let (element_type, length) = match array_variable.type_() {
+            Type::Array(type_, length) => (type_.clone(), length),
+            Type::StaticArray(type_) => (type_.clone(), &0),
+            _ => panic!("assign a non-array variable"),
+        };   
+
+        for (i, value) in values.iter().enumerate() {
+            let mut value_as_variable = Variable::new(
+                Token::Other(format!("{}[{}]", array_variable.id(), i)),
+                *element_type.clone(),
+                value.clone()
+            );
+
+            value_as_variable.set_stack_pos(
+                array_variable.stack_pos() - element_type.to_usize() * i
+            );
+            
+            self.assign_variable(&value_as_variable);
+        }
     }
 }
 

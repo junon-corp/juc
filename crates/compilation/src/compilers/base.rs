@@ -149,6 +149,9 @@ pub trait Compiler {
 
     fn at_return(&mut self, value: &Token);
 
+    /// Creates a variable by pushing it in the compiler's variable stack
+    ///
+    /// Does call to assign the variable for initialization 
     fn at_variable(&mut self, variable: &Variable);
 
     fn at_other(&mut self, other: &Token) {
@@ -178,4 +181,6 @@ pub trait Compiler {
     fn create_start_function(&mut self);
     fn call_function(&mut self, id: &String);
     fn update_return_register(&mut self, value: &Token);
+    fn assign_variable(&mut self, variable: &Variable);
+    fn assign_array_variable(&mut self, array_variable: &Variable);
 }
