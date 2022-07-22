@@ -25,9 +25,16 @@ use platform::Platform;
 use strings::manager::StringsManager;
 
 use crate::{
-    compilers::base::Compiler,
-    compilers::linux::LinuxCompiler,
-    data::CompilerData,
+    compilers::{
+        base::Compiler,
+        linux::LinuxCompiler,
+    },
+    data::{
+        CompilerData,
+        CompilerTools,
+        CompilerCodeData,
+        CompilerStacksData,
+    },
     scope::Scope,
 };
 
@@ -78,32 +85,38 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, sm: &
     // Sets important information for the compiler
     let data = CompilerData {
         is_library,
-
         sources: sources.clone(),
         options: options.clone(),
-        
+    };
+
+    let tools = CompilerTools {
         strings_manager: sm.clone(),
-
         asm_formatter: Formatter::new(false),
+    };
 
+    let code_data = CompilerCodeData {
         current_source: String::new(),
         current_parsed: vec![],
-        current_scope: Scope::new(),
+        scope: Scope::new(),
 
         next_element: Element::Other(Token::None),
         is_skip_next: false,
+    };
 
+    let stacks_data = CompilerStacksData {
         variable_stack: Dict::new(),
         i_variable_stack: 0,
 
         i_parameter_stack: 0,
     };
 
+    let all_data = (data, tools, code_data, stacks_data);
+
     // Runs the right compiler according to the platform
     match platform {
         Platform::Android => todo!(),
         Platform::IOS => todo!(),
-        Platform::Linux => LinuxCompiler::new(data).run(),
+        Platform::Linux => LinuxCompiler::new(all_data).run(),
         Platform::MacOS => todo!(),
         Platform::Windows => todo!(),
 
