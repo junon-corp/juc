@@ -169,6 +169,12 @@ pub trait Compiler {
 
     // Other functions for Assembly code ---------------------------------------
 
+    fn execute_next_expression(&mut self) {
+        let expression = self.code_data().next_element.clone();
+        self.check_element(&expression);
+        self.code_data().is_skip_next = true;
+    }
+
     fn create_start_function(&mut self);
     fn call_function(&mut self, id: &String);
     fn update_return_register(&mut self, value: &Token);

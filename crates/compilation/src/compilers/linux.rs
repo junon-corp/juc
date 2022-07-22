@@ -78,6 +78,30 @@ impl LinuxCompiler {
         }
     }
 
+    pub fn give_value(&mut self, id_or_value_or_expression: &Token) -> Operand {
+        match self.give_kind_of_token(id_or_value_or_expression) {
+            KindToken::Expression => {
+                self.execute_next_expression();
+                reg!(defaults::RETURN_REGISTER)
+            },
+            KindToken::Identifier => reg!(defaults::RETURN_REGISTER),
+            KindToken::Value => Op::Expression(id_or_value_or_expression.to_string()),
+        }
+    }
+
+    pub fn give_kind_of_token(&mut self, id_or_value_or_expression: &Token) -> KindToken {
+        if id_or_value_or_expression == &Token::BracketOpen {
+            return KindToken::Expression;
+        }
+
+        if id_or_value_or_expression.to_string().parse::<f64>().is_ok()
+            || id_or_value_or_expression.to_string().chars().nth(0) == Some('\'') {
+            KindToken::Value
+        } else {
+            KindToken::Identifier
+        }
+    }
+
     /// Gives the expression for variable in stack to gets its value
     pub fn give_expression_for_variable(&mut self, variable: &Variable) -> Operand {
         Op::Expression(format!(
@@ -96,6 +120,35 @@ impl LinuxCompiler {
             3 => reg!(R9),
             _ => todo!("only 4 arguments can be given"),
         }
+    }
+
+    /// Moves the value, when `id_or_value` is the variable's id, to the 
+    /// expression return register, and assign the expression default register 
+    /// to retrieve the value of the variable
+    ///
+    /// So, "id_or_value" should be named "id" here
+    fn before_getting_value_when_id(&mut self, id_or_value: &Token, to_register: Register) {
+        // Not an identifier, nothing to do
+        if self.give_kind_of_token(id_or_value) != KindToken::Identifier {
+            return;
+        }
+        
+        println!("{:?}", id_or_value);
+
+        let instruction = i!(
+            Mov,
+            reg!(to_register),
+            {
+                let value_as_variable = self.stacks_data().variable_stack
+                    .get(&id_or_value.to_string())
+                    .unwrap()
+                    .clone();
+                
+                self.give_expression_for_variable(&value_as_variable)
+            }
+        );
+
+        self.tools().asm_formatter.add_instruction(instruction);
     }
 }
 
@@ -351,8 +404,34 @@ impl Compiler for LinuxCompiler {
 
     }
 
-    fn at_return(&mut self, value: &Token) {
+    /// Moves the value to return into the default function return register
+    ///
+    /// Terminates the stacks and returns the Assembly function
+    fn at_return(&mut self, id_or_value: &Token) {
+        let instruction = if id_or_value == &Token::None {
+            i!(
+                Xor, 
+                reg!(defaults::FUN_RETURN_REGISTER), 
+                reg!(defaults::FUN_RETURN_REGISTER)
+            )
+        } else {
+            self.before_getting_value_when_id(id_or_value, defaults::RETURN_REGISTER);
+            
+            i!(
+                Mov, 
+                reg!(defaults::FUN_RETURN_REGISTER), 
+                self.give_value(id_or_value)
+            )
+        };
 
+        self.tools().asm_formatter.add_instructions(&mut vec![
+            instruction,
+            i!(Pop, reg!(Rbp)),
+            i!(Ret),
+        ]);
+
+        self.stacks_data().i_variable_stack = 0;
+        self.stacks_data().i_parameter_stack = 0;
     }
 
     fn at_variable(&mut self, variable: &Variable) {
@@ -394,4 +473,11 @@ impl Compiler for LinuxCompiler {
             )
         ]);
     }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum KindToken {
+    Expression,
+    Identifier,
+    Value,
 }
