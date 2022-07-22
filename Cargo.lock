@@ -19,7 +19,7 @@ dependencies = [
  "platform",
  "rslog",
  "strings",
- "x64asm 0.1.3 (git+https://github.com/antoninhrlt/x64asm)",
+ "x64asm 0.1.4 (git+https://github.com/antoninhrlt/x64asm)",
 ]
 
 [[package]]
@@ -45,7 +45,7 @@ version = "0.1.0"
 source = "git+https://github.com/junon-corp/jup#e8658d6fba2814bd56d329614f108da43cac4c86"
 dependencies = [
  "rslog",
- "x64asm 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "x64asm 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -86,18 +86,18 @@ checksum = "f3f6f92acf49d1b98f7a81226834412ada05458b7364277387724a237f062695"
 
 [[package]]
 name = "serde"
-version = "1.0.138"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1578c6245786b9d168c5447eeacfb96856573ca56c9d68fdcf394be134882a47"
+checksum = "fc855a42c7967b7c369eb5860f7164ef1f6f81c20c7cc1141f2a604e18723b03"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.138"
+version = "1.0.140"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "023e9b1467aef8a10fb88f25611870ada9800ef7e22afce356bb0d2387b6f27c"
+checksum = "6f2122636b9fe3b81f1cb25099fcf2d3f542cdb1d45940d56c713158884a05da"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -136,17 +136,17 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bd2fe26506023ed7b5e1e315add59d6f584c621d037f9368fea9cfb988f368c"
+checksum = "15c61ba63f9235225a22310255a29b806b907c9b8c964bcbd0a2c70f3f2deea7"
 
 [[package]]
 name = "x64asm"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9d7c3112c8797f00a2629338669e0191d8ed58461942a88f2d3849bdf551a0c"
+checksum = "583ee462b1e691460226fdb143bc1cc99b3be29d7268b45d9de7adfd72e91cee"
 
 [[package]]
 name = "x64asm"
-version = "0.1.3"
-source = "git+https://github.com/antoninhrlt/x64asm#4e632d32c83e44513064f9773c4b6a4ddd37532e"
+version = "0.1.4"
+source = "git+https://github.com/antoninhrlt/x64asm#1094c0a7bbe598e0c97055b91f49dffac9fa0a67"
