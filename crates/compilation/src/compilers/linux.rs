@@ -38,7 +38,7 @@ use args::Args;
 use platform;
 
 use crate::{
-    compilers::base::Compiler,
+    compilers::base::{ Compiler, KindToken },
     data::{
         CompilerData,
         CompilerTools,
@@ -77,26 +77,20 @@ impl LinuxCompiler {
     }
 
     pub fn give_value(&mut self, id_or_value_or_expression: &Token) -> Operand {
-        match self.give_kind_of_token(id_or_value_or_expression) {
+        match KindToken::from_token(id_or_value_or_expression) {
             KindToken::Expression => {
                 self.execute_next_expression();
                 reg!(defaults::RETURN_REGISTER)
             },
-            KindToken::Identifier => reg!(defaults::RETURN_REGISTER),
+            KindToken::Identifier => {
+                let variable_from_id = self.stacks_data().variable_stack
+                    .get(&id_or_value_or_expression.to_string())
+                    .unwrap()
+                    .clone();
+
+                self.give_expression_for_variable(&variable_from_id)
+            }
             KindToken::Value => Op::Expression(id_or_value_or_expression.to_string()),
-        }
-    }
-
-    pub fn give_kind_of_token(&mut self, id_or_value_or_expression: &Token) -> KindToken {
-        if id_or_value_or_expression == &Token::BracketOpen {
-            return KindToken::Expression;
-        }
-
-        if id_or_value_or_expression.to_string().parse::<f64>().is_ok()
-            || id_or_value_or_expression.to_string().chars().nth(0) == Some('\'') {
-            KindToken::Value
-        } else {
-            KindToken::Identifier
         }
     }
 
@@ -121,7 +115,7 @@ impl LinuxCompiler {
     }
 
     pub fn give_type_operand_before_value(&mut self, id_or_value_or_expression: &Token) -> Operand {
-        match self.give_kind_of_token(id_or_value_or_expression) {
+        match KindToken::from_token(id_or_value_or_expression) {
             KindToken::Expression | KindToken::Identifier => {
                 // Nothing because we move a register 
                 Op::None
@@ -140,12 +134,10 @@ impl LinuxCompiler {
     /// So, "id_or_value" should be named "id" here
     fn before_getting_value_when_id(&mut self, id_or_value: &Token, to_register: Register) {
         // Not an identifier, nothing to do
-        if self.give_kind_of_token(id_or_value) != KindToken::Identifier {
+        if KindToken::from_token(id_or_value) != KindToken::Identifier {
             return;
         }
         
-        println!("{:?}", id_or_value);
-
         let instruction = i!(
             Mov,
             reg!(to_register),
@@ -505,13 +497,13 @@ impl Compiler for LinuxCompiler {
     }
 
     fn update_return_register(&mut self, value: &Token) {
-        self.tools().asm_formatter.add_instructions(&mut vec![
-            i!(
-                Mov, 
-                reg!(defaults::RETURN_REGISTER), 
-                Op::Expression(value.to_string())
-            )
-        ]);
+        let instruction = i!(
+            Mov, 
+            reg!(defaults::RETURN_REGISTER), 
+            self.give_value(&value)
+        );
+
+        self.tools().asm_formatter.add_instruction(instruction);
     }
 
     /// The value to assign is the value stored in the variable object.
@@ -582,11 +574,4 @@ impl Compiler for LinuxCompiler {
             self.assign_variable(&value_as_variable);
         }
     }
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum KindToken {
-    Expression,
-    Identifier,
-    Value,
 }

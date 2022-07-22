@@ -158,12 +158,18 @@ pub trait Compiler {
         match other {
             Token::NewLine => {},
             Token::Other(id_or_value) => {
-                if self.stacks_data().variable_stack.get(id_or_value).is_none() {
-                    // No variable for this identifier was found, so we call
-                    // its associated function
-                    self.call_function(id_or_value);
-                } else {
-                    self.update_return_register(other);
+                match KindToken::from_token(other) {
+                    KindToken::Expression => panic!("impossible, other token cannot be an expression token"),
+                    KindToken::Identifier => {
+                        if self.stacks_data().variable_stack.get(id_or_value).is_none() {
+                            // Not a variable, call the function with this identifier
+                            self.call_function(id_or_value);
+                            return;
+                        }
+
+                        self.update_return_register(other);
+                    }
+                    KindToken::Value => self.update_return_register(other),
                 }
             }
             _ => panic!("unknown token : {:?}", other),
@@ -184,3 +190,26 @@ pub trait Compiler {
     fn assign_variable(&mut self, variable: &Variable);
     fn assign_array_variable(&mut self, array_variable: &Variable);
 }
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum KindToken {
+    Expression,
+    Identifier,
+    Value,
+}
+
+impl KindToken {
+    pub fn from_token(id_or_value_or_expression: &Token) -> KindToken {
+        if id_or_value_or_expression == &Token::BracketOpen {
+            return KindToken::Expression;
+        }
+    
+        if id_or_value_or_expression.to_string().parse::<f64>().is_ok()
+            || id_or_value_or_expression.to_string().chars().nth(0) == Some('\'') {
+            KindToken::Value
+        } else {
+            KindToken::Identifier
+        }
+    }
+}
+
