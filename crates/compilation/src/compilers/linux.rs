@@ -357,17 +357,16 @@ impl Compiler for LinuxCompiler {
 
             current_parameter.set_type(Type::from_string(id_or_type.clone()));
             
+            current_parameter.set_stack_pos(
+                self.stacks_data().i_variable_stack + 
+                    current_parameter.type_().to_usize()
+            );
             // Inserts the finished variable into the stack
             // The value is set as `Token::None` because it will be changed in
             // Assembly code, not here
             self.stacks_data().variable_stack.insert(
                 current_parameter.id(),
                 current_parameter.clone()
-            );
-
-            current_parameter.set_stack_pos(
-                self.stacks_data().i_variable_stack + 
-                    current_parameter.type_().to_usize()
             );
 
             let stack_position: usize = current_parameter.stack_pos();
@@ -438,11 +437,14 @@ impl Compiler for LinuxCompiler {
         } else {
             self.before_getting_value_when_id(id_or_value, defaults::RETURN_REGISTER);
             
-            i!(
+            let instruction = i!(
                 Mov, 
                 reg!(defaults::FUN_RETURN_REGISTER), 
                 self.give_value(id_or_value)
-            )
+            );
+            println!("{}", instruction.to_string(false));
+
+            instruction
         };
 
         self.tools().asm_formatter.add_instructions(&mut vec![
