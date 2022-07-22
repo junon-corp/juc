@@ -319,7 +319,7 @@ impl Compiler for LinuxCompiler {
         // The panic! will never happen.
         let parameters = match function.params() {
             Element::Parameters(elements) => elements,
-            _ => panic!("parameters are not parameters element"),
+            _ => panic!("parameters are not a parameters element"),
         };
 
         // Prepares the variable stack iterator for the function 
@@ -332,12 +332,11 @@ impl Compiler for LinuxCompiler {
 
         // Retrieves passed parameters to variables
         let mut i_parameter: usize = 0;
+        // Creates an empty variable that will be filled step by step in the
+        // code below
+        let mut current_parameter = Variable::new(Token::None, Type::None, Token::None);
 
         for element in parameters {
-            // Creates an empty variable that will be filled step by step in the
-            // code below
-            let mut current_parameter = Variable::new(Token::None, Type::None, Token::None);
-
             let token = match element {
                 Element::Other(token) => token,
                 _ => panic!("passed parameter is not valid : {:?}", element)
@@ -348,9 +347,9 @@ impl Compiler for LinuxCompiler {
                 Token::Other(ref id_or_type) => id_or_type,
                 _ => panic!("invalid token found in parameter list : {:?}", token)
             };
-
+            
             // Sets parameter's id
-            if current_parameter.id() == Token::None.to_string() {
+            if current_parameter.id().is_empty() {
                 current_parameter.set_id(token.clone());
                 i_parameter += 1;
                 continue;
@@ -383,6 +382,8 @@ impl Compiler for LinuxCompiler {
             );
 
             self.tools().asm_formatter.add_instruction(instruction);
+
+            current_parameter = Variable::new(Token::None, Type::None, Token::None);
         }
     }
 
@@ -484,7 +485,32 @@ impl Compiler for LinuxCompiler {
     }
 
     fn call_function(&mut self, id: &String) {
-        // todo!() : Pass parameters when required.
+        let parameters = match self.code_data().next_element.clone() {
+            Element::Parameters(parameters) => parameters,
+            _ => panic!("passed parameters should be a parameters element"),
+        };
+
+        let mut i_parameter: usize = 0;
+
+        for element in parameters {
+            let operand = match element {
+                Element::Expression(_) => reg!(defaults::RETURN_REGISTER),
+                Element::Other(Token::Comma) => continue,
+                Element::Other(id_or_value_or_expression) => {
+                    self.give_value(&id_or_value_or_expression)
+                },
+                _ => panic!("passed parameter is not valid : {:?}", element),
+            };
+
+            let instruction = i!(
+                Mov,
+                self.give_register_for_parameter(i_parameter),
+                operand
+            );
+
+            self.tools().asm_formatter.add_instruction(instruction);
+            i_parameter += 1;
+        }
 
         self.tools().asm_formatter.add_instructions(&mut vec![
             i!(Call, Op::Label(id.to_string())),
