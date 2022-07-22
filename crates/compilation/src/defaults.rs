@@ -16,5 +16,4 @@ pub mod linux_defaults {
     pub const LINKER: &str = "ld";
 
     pub const OUTPUT_FILE: &str = "junon.out";
-    pub const START_FUNCTION: &str = "_start";
 }

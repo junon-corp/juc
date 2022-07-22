@@ -169,6 +169,7 @@ pub trait Compiler {
 
     // Other functions for Assembly code ---------------------------------------
 
+    fn create_start_function(&mut self);
     fn call_function(&mut self, id: &String);
     fn update_return_register(&mut self, value: &Token);
 }
