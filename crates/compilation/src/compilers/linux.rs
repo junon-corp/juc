@@ -435,14 +435,11 @@ impl Compiler for LinuxCompiler {
                 reg!(defaults::FUN_RETURN_REGISTER)
             )
         } else {
-            self.before_getting_value_when_id(id_or_value, defaults::RETURN_REGISTER);
-            
             let instruction = i!(
                 Mov, 
                 reg!(defaults::FUN_RETURN_REGISTER), 
                 self.give_value(id_or_value)
             );
-            println!("{}", instruction.to_string(false));
 
             instruction
         };
