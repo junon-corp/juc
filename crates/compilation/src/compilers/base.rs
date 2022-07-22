@@ -58,8 +58,12 @@ pub trait Compiler {
             self.terminate_file(&source_path);
         }
 
+        self.link();
         self.terminate();
     }
+
+    /// Links generated files to one output file
+    fn link(&mut self);
 
     /// Walks through the given elements, calling `check` for each element.
     ///
@@ -156,7 +160,7 @@ pub trait Compiler {
                     // its associated function
                     self.call_function(id_or_value);
                 } else {
-                    self.update_expression_return_register(other);
+                    self.update_return_register(other);
                 }
             }
             _ => panic!("unknown token : {:?}", other),
@@ -166,5 +170,5 @@ pub trait Compiler {
     // Other functions for Assembly code ---------------------------------------
 
     fn call_function(&mut self, id: &String);
-    fn update_expression_return_register(&mut self, value: &Token);
+    fn update_return_register(&mut self, value: &Token);
 }
