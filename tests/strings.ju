@@ -1,0 +1,16 @@
+fun main {
+    printname()
+    ret
+}
+
+fun printname {
+    let name: byte[5] = ['L', 'i', 'n', 'u', 's']
+    @mov rax, 1
+    @mov rdi, 1
+    @lea rbx, [rbp-5]
+    @mov rsi, rbx
+    @mov rdx, 5
+    @syscall
+
+    ret
+}
