@@ -119,15 +119,19 @@ impl LinuxCompiler {
         }
     }
 
-    pub fn give_type_operand_before_value(&mut self, id_or_value_or_expression: &Token) -> Operand {
+    pub fn give_type_operand_before_value(&mut self, variable: &Variable, id_or_value_or_expression: &Token) -> Operand {
         match KindToken::from_token(id_or_value_or_expression) {
             KindToken::Expression | KindToken::Identifier => {
                 // Nothing because we move a register 
                 Op::None
             },
             KindToken::Value => {
-                // todo!() : Match the value to select the right operand : (q|d|)word
-                Op::Dword
+                match variable.type_() {
+                    Type::Byte => Op::Byte,
+                    Type::Integer => Op::Word,
+                    Type::BigInteger => Op::Dword,
+                    type_ => panic!("no possible operand for type : {:?}", type_),
+                }
             }
         }
     }
@@ -137,12 +141,14 @@ impl LinuxCompiler {
     /// to retrieve the value of the variable
     ///
     /// So, "id_or_value" should be named "id" here
-    fn before_getting_value_when_id(&mut self, id_or_value: &Token, to_register: Register) {
+    ///
+    /// Returns if it was an identifier or not
+    fn before_getting_value_when_id(&mut self, id_or_value: &Token, to_register: Register) -> bool {        
         // Not an identifier, nothing to do
         if KindToken::from_token(id_or_value) != KindToken::Identifier {
-            return;
+            return false;
         }
-        
+
         let instruction = i!(
             Mov,
             reg!(to_register),
@@ -157,6 +163,7 @@ impl LinuxCompiler {
         );
 
         self.tools().asm_formatter.add_instruction(instruction);
+        return true;
     }
 
     fn do_arithmetic_operation(&mut self, operation: &Operation, operation_mnemonic: Mnemonic) {
@@ -596,18 +603,27 @@ impl Compiler for LinuxCompiler {
             _ => {}
         }
 
-        self.before_getting_value_when_id(variable.value(), defaults::RETURN_REGISTER);
+        let is_identifier: bool = self.before_getting_value_when_id(
+            variable.value(), 
+            defaults::RETURN_REGISTER
+        );
 
         let mut instruction = i!(
             Mov,
             self.give_expression_for_variable(variable),
-            self.give_type_operand_before_value(variable.value()),
+            self.give_type_operand_before_value(&variable, variable.value()),
             {
-                // Here, we don't use `give_value()` because it also executes 
-                // the expression and it's not required.
                 if variable.value() == &Token::BracketOpen {
+                    // Here, we don't use `self.give_value()` because it also 
+                    // executes the expression and it's not required.
                     self.execute_next_expression();
                     Op::Expression(defaults::RETURN_REGISTER.to_string())
+                } else if is_identifier {
+                    // When the value to assign is a variable's identifier.
+                    // 
+                    // The variable's value was moved into the register, now
+                    // we move that register into the variable to assign
+                    reg!(defaults::RETURN_REGISTER)
                 } else {
                     // `value` cannot be `Token::BracketOpen` so it's not an 
                     // expression
