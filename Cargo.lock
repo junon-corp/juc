@@ -42,7 +42,7 @@ dependencies = [
 [[package]]
 name = "jup"
 version = "0.1.0"
-source = "git+https://github.com/junon-corp/jup#e8658d6fba2814bd56d329614f108da43cac4c86"
+source = "git+https://github.com/junon-corp/jup#0709257a267158642294f596d8a8ae8383abdd79"
 dependencies = [
  "rslog",
  "x64asm 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
