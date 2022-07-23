@@ -1,9 +1,9 @@
 fun main {
-    let a: byte = { 'a' }
-    let b: int = { 5 }
-    let c: int = { b }
+    let a: byte = 'a'
+    let b: int = 5
+    let c: int = b
     
-    let d: int = 2
+    let d: bigint = 2
     d = 3
     d = { 2 + 4 }
 
