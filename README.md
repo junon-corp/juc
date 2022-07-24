@@ -3,12 +3,8 @@
 # juc
 Compiler for the Junon language. Multi-platform and modern design. Currently only available for Linux
 
-## Note
-The compiler is still under development, and the main branch is not always stable.
-
-About the Rust code, it's often reviewed to optimize some parts and to better follow the Rust's guidelines. You can contribute on that checking by making a pull request with your changes.
-
-## Simple example
+## Example
+This example shows the different things you can actually do with the current version.
 ```junon
 fun main {
     let a: int = 1
@@ -20,30 +16,35 @@ fun main {
     ret
 }
 
-fun foo: int {
-    ret { 6 / 2 }
+// Divides by 2 a number `a`
+fun foo(a: int): int {
+    ret { a / 2 }
 }
 ```
-Need more things ? While you wait for the documentation, you can [contact me](mailto:antonherault@gmail.com) :)
 
-Be careful, the source code is not yet checked by the compiler. Your code has to be perfect. 
+## Note
+The compiler is still under development, and the main branch is not stable. If you encounter a bug, please open an issue.
 
 ## Documentation
-The first Junon language's documentation pages are coming soon.
+The language's documentation will be there soon. If you have any question, open an issue or [contact me](mailto:antonherault@gmail.com).
 
-The [juc](https://github.com/junon-corp/juc) code comments for documentation could be wrong sometimes if a change forgot to update the comment with itself. If you see any documentation error, do not hesitate to open an issue. \
-Before each stable version, the documentation will be checked again to avoid these kind of problems.
+## Contributions
+Run a test : `tests/run.sh <test name>`. Some tests do not work with the current compiler's version, because the language is evolving. \
+The `<test name>` is a test file's name (without the extension) or a folder located in the "tests/" folder.
 
-## Run tests
-All tests source code are located in the "tests/" folder. \
-Run a test with its name : `tests/run.sh <test name>`. The **test name** could be a folder containing Junon files or a Junon file ("my_test.ju" or "my_test/*.ju")
+To purpose some changes on the compiler, fork this repository and open a pull request with your changes. Please, work on your own another branch.
 
-Note some tests are old and may stop working with the current juc version.
+Check [jup](https://github.com/junon-corp/jup) for the code the tokenizing and parsing parts.
 
 ## Requirements
-All dependencies for compilation are specified in the "Cargo.toml" file and are built while compilation.
+The compiler requires some programs at runtime : 
 
-But some other programs are required by the compiler at runtime, following the platform :
-- ### Linux
-  - [nasm](https://www.nasm.us/)
-  - ld
+- **Linux** : [nasm](https://www.nasm.us/), ld
+
+## Syntax highlighter
+Create projects with Junon to make the language's integration possible on [github/linguist](https://github.com/github/linguist)
+
+> We try only to add languages once they have some usage on GitHub. In most cases we prefer that each new file extension be in use in at least 200 unique :user/:repo repositories before supporting them in Linguist.
+*from [linguist/contributing.md](https://github.com/github/linguist/blob/master/CONTRIBUTING.md#Adding-a-language)*
+
+For common editors, may extensions will be created once the language style rules will be finally set. 
