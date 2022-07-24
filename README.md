@@ -28,6 +28,8 @@ The compiler is still under development, and the main branch is not stable. If y
 ## Documentation
 The language's documentation will be there soon. If you have any question, open an issue or [contact me](mailto:antonherault@gmail.com).
 
+The compiler's code is documented. To generate the documentation pages, run `cargo doc --open` then your web browser will be opened on it. More comments are written in the code to help contributors understanding how it works but they are not showing up on the generated pages.
+
 ## Contributions
 Run a test : `tests/run.sh <test name>`. Some tests do not work with the current compiler's version, because the language is evolving. \
 The `<test name>` is a test file's name (without the extension) or a folder located in the "tests/" folder.
@@ -44,7 +46,7 @@ The compiler requires some programs at runtime :
 ## Syntax highlighter
 Create projects with Junon to make the language's integration possible on [github/linguist](https://github.com/github/linguist)
 
-> We try only to add languages once they have some usage on GitHub. In most cases we prefer that each new file extension be in use in at least 200 unique :user/:repo repositories before supporting them in Linguist.
+> We try only to add languages once they have some usage on GitHub. In most cases we prefer that each new file extension be in use in at least 200 unique `:user/:repo` repositories before supporting them in Linguist. \
 *from [linguist/contributing.md](https://github.com/github/linguist/blob/master/CONTRIBUTING.md#Adding-a-language)*
 
 For common editors, may extensions will be created once the language style rules will be finally set. 
