@@ -472,11 +472,22 @@ impl Compiler for LinuxCompiler {
     }
     
     fn at_multiply(&mut self, operation: &Operation) {
-        todo!("multiplications are not available");
+        let mut instructions = vec![
+            i!(Mov, reg!(Rax), self.give_value(operation.arg1())),
+            i!(Imul, reg!(Rax), self.give_value(operation.arg2())),
+            i!(Mov, reg!(Rbx), reg!(Rax))
+        ];
+        self.tools().asm_formatter.add_instructions(&mut instructions);
     }
     
     fn at_divide(&mut self, operation: &Operation) {
-        todo!("divisions are not available");
+        let mut instructions = vec![
+            i!(Mov, reg!(Rax), self.give_value(operation.arg1())),
+            i!(Mov, reg!(Rdx), self.give_value(operation.arg2())),
+            i!(Idiv, reg!(Rax)),
+            i!(Mov, reg!(Rbx), reg!(Rax))
+        ];
+        self.tools().asm_formatter.add_instructions(&mut instructions);
     }
 
     /// Moves the value to return into the default function return register
