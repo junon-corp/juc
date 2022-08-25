@@ -13,6 +13,13 @@ fun main: int {
     let c: int = { a + 5 }
     let d: int = { a + b }
     let e: int = { 5 - a }
+    
+    let f: int = 50
+    let g: int = 3
+    let h: int = { f * g }
+
+    let h2: int = { 50 * g }
+    let h3: int = { f * 3 }
 
     ret c
 }

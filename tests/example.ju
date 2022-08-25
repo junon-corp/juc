@@ -1,0 +1,16 @@
+fun main {
+    let a: int = 1
+    a = 2
+
+    let b: int = { 3 + 4 }
+    let c: int[5] = [1, 2, 3, 4, 5]
+
+    foo(10)
+
+    ret
+}
+
+// Divides by 2 a number `a`
+fun foo(a: int): int {
+    ret { a / 2 }
+}
