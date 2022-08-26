@@ -1,0 +1,23 @@
+fun main {
+    let a: int = 0
+
+    if { a == 20 } {
+        a = 1 
+    } else {
+        a = 2 
+    }
+
+    let v: int = 99
+    let d: int = { v == a }
+
+    ret
+}
+
+
+fun foo {
+    let v: int = 90
+    
+    if { v == 90 } {
+        v = 60
+    }
+}
