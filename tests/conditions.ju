@@ -20,4 +20,6 @@ fun foo {
     if { v == 90 } {
         v = 60
     }
+
+    ret
 }
