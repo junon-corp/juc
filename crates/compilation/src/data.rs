@@ -45,6 +45,9 @@ pub struct CompilerCodeData {
     pub next_element: Element,
     /// Should the next element be skipped ?
     pub is_skip_next: bool,
+
+    pub is_condition: bool,
+    pub n_condition: i32,
 }
 
 /// Some useful variables for the Assembly stacks

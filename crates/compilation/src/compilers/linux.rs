@@ -354,6 +354,46 @@ impl Compiler for LinuxCompiler {
         );
     }
 
+    fn at_condition(&mut self, condition: &Token) {
+        match condition {
+            Token::ConditionIf => {
+                self.code_data().is_condition = true;
+                self.code_data().n_condition += 1;
+
+                let instruction = i!(Jne, Op::Label(
+                    format!(".elsec_{}", self.code_data().n_condition)
+                ));
+                self.tools().asm_formatter.add_instruction(instruction);
+
+                self.execute_next_expression();
+                
+                let instruction = i!(Jmp, Op::Label(
+                    format!(".endc_{}", self.code_data().n_condition)
+                ));
+                self.tools().asm_formatter.add_instruction(instruction);
+            }
+            Token::ConditionElse => {
+                let instruction = i!(label!(
+                    format!(".elsec_{}", self.code_data().n_condition)
+                        .as_str()
+                ));
+                self.tools().asm_formatter.add_instruction(instruction);
+                self.execute_next_expression();
+                self.code_data().is_condition = false;
+            }
+            _ => panic!("not a condition token : {:?}", condition)
+        }
+
+        if !self.code_data().is_condition {
+            let instruction = i!(label!(
+                format!(".endc_{}", self.code_data().n_condition)
+            ));
+        
+            self.tools().asm_formatter.add_instruction(instruction);
+        }
+
+    }
+
     fn at_function(&mut self, function: &Function) {
         if function.id().to_string() == defaults::ENTRY_POINT.to_string() {
             self.create_start_function();
@@ -487,6 +527,21 @@ impl Compiler for LinuxCompiler {
             i!(Idiv, reg!(Rax)),
             i!(Mov, reg!(Rbx), reg!(Rax))
         ];
+        self.tools().asm_formatter.add_instructions(&mut instructions);
+    }
+
+    fn at_equal(&mut self, operation: &Operation) {
+        let mut instructions = vec![
+            i!(Mov, reg!(Rbx), self.give_value(operation.arg1())),
+            i!(Cmp, reg!(Rbx), self.give_value(operation.arg2())),
+        ];
+        
+        // Actual code to retrieves the comparison value
+        if !self.code_data().is_condition {
+            instructions.push(i!(Sete, reg!(Al)));
+            instructions.push(i!(Movzx, reg!(defaults::RETURN_REGISTER), reg!(Al)));
+        }
+
         self.tools().asm_formatter.add_instructions(&mut instructions);
     }
 

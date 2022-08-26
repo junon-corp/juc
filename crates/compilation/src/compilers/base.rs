@@ -78,6 +78,8 @@ pub trait Compiler {
                 continue;
             }
 
+            println!("{} : {:?}", i, element);
+
             if i != elements.len() -1 {
                 self.code_data().next_element = elements[i + 1].clone();
             }
@@ -125,6 +127,8 @@ pub trait Compiler {
     /// file.
     fn at_assembly(&mut self, code: &Token); 
 
+    fn at_condition(&mut self, condition: &Token);
+
     /// Adds a function based on the given object
     fn at_function(&mut self, function: &Function);
 
@@ -137,6 +141,7 @@ pub trait Compiler {
             Token::Minus => self.at_subtraction(&operation),
             Token::Multiply => self.at_multiply(&operation),
             Token::Divide => self.at_divide(&operation),
+            Token::Equal => self.at_equal(&operation),
             _ => panic!("invalid operation for operation : {:?}", operation),
         }
     }
@@ -146,6 +151,7 @@ pub trait Compiler {
     fn at_subtraction(&mut self, operation: &Operation);
     fn at_multiply(&mut self, operation: &Operation);
     fn at_divide(&mut self, operation: &Operation);
+    fn at_equal(&mut self, operation: &Operation);
 
     fn at_return(&mut self, value: &Token);
 
@@ -156,6 +162,9 @@ pub trait Compiler {
 
     fn at_other(&mut self, other: &Token) {
         match other {
+            Token::ConditionElse | Token::ConditionIf => {
+                self.at_condition(other);
+            }
             Token::NewLine => {},
             Token::Other(id_or_value) => {
                 match KindToken::from_token(other) {

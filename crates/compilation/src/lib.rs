@@ -101,6 +101,8 @@ pub fn run_compiler(sources: &Vec<String>, options: &Dict<String, String>, sm: &
 
         next_element: Element::Other(Token::None),
         is_skip_next: false,
+        is_condition: false,
+        n_condition: 0,
     };
 
     let stacks_data = CompilerStacksData {
