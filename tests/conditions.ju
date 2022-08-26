@@ -1,7 +1,7 @@
 fun main {
     let a: int = 0
 
-    if { a == 20 } {
+    if a == 20 {
         a = 1 
     } else {
         a = 2 
