@@ -96,18 +96,31 @@ pub trait Compiler {
         // about it because we will care it in another function called 
         // because of another element.
 
-
-        if self.code_data().is_condition {
+        // End the condition when there is no "else" closure
+        if self.code_data().is_condition || self.code_data().is_loop {
             match element {
                 Element::Other(Token::NewLine) => {}
                 Element::Operation(_) => {}
                 Element::Expression(_) => {}
                 _ => {
-                    if element != &Element::Other(Token::ConditionElse) {    
+                    if self.code_data().is_condition 
+                        && element != &Element::Other(Token::ConditionElse) 
+                    {    
                         self.code_data().is_condition = false;
-                        // When the given token is None, that means the condition has to be 
-                        // ended even if there is no "else" closure
+                        // When the given token is None, that means the 
+                        // condition has to be ended even when there is no 
+                        // "else" closure
                         self.at_condition(&Token::None);                        
+                    }
+                    
+                    if self.code_data().is_loop 
+                        && element != &Element::Other(Token::LoopBreak)
+                        && element != &Element::Other(Token::LoopContinue)
+                    {
+                        self.code_data().is_loop = false;
+                        // When the given token is None, that means the loop has 
+                        // to be ended
+                        self.at_loop(&Token::None);     
                     }
                 }
             }
@@ -148,6 +161,8 @@ pub trait Compiler {
     /// Adds a function based on the given object
     fn at_function(&mut self, function: &Function);
 
+    fn at_loop(&mut self, token: &Token);
+
     // Checks the right kind of operation to call the right operation
     // function
     fn at_operation(&mut self, operation: &Operation) {
@@ -180,6 +195,9 @@ pub trait Compiler {
         match other {
             Token::ConditionElse | Token::ConditionIf => {
                 self.at_condition(other);
+            }
+            Token::Loop | Token::LoopBreak | Token::LoopContinue => {
+                self.at_loop(other);
             }
             Token::NewLine => {},
             Token::Other(id_or_value) => {

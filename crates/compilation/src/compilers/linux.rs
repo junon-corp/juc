@@ -495,6 +495,63 @@ impl Compiler for LinuxCompiler {
         }
     }
 
+    fn at_loop(&mut self, token: &Token) {
+        println!("{:?}", token);
+
+        match token {
+            Token::Loop => {
+                self.code_data().is_loop = true;
+
+                self.tools().asm_formatter.add_instruction(i!(
+                    label!(".loop_test")
+                ));
+
+                self.execute_next_expression();
+                                
+                self.tools().asm_formatter.add_instructions(&mut vec![
+                    i!(
+                        Jne,
+                        Op::Label(".loop_core".to_string())
+                    ),
+                    i!(
+                        Jmp,
+                        Op::Label(".loop_end".to_string())
+                    ),
+                    i!(
+                        label!(".loop_core")
+                    )
+                ]);   
+            }
+            Token::LoopBreak => {
+                self.tools().asm_formatter.add_instruction(i!(
+                    Jmp,
+                    Op::Label(".loop_end".to_string())
+                ));
+                self.code_data().is_loop = false;
+            }
+            Token::LoopContinue => {
+                self.tools().asm_formatter.add_instruction(i!(
+                    Jmp,
+                    Op::Label(".loop_test".to_string())
+                ));
+            }
+            Token::None => {
+                self.code_data().is_loop = false;
+            }
+            _ => panic!("not a loop token : {:?}", token),
+        }
+
+        if !self.code_data().is_loop {
+            self.tools().asm_formatter.add_instructions(&mut vec![
+                i!(
+                    Jmp,
+                    Op::Label(".loop_test".to_string())
+                ),
+                i!(label!(".loop_end")),
+            ]);
+        }
+    }
+
     /// Retrieves the variable to assign and calls `self.assign_variable()` with
     /// the value next to the operator
     /// ```
@@ -551,7 +608,7 @@ impl Compiler for LinuxCompiler {
         ];
         
         // Actual code to retrieves the comparison value
-        if !self.code_data().is_condition {
+        if !self.code_data().is_condition && !self.code_data().is_loop {
             instructions.push(i!(Sete, reg!(Al)));
             instructions.push(i!(Movzx, reg!(defaults::RETURN_REGISTER), reg!(Al)));
         }

@@ -48,6 +48,9 @@ pub struct CompilerCodeData {
 
     pub is_condition: bool,
     pub n_condition: i32,
+
+    pub is_loop: bool,
+    pub n_loop: i32,
 }
 
 /// Some useful variables for the Assembly stacks
