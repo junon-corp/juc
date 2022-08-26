@@ -1,0 +1,19 @@
+fun main {
+    let a: int = 0
+    
+    loop a == 5 {
+        a = { a + 1 }
+        continue
+    }
+
+    loop a == 5 {
+        a = { a + 1 }
+        break
+    }
+
+    loop a == 5 {
+        a = { a + 1 }
+    }
+
+    ret
+}
