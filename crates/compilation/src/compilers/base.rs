@@ -78,8 +78,6 @@ pub trait Compiler {
                 continue;
             }
 
-            println!("{} : {:?}", i, element);
-
             if i != elements.len() -1 {
                 self.code_data().next_element = elements[i + 1].clone();
             }
