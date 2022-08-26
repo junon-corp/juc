@@ -501,39 +501,64 @@ impl Compiler for LinuxCompiler {
         match token {
             Token::Loop => {
                 self.code_data().is_loop = true;
+                self.code_data().n_loop += 1;
 
-                self.tools().asm_formatter.add_instruction(i!(
-                    label!(".loop_test")
-                ));
+                let instruction = i!(
+                    label!(format!(
+                        ".loop_test_{}",
+                        self.code_data().n_loop
+                    ).as_str())
+                );
+                self.tools().asm_formatter.add_instruction(instruction);
 
                 self.execute_next_expression();
                                 
-                self.tools().asm_formatter.add_instructions(&mut vec![
+                let mut instructions = vec![
                     i!(
                         Jne,
-                        Op::Label(".loop_core".to_string())
+                        Op::Label(format!(
+                            ".loop_core_{}",
+                            self.code_data().n_loop
+                        ))
                     ),
                     i!(
                         Jmp,
-                        Op::Label(".loop_end".to_string())
+                        Op::Label(format!(
+                            ".loop_end_{}",
+                            self.code_data().n_loop
+                        ))
                     ),
                     i!(
-                        label!(".loop_core")
+                        label!(format!(
+                            ".loop_core_{}",
+                            self.code_data().n_loop
+                        ).as_str())
                     )
-                ]);   
+                ];
+
+                self.tools().asm_formatter.add_instructions(&mut instructions);   
             }
             Token::LoopBreak => {
-                self.tools().asm_formatter.add_instruction(i!(
+                let instruction = i!(
                     Jmp,
-                    Op::Label(".loop_end".to_string())
-                ));
+                    Op::Label(format!(
+                        ".loop_end_{}",
+                        self.code_data().n_loop
+                    ))
+                );
+                self.tools().asm_formatter.add_instruction(instruction);
                 self.code_data().is_loop = false;
             }
             Token::LoopContinue => {
-                self.tools().asm_formatter.add_instruction(i!(
+                let instruction = i!(
                     Jmp,
-                    Op::Label(".loop_test".to_string())
-                ));
+                    Op::Label(format!(
+                        ".loop_test_{}",
+                        self.code_data().n_loop
+                    ))
+                );
+
+                self.tools().asm_formatter.add_instruction(instruction);
             }
             Token::None => {
                 self.code_data().is_loop = false;
@@ -542,13 +567,23 @@ impl Compiler for LinuxCompiler {
         }
 
         if !self.code_data().is_loop {
-            self.tools().asm_formatter.add_instructions(&mut vec![
+            let mut instructions = vec![
                 i!(
                     Jmp,
-                    Op::Label(".loop_test".to_string())
+                    Op::Label(format!(
+                        ".loop_test_{}",
+                        self.code_data().n_loop
+                    ))
                 ),
-                i!(label!(".loop_end")),
-            ]);
+                i!(
+                    label!(format!(
+                        ".loop_end_{}",
+                        self.code_data().n_loop
+                    ).as_str())
+                ),
+            ];
+
+            self.tools().asm_formatter.add_instructions(&mut instructions);
         }
     }
 
