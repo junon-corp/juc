@@ -354,21 +354,23 @@ impl Compiler for LinuxCompiler {
         );
     }
 
-    fn at_condition(&mut self, condition: &Token) {
+    /// If `condition` token == `Token::None`, the condition is terminated even 
+    /// without "else" closure.
+    fn at_condition(&mut self, condition: &Token) {        
         match condition {
             Token::ConditionIf => {
                 self.code_data().is_condition = true;
                 self.code_data().n_condition += 1;
 
                 self.execute_next_expression();
-
+                
                 let instruction = i!(
                     Jne,
                     Op::Label(format!(
-                        ".elsec_{}", self.code_data().n_condition
+                        ".cond_{}", self.code_data().n_condition
                     ))
                 );
-    
+                
                 self.tools().asm_formatter.add_instruction(instruction);
             }
             Token::ConditionElse => {
@@ -376,18 +378,23 @@ impl Compiler for LinuxCompiler {
                     i!(
                         Jmp,
                         Op::Label(format!(
-                            ".endc_{}", self.code_data().n_condition
+                            ".cond_{}", self.code_data().n_condition + 1
                         ))
                     ),
                     i!(
                         label!(format!(
-                            ".elsec_{}", self.code_data().n_condition
+                            ".cond_{}", self.code_data().n_condition
                         ).as_str())
                     )
                 ];
 
+                self.code_data().n_condition += 1;
+
                 self.tools().asm_formatter.add_instructions(&mut instructions);
                 self.execute_next_expression();
+                self.code_data().is_condition = false;
+            }
+            Token::None => {
                 self.code_data().is_condition = false;
             }
             _ => panic!("not a condition token : {:?}", condition)
@@ -395,9 +402,8 @@ impl Compiler for LinuxCompiler {
 
         if !self.code_data().is_condition {
             let instruction = i!(label!(
-                format!(".endc_{}", self.code_data().n_condition)
+                format!(".cond_{}", self.code_data().n_condition)
             ));
-        
             self.tools().asm_formatter.add_instruction(instruction);
         }
     }

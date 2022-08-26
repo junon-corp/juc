@@ -81,6 +81,7 @@ pub trait Compiler {
             if i != elements.len() -1 {
                 self.code_data().next_element = elements[i + 1].clone();
             }
+
             self.check_element(element);
             i += 1;
         }
@@ -94,6 +95,23 @@ pub trait Compiler {
         // All cases where the element raises no call is because we don't care 
         // about it because we will care it in another function called 
         // because of another element.
+
+
+        if self.code_data().is_condition {
+            match element {
+                Element::Other(Token::NewLine) => {}
+                Element::Operation(_) => {}
+                Element::Expression(_) => {}
+                _ => {
+                    if element != &Element::Other(Token::ConditionElse) {    
+                        self.code_data().is_condition = false;
+                        // When the given token is None, that means the condition has to be 
+                        // ended even if there is no "else" closure
+                        self.at_condition(&Token::None);                        
+                    }
+                }
+            }
+        }
 
         match element {
             Element::Array(_values) => {},
