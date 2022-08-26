@@ -360,24 +360,33 @@ impl Compiler for LinuxCompiler {
                 self.code_data().is_condition = true;
                 self.code_data().n_condition += 1;
 
-                let instruction = i!(Jne, Op::Label(
-                    format!(".elsec_{}", self.code_data().n_condition)
-                ));
-                self.tools().asm_formatter.add_instruction(instruction);
-
                 self.execute_next_expression();
-                
-                let instruction = i!(Jmp, Op::Label(
-                    format!(".endc_{}", self.code_data().n_condition)
-                ));
+
+                let instruction = i!(
+                    Jne,
+                    Op::Label(format!(
+                        ".elsec_{}", self.code_data().n_condition
+                    ))
+                );
+    
                 self.tools().asm_formatter.add_instruction(instruction);
             }
             Token::ConditionElse => {
-                let instruction = i!(label!(
-                    format!(".elsec_{}", self.code_data().n_condition)
-                        .as_str()
-                ));
-                self.tools().asm_formatter.add_instruction(instruction);
+                let mut instructions = vec![ 
+                    i!(
+                        Jmp,
+                        Op::Label(format!(
+                            ".endc_{}", self.code_data().n_condition
+                        ))
+                    ),
+                    i!(
+                        label!(format!(
+                            ".elsec_{}", self.code_data().n_condition
+                        ).as_str())
+                    )
+                ];
+
+                self.tools().asm_formatter.add_instructions(&mut instructions);
                 self.execute_next_expression();
                 self.code_data().is_condition = false;
             }
@@ -391,7 +400,6 @@ impl Compiler for LinuxCompiler {
         
             self.tools().asm_formatter.add_instruction(instruction);
         }
-
     }
 
     fn at_function(&mut self, function: &Function) {
