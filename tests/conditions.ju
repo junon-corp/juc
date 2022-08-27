@@ -8,7 +8,8 @@ fun main {
     }
 
     let v: int = 99
-    let d: int = { v == a }
+    let d: int = { v <= a }
+    let f: int = { v >= a }
 
     ret
 }
