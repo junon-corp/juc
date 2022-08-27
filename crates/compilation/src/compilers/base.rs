@@ -172,7 +172,7 @@ pub trait Compiler {
             Token::Minus => self.at_subtraction(&operation),
             Token::Multiply => self.at_multiply(&operation),
             Token::Divide => self.at_divide(&operation),
-            Token::Equal => self.at_equal(&operation),
+            Token::Equal => self.at_comparison(&operation),
             Token::LessThan => self.at_comparison(&operation),
             Token::MoreThan => self.at_comparison(&operation),
             Token::LessThanOrEqual => self.at_comparison(&operation),
@@ -186,7 +186,7 @@ pub trait Compiler {
     fn at_subtraction(&mut self, operation: &Operation);
     fn at_multiply(&mut self, operation: &Operation);
     fn at_divide(&mut self, operation: &Operation);
-    fn at_equal(&mut self, operation: &Operation);
+    fn at_comparison(&mut self, operation: &Operation);
 
     fn at_return(&mut self, value: &Token);
 
