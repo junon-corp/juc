@@ -21,8 +21,8 @@ fun fib(n: int) {
 
     loop a < n {
         let c: int = { a + b }
-        let a: int = b
-        let b: int = c
+        a = b
+        b = c
     }
 
     ret
