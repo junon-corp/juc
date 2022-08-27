@@ -173,6 +173,10 @@ pub trait Compiler {
             Token::Multiply => self.at_multiply(&operation),
             Token::Divide => self.at_divide(&operation),
             Token::Equal => self.at_equal(&operation),
+            Token::LessThan => self.at_comparison(&operation),
+            Token::MoreThan => self.at_comparison(&operation),
+            Token::LessThanOrEqual => self.at_comparison(&operation),
+            Token::MoreThanOrEqual => self.at_comparison(&operation),
             _ => panic!("invalid operation for operation : {:?}", operation),
         }
     }

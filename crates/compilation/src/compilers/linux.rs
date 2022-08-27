@@ -636,7 +636,7 @@ impl Compiler for LinuxCompiler {
         self.tools().asm_formatter.add_instructions(&mut instructions);
     }
 
-    fn at_equal(&mut self, operation: &Operation) {
+    fn at_comparison(&mut self, operation: &Operation) {
         let mut instructions = vec![
             i!(Mov, reg!(Rbx), self.give_value(operation.arg1())),
             i!(Cmp, reg!(Rbx), self.give_value(operation.arg2())),
