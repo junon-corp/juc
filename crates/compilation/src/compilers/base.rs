@@ -12,6 +12,8 @@ use jup::lang::{
     tokens::Token,
 };
 
+use x64asm::mnemonic::Mnemonic;
+
 use crate::data::{
     CompilerData,
     CompilerTools,
@@ -236,6 +238,7 @@ pub trait Compiler {
     fn update_return_register(&mut self, value: &Token);
     fn assign_variable(&mut self, variable: &Variable);
     fn assign_array_variable(&mut self, array_variable: &Variable);
+    fn give_mnemonic_for_previous_operator(&mut self) -> Mnemonic;
 }
 
 #[derive(Debug, Eq, PartialEq)]

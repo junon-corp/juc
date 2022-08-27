@@ -13,9 +13,12 @@
 
 use std::collections::HashMap as Dict;
 
-use jup::lang::elements::{ 
-    Element, 
-    variable::Variable 
+use jup::lang::{
+    tokens::Token,
+    elements::{ 
+        Element,
+        variable::Variable 
+    }
 };
 use x64asm::formatter::Formatter;
 use strings::manager::StringsManager;
@@ -51,6 +54,8 @@ pub struct CompilerCodeData {
 
     pub is_loop: bool,
     pub n_loop: i32,
+
+    pub previous_operator: Token,
 }
 
 /// Some useful variables for the Assembly stacks

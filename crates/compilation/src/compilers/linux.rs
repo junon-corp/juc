@@ -365,7 +365,7 @@ impl Compiler for LinuxCompiler {
                 self.execute_next_expression();
                 
                 let instruction = i!(
-                    Jne,
+                    self.give_mnemonic_for_previous_operator(),
                     Op::Label(format!(
                         ".cond_{}", self.code_data().n_condition
                     ))
@@ -515,7 +515,7 @@ impl Compiler for LinuxCompiler {
                                 
                 let mut instructions = vec![
                     i!(
-                        Jne,
+                        self.give_mnemonic_for_previous_operator(),
                         Op::Label(format!(
                             ".loop_core_{}",
                             self.code_data().n_loop
@@ -642,13 +642,23 @@ impl Compiler for LinuxCompiler {
             i!(Cmp, reg!(Rbx), self.give_value(operation.arg2())),
         ];
         
+        let mnemonic = match operation.operator() {
+            Token::Equal => Sete,
+            Token::LessThan => Setl,
+            Token::MoreThan => Setg,
+            Token::LessThanOrEqual => Setle,
+            Token::MoreThanOrEqual => Setge, 
+            token => panic!("not a comparison operator : {:?}", token)
+        };
+
         // Actual code to retrieves the comparison value
         if !self.code_data().is_condition && !self.code_data().is_loop {
-            instructions.push(i!(Sete, reg!(Al)));
+            instructions.push(i!(mnemonic, reg!(Al)));
             instructions.push(i!(Movzx, reg!(defaults::RETURN_REGISTER), reg!(Al)));
         }
 
         self.tools().asm_formatter.add_instructions(&mut instructions);
+        self.code_data().previous_operator = operation.operator().clone();
     }
 
     /// Moves the value to return into the default function return register
@@ -833,6 +843,17 @@ impl Compiler for LinuxCompiler {
             );
             
             self.assign_variable(&value_as_variable);
+        }
+    }
+
+    fn give_mnemonic_for_previous_operator(&mut self) -> Mnemonic {
+        match &self.code_data().previous_operator {
+            Token::Equal => Jne,
+            Token::LessThan => Jge,
+            Token::MoreThan => Jle,
+            Token::LessThanOrEqual => Jg,
+            Token::MoreThanOrEqual => Jl, 
+            token => panic!("not a comparison operator : {:?}", token)
         }
     }
 }
